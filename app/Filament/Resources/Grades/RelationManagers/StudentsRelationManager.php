@@ -16,6 +16,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\ImageColumn;
+use Laravolt\Avatar\Facade as Avatar;
 
 class StudentsRelationManager extends RelationManager
 {
@@ -36,7 +38,21 @@ class StudentsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
+                ImageColumn::make('photo')
+                    ->label('Photo')
+                    ->defaultImageUrl(function ($record) {
+                        return (string) Avatar::create($record->name)->toBase64();
+                    })
+                    ->disk('public')
+                    ->circular()
+                    ->searchable(),
                 TextColumn::make('name')
+                    ->searchable(),
+                TextColumn::make('nisn')
+                    ->searchable(),
+                TextColumn::make('nis')
+                    ->searchable(),
+                TextColumn::make('gender')
                     ->searchable(),
             ])
             ->filters([
