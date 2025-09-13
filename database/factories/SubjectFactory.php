@@ -20,6 +20,7 @@ class SubjectFactory extends Factory
      */
     public function definition(): array
     {
+        $grade = Grade::gradeAcademicYearActive()->get()->random();
         return [
             'name' => fake()->word(),
             'code' => fake()->bothify('SUB-####'),
@@ -27,8 +28,8 @@ class SubjectFactory extends Factory
             'user_id' => User::factory()->afterCreating(function (User $user) {
                 $user->assignRole('teacher');
             }),
-            'grade_id' => Grade::gradeAcademicYearActive()->get()->random()->id,
-            'academic_year_id' => AcademicYear::active()->first()->id,
+            'grade_id' => $grade->id,
+            'academic_year_id' => $grade->academic_year_id,
         ];
     }
 }
