@@ -31,6 +31,10 @@ class GradesTable
                     ->label('Students Count')
                     ->counts('students')
                     ->searchable(),
+                TextColumn::make('subjects_count')
+                    ->label('Subjects Count')
+                    ->counts('subjects')
+                    ->searchable(),
             ])
             ->filters([
                 TrashedFilter::make(),

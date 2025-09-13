@@ -34,6 +34,10 @@ class SubjectsTable
                     ->bulleted()
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('user.name')
+                    ->label('Teacher')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 TrashedFilter::make(),
@@ -47,6 +51,10 @@ class SubjectsTable
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->modifyQueryUsing(function ($query) {
+                $query->subjectWithGradeActive()
+                    ->mySubjects();
+            });
     }
 }

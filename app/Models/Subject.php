@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Subject extends Model
 {
@@ -40,5 +41,10 @@ class Subject extends Model
         return $query->whereHas('grade', function ($query) use ($gradeActive) {
             $query->whereIn('grades.id', $gradeActive->pluck('id'));
         });
+    }
+
+    public function scopeMySubjects($query)
+    {
+        return $query->where('user_id', Auth::id());
     }
 }
