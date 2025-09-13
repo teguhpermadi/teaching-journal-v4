@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('nis')->unique();
             $table->string('photo')->nullable();
             $table->boolean('active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
         });
     }
