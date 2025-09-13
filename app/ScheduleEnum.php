@@ -11,7 +11,7 @@ enum ScheduleEnum: string
     case FRIDAY = 'friday';
     case SATURDAY = 'saturday';
 
-    public function label(): string
+    public function getLabel(): string
     {
         // return in Indonesian
         return match ($this) {

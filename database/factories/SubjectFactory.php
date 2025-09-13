@@ -22,7 +22,7 @@ class SubjectFactory extends Factory
         return [
             'name' => fake()->word(),
             'code' => fake()->bothify('SUB-####'),
-            'schedule' => fake()->randomElement(ScheduleEnum::cases())->value,
+            'schedule' => fake()->randomElements(ScheduleEnum::cases(), 2),
             'user_id' => User::factory(),
             'grade_id' => Grade::gradeAcademicYearActive()->get()->random()->id,
         ];
