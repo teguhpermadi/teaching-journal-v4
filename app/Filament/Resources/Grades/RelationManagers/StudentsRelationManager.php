@@ -15,6 +15,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class StudentsRelationManager extends RelationManager
 {
@@ -45,6 +46,7 @@ class StudentsRelationManager extends RelationManager
                 // CreateAction::make(),
                 AttachAction::make()
                     ->preloadRecordSelect()
+                    ->recordSelectOptionsQuery(fn (Builder $query) => $query->studentWithoutGradeActive())
                     ->multiple(),
             ])
             ->recordActions([

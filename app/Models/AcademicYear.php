@@ -33,4 +33,20 @@ class AcademicYear extends Model
     {
         return $this->hasMany(Grade::class);
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
+    }
+
+    public static function setActive($yearId)
+    {
+        // Menonaktifkan semua tahun ajaran
+        self::query()->update(['active' => false]);
+
+        // Mengaktifkan tahun ajaran yang diberikan
+        self::where('id', $yearId)->update(['active' => true]);
+
+        return self::where('active', true)->first();
+    }
 }

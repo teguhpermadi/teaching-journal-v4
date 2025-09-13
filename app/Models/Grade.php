@@ -29,4 +29,11 @@ class Grade extends Model
     {
         return $this->belongsToMany(Student::class, 'grade_student');
     }
+
+    public function scopeGradeAcademicYearActive($query)
+    {
+        return $query->whereHas('academicYear', function ($query) {
+            $query->where('active', true);
+        });
+    }
 }

@@ -29,4 +29,12 @@ class Student extends Model
     {
         return $this->belongsToMany(Grade::class, 'grade_student');
     }
+
+    public function scopeStudentWithoutGradeActive()
+    {
+        $gradeActive = Grade::gradeAcademicYearActive()->get();
+        return $this->whereDoesntHave('grades', function ($query) use ($gradeActive) {
+            $query->whereIn('grades.id', $gradeActive->pluck('id'));
+        });
+    }
 }
