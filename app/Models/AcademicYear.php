@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Grade;
 
 class AcademicYear extends Model
 {
@@ -27,4 +28,9 @@ class AcademicYear extends Model
         'date_end' => 'date',
         'active' => 'boolean',
     ];
+
+    public function grades()
+    {
+        return $this->hasMany(Grade::class);
+    }
 }
