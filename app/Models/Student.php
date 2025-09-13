@@ -24,4 +24,9 @@ class Student extends Model
     protected $casts = [
         'active' => 'boolean',
     ];
+
+    public function grades()
+    {
+        return $this->belongsToMany(Grade::class, 'grade_student');
+    }
 }
