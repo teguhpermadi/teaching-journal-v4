@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use App\Models\AcademicYear;
+use App\Models\Scopes\AcademicYearScope;
 
 class AcademicYearsTable
 {
@@ -40,6 +41,10 @@ class AcademicYearsTable
                 TextColumn::make('grades_count')
                     ->label('Grades Count')
                     ->counts('grades')
+                    ->sortable(),
+                TextColumn::make('subjects_count')
+                    ->label('Subjects Count')
+                    ->counts('subjects')
                     ->sortable(),
             ])
             ->filters([

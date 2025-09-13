@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
 use App\Models\Grade;
+use App\Models\AcademicYear;
 use App\ScheduleEnum;
 
 /**
@@ -27,6 +28,7 @@ class SubjectFactory extends Factory
                 $user->assignRole('teacher');
             }),
             'grade_id' => Grade::gradeAcademicYearActive()->get()->random()->id,
+            'academic_year_id' => AcademicYear::active()->first()->id,
         ];
     }
 }

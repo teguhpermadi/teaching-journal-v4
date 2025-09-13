@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AcademicYear;
 use App\Models\Grade;
 
 class SubjectForm
@@ -19,6 +20,8 @@ class SubjectForm
             ->components([
                 Hidden::make('user_id')
                     ->default(Auth::id()),
+                Hidden::make('academic_year_id')
+                    ->default(AcademicYear::active()->first()->id),
                 TextInput::make('name')
                     ->label('Subject Name')
                     ->required(),

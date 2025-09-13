@@ -18,6 +18,7 @@ return new class extends Migration
             $table->json('schedule');
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('grade_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
             $table->softDeletes();
             $table->timestamps();
         });
