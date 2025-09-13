@@ -12,6 +12,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Laravolt\Avatar\Facade as Avatar;
 
 class StudentsTable
 {
@@ -21,6 +22,10 @@ class StudentsTable
             ->columns([
                 ImageColumn::make('photo')
                     ->label('Foto')
+                    ->defaultImageUrl(function ($record) {
+                        return (string) Avatar::create($record->name)->toBase64();
+                    })
+                    ->disk('public')
                     ->circular(),
                 TextColumn::make('name')
                     ->searchable(),

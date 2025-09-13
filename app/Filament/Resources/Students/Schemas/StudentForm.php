@@ -34,8 +34,7 @@ class StudentForm
                     ->numeric(),
                 FileUpload::make('photo')
                     ->label('Foto')
-                    ->image()
-                    ->imageEditor()
+                    ->avatar()
                     ->disk('public')
                     ->directory('photos')
                     ->visibility('public'),
