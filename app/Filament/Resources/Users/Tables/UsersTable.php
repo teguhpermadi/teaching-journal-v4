@@ -17,6 +17,10 @@ class UsersTable
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
+                TextColumn::make('subjects_count')
+                    ->label('Subjects')
+                    ->counts('subjects')
+                    ->sortable(),
             ])
             ->filters([
                 //

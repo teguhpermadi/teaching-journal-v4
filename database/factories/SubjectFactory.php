@@ -23,7 +23,9 @@ class SubjectFactory extends Factory
             'name' => fake()->word(),
             'code' => fake()->bothify('SUB-####'),
             'schedule' => fake()->randomElements(ScheduleEnum::cases(), 2),
-            'user_id' => User::factory(),
+            'user_id' => User::factory()->afterCreating(function (User $user) {
+                $user->assignRole('teacher');
+            }),
             'grade_id' => Grade::gradeAcademicYearActive()->get()->random()->id,
         ];
     }

@@ -3,9 +3,13 @@
 namespace App\Filament\Resources\Subjects\Schemas;
 
 use App\ScheduleEnum;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Grade;
 
 class SubjectForm
 {
@@ -13,6 +17,8 @@ class SubjectForm
     {
         return $schema
             ->components([
+                Hidden::make('user_id')
+                    ->default(Auth::id()),
                 TextInput::make('name')
                     ->label('Subject Name')
                     ->required(),
@@ -21,7 +27,7 @@ class SubjectForm
                     ->required(),
                 Select::make('grade_id')
                     ->label('Grade')
-                    ->relationship('grade', 'name')
+                    ->relationship(name: 'grade', titleAttribute: 'name', modifyQueryUsing: fn (Builder $query) => Grade::gradeAcademicYearActive($query))
                     ->required(),
                 Select::make('schedule')
                     ->label('Schedule')

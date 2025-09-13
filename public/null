@@ -1,25 +1,6 @@
-App\Models\Grade::get();
-App\Models\Grade::academicYearActive()->get();
-App\Models\Grade::academicYearActive()->get();
-App\Models\Grade::academicYearActive()->get();
-App\Models\Grade::studentWithGradeActive()->get();
 
-App\Models\Student::studentWithGradeActive()->get();
+App\Models\Subject::lastes()->get()
 
-App\Models\Student::studentWithGradeActive()->get();
+App\Models\Subject::lates()->get()
 
-App\Models\Student::studentWithGradeActive()->count();
-
-App\Models\Student::studentWithGradeActive()->count();
-
-App\Models\Student::studentWithGradeActive()->count();
-
-App\Models\Student::studentWithGradeActive()->count();
-
-App\Models\Student::studentWithputGradeActive()->count();
-
-App\Models\Student::studentWithoutGradeActive()->count();
-
-App\Models\Student::studentWithoutGradeActive()->count();
-
-App\Models\Student::studentWithoutGradeActive()->count();
+App\Models\Subject::latest()->get()
