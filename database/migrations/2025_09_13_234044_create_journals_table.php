@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('journals', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('grade_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('subject_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->date('date');

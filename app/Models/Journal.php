@@ -22,6 +22,7 @@ class Journal extends Model implements HasMedia
     protected $fillable = [
         'academic_year_id',
         'subject_id',
+        'grade_id',
         'user_id',
         'date',
         'target',
@@ -45,6 +46,11 @@ class Journal extends Model implements HasMedia
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
     }
 
     public function subject()
