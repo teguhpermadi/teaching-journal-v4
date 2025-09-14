@@ -56,4 +56,9 @@ class Subject extends Model
     {
         return $query->where('user_id', Auth::id());
     }
+
+    public function journals()
+    {
+        return $this->hasMany(Journal::class);
+    }
 }
