@@ -8,6 +8,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -48,6 +49,13 @@ class JournalForm
                     ->required(),
                 Textarea::make('notes')
                     ->columnSpan('full'),
+                SpatieMediaLibraryFileUpload::make('photo')
+                    ->label('Photos')
+                    ->disk('public')
+                    ->multiple()
+                    ->collection('photos')
+                    ->image(),
+
             ]);
     }
 }

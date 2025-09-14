@@ -4,3 +4,9 @@ App\Models\Subject::lastes()->get()
 App\Models\Subject::lates()->get()
 
 App\Models\Subject::latest()->get()
+$grade = Grade::gradeAcademicYearActive()->get()->random();
+$grade = Grade::gradeAcademicYearActive()->get()'?>
+$grade = Grade::gradeAcademicYearActive()->get();
+$grade = Grade::gradeAcademicYearActive();
+$grade = Grade::gradeAcademicYearActive()->get();
+$grade = Grade::get();

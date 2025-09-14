@@ -20,7 +20,7 @@ class SubjectFactory extends Factory
      */
     public function definition(): array
     {
-        $grade = Grade::gradeAcademicYearActive()->get()->random();
+        $grade = Grade::get()->random();
         return [
             'name' => fake()->word(),
             'code' => fake()->bothify('SUB-####'),

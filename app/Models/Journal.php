@@ -10,12 +10,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 #[ScopedBy(AcademicYearScope::class)]
-class Journal extends Model
+class Journal extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\JournalFactory> */
-    use HasFactory, HasUlids, SoftDeletes;
+    use HasFactory, HasUlids, SoftDeletes, InteractsWithMedia;
 
     protected $fillable = [
         'academic_year_id',
