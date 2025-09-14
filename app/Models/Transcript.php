@@ -17,6 +17,7 @@ class Transcript extends Model
     use HasFactory, HasUlids, SoftDeletes;
 
     protected $fillable = [
+        'grade_id',
         'subject_id',
         'journal_id',
         'academic_year_id',
@@ -24,6 +25,11 @@ class Transcript extends Model
         'title',
         'description',
     ];
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
+    }
 
     public function subject()
     {

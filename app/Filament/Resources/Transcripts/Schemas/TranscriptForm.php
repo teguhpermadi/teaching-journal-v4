@@ -22,8 +22,19 @@ class TranscriptForm
                     ->default(AcademicYear::active()->first()->id),
                 Hidden::make('user_id')
                     ->default(Auth::id()),
+                Hidden::make('grade_id')
+                    ->reactive(),
                 Select::make('subject_id')
-                    ->options(Subject::mySubjects()->pluck('name', 'id'))
+                    ->options(Subject::mySubjects()->get()->map(function ($subject) {
+                        return [
+                            'label' => $subject->name . ' - ' . $subject->grade->name,
+                            'value' => $subject->id,
+                        ];
+                    })->pluck('label', 'value'))
+                    ->afterStateUpdated(function ($state, $set) {
+                        $set('grade_id', Subject::find($state)->grade_id);
+                    })
+                    ->reactive()
                     ->required(),
                 Select::make('journal_id')
                     ->options(Journal::myJournals()->pluck('chapter', 'id'))

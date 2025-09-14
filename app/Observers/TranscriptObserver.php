@@ -16,10 +16,11 @@ class TranscriptObserver
             'transcript_id' => $transcript->id,
             'academic_year_id' => $transcript->academic_year_id,
             'subject_id' => $transcript->subject_id,
+            'grade_id' => $transcript->grade_id,
             'score' => 0,
         ];
 
-        $students = $transcript->subject()->first()->grade()->first()->students()->pluck('id');
+        $students = $transcript->grade()->first()->students()->pluck('id');
 
         foreach ($students as $student) {
             TranscriptStudent::create([

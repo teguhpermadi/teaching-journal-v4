@@ -17,6 +17,8 @@ class TranscriptsTable
             ->columns([
                 TextColumn::make('subject.name')
                     ->label('Subject'),
+                TextColumn::make('grade.name')
+                    ->label('Grade'),
                 TextColumn::make('journal.chapter')
                     ->wrap()
                     ->label('Journal Chapter'),
@@ -39,7 +41,7 @@ class TranscriptsTable
                 ]),
             ])
             ->modifyQueryUsing(function (Builder $query) {
-                $query->myTranscripts();
+                $query->myTranscripts()->orderBy('created_at', 'desc');
             });
     }
 }

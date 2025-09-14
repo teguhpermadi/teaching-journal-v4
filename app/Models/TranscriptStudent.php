@@ -15,6 +15,7 @@ class TranscriptStudent extends Model
         'transcript_id',
         'academic_year_id',
         'subject_id',
+        'grade_id',
         'student_id',
         'score',
     ];
@@ -37,5 +38,10 @@ class TranscriptStudent extends Model
     public function subject()
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
     }
 }

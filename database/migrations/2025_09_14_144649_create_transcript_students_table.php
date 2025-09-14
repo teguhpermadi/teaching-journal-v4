@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUlid('transcript_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('subject_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('grade_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('student_id')->constrained()->cascadeOnDelete();
             $table->integer('score')->default(0);
             $table->timestamps();

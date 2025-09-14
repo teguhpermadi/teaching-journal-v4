@@ -58,3 +58,80 @@ $transcript = TranscriptStudent::get();
 use App\Models\TranscriptStudent;
 
 $transcript = TranscriptStudent::get();
+use App\Models\TranscriptStudent;
+
+$journal = Journal::all()->random();
+$subject = $journal->subject;
+$academicYear = $journal->academic_year_id;
+$user = $journal->user_id;
+$grade = $subject->grade_id;
+use App\Models\TranscriptStudent;
+
+$journal = Journal::all()->random();
+$subject = $journal->subject;
+$academicYear = $journal->academic_year_id;
+$user = $journal->user_id;
+
+use App\Models\TranscriptStudent;
+
+$journal = Journal::all()->random();
+$subject = $journal->subject;
+$academicYear = $journal->academic_year_id;
+$user = $journal->user_id;
+
+use App\Models\TranscriptStudent;
+
+$journal = Journal::all()->random();
+$subject = $journal->subject;
+$academicYear = $journal->academic_year_id;
+$user = $journal->user_id;
+
+use App\Models\Journal;
+
+$journal = Journal::all()->random();
+$subject = $journal->subject;
+
+
+
+use App\Models\Journal;
+
+$journal = Journal::all()->random();
+
+
+
+
+use App\Models\Journal;
+
+$journal = Journal::all()->random();
+
+
+
+
+use App\Models\Journal;
+
+$journal = Journal::all()->random();
+
+
+
+
+use App\Models\Journal;
+
+$journal = Journal::all()->random();
+
+
+
+
+use App\Models\Journal;
+
+$journal = Journal::all()->random();
+
+
+
+
+use App\Models\Journal;
+
+$journal = Journal::all();
+
+
+
+

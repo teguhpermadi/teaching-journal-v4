@@ -19,11 +19,11 @@ class JournalFactory extends Factory
     public function definition(): array
     {
         $subject = Subject::all()->random();
-        $grade = $subject->grade;
+        
         return [
             'academic_year_id' => $subject->academic_year_id,
             'subject_id' => $subject->id,
-            'grade_id' => $grade->id,
+            'grade_id' => $subject->grade_id,
             'user_id' => $subject->user_id,
             'date' => Carbon::now()->subDays(rand(0, 6)),
             'target' => fake()->sentence(10),

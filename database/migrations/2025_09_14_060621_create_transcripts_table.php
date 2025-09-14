@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('transcripts', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('grade_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('subject_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('journal_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
