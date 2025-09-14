@@ -19,6 +19,7 @@ class JournalFactory extends Factory
     public function definition(): array
     {
         $subject = Subject::all()->random();
+        
         return [
             'academic_year_id' => $subject->academic_year_id,
             'subject_id' => $subject->id,

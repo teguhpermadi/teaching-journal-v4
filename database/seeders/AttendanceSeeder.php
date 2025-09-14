@@ -13,6 +13,13 @@ class AttendanceSeeder extends Seeder
      */
     public function run(): void
     {
-        Attendance::factory()->count(100)->create();
+        for ($i=0; $i < 100; $i++) { 
+            try {
+                //code...
+                Attendance::factory()->create();
+            } catch (\Throwable $th) {
+                //throw $th;
+            }
+        }
     }
 }

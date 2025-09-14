@@ -5,27 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Transcript extends Model implements HasMedia
+class Transcript extends Model
 {
     /** @use HasFactory<\Database\Factories\TranscriptFactory> */
-    use HasFactory, HasUlids, InteractsWithMedia;
+    use HasFactory, HasUlids, SoftDeletes;
 
     protected $fillable = [
-        'student_id',
         'subject_id',
         'journal_id',
         'academic_year_id',
-        'score',
-        'notes',
+        'title',
+        'description',
     ];
-
-    public function student()
-    {
-        return $this->belongsTo(Student::class);
-    }
 
     public function subject()
     {

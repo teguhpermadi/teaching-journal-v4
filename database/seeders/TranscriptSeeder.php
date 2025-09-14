@@ -14,12 +14,6 @@ class TranscriptSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($i=0; $i < 100; $i++) { 
-            try {
-                Transcript::factory()->create();
-            } catch (\Exception $e) {
-                Log::info($e->getMessage());
-            }
-        }
+        Transcript::factory()->count(100)->create();
     }
 }

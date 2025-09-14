@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Grade;
+use App\Models\Journal;
+use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,19 +19,16 @@ class TranscriptFactory extends Factory
      */
     public function definition(): array
     {
-        $grade = Grade::all()->random();
-        $student = $grade->students()->all();
-        $academicYear = $grade->academic_year_id;
-        $subject = $grade->subjects()->all();
-        $journal = $subject->journals()->all();
+        $journal = Journal::all()->random();
+        $subject = $journal->subject;
+        $academicYear = $journal->academic_year_id; 
         
         return [
-            'student_id' => $student->first()->id,
+            'subject_id' => $subject->id,
+            'journal_id' => $journal->id,
             'academic_year_id' => $academicYear,
-            'subject_id' => $subject->first()->id,
-            'journal_id' => $journal->first()->id,
-            'score' => fake()->numberBetween(50, 100),
-            'notes' => fake()->sentence(10),
+            'title' => fake()->sentence(10),
+            'description' => fake()->sentence(10),
         ];
     }
 }

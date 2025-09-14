@@ -12,16 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transcripts', function (Blueprint $table) {
-            $table->ulid()->primary();
-            $table->foreignUlid('student_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
             $table->foreignUlid('subject_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('journal_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
-            $table->integer('score');
-            $table->text('notes')->nullable();
+            $table->string('title');
+            $table->text('description')->nullable();
             $table->timestamps();
-
-            $table->unique(['student_id', 'subject_id', 'journal_id', 'academic_year_id'], 'transcript_unique');
+            $table->softDeletes();
         });
     }
 
