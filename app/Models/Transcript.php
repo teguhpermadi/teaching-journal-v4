@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Transcript extends Model
 {
@@ -16,6 +17,7 @@ class Transcript extends Model
         'subject_id',
         'journal_id',
         'academic_year_id',
+        'user_id',
         'title',
         'description',
     ];
@@ -33,5 +35,15 @@ class Transcript extends Model
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function scopeMyTranscripts($query)
+    {
+        return $query->where('user_id', Auth::id());
     }
 }

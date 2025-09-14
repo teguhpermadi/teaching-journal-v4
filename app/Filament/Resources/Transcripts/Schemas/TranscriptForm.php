@@ -25,10 +25,9 @@ class TranscriptForm
                 Select::make('journal_id')
                     ->options(Journal::myJournals()->pluck('chapter', 'id'))
                     ->required(),
-                TextInput::make('title')
+                Textarea::make('title')
                     ->required(),
-                Textarea::make('description')
-                    ->required(),
+                Textarea::make('description'),
             ]);
     }
 }

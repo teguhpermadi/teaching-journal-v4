@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TranscriptsTable
 {
@@ -17,10 +18,13 @@ class TranscriptsTable
                 TextColumn::make('subject.name')
                     ->label('Subject'),
                 TextColumn::make('journal.chapter')
-                    ->label('Journal'),
+                    ->wrap()
+                    ->label('Journal Chapter'),
                 TextColumn::make('title')
+                    ->wrap()
                     ->label('Title'),
                 TextColumn::make('description')
+                    ->wrap()
                     ->label('Description'),
             ])
             ->filters([
@@ -33,6 +37,9 @@ class TranscriptsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->myTranscripts();
+            });
     }
 }

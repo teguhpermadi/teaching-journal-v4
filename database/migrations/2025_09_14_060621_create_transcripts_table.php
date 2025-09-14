@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUlid('subject_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('journal_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
             $table->timestamps();

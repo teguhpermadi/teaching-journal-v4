@@ -21,12 +21,14 @@ class TranscriptFactory extends Factory
     {
         $journal = Journal::all()->random();
         $subject = $journal->subject;
-        $academicYear = $journal->academic_year_id; 
+        $academicYear = $journal->academic_year_id;
+        $user = $journal->user_id;
         
         return [
             'subject_id' => $subject->id,
             'journal_id' => $journal->id,
             'academic_year_id' => $academicYear,
+            'user_id' => $user,
             'title' => fake()->sentence(10),
             'description' => fake()->sentence(10),
         ];
