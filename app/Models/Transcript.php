@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Observers\TranscriptObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
+#[ObservedBy(TranscriptObserver::class)]
 class Transcript extends Model
 {
     /** @use HasFactory<\Database\Factories\TranscriptFactory> */
@@ -45,5 +48,10 @@ class Transcript extends Model
     public function scopeMyTranscripts($query)
     {
         return $query->where('user_id', Auth::id());
+    }
+
+    public function transcriptStudents()
+    {
+        return $this->hasMany(TranscriptStudent::class);
     }
 }

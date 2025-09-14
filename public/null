@@ -1,12 +1,60 @@
+use App\Models\Transcript;
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+use App\Models\Transcript;
 
-App\Models\Subject::lastes()->get()
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->students()->pluck('id');
+use App\Models\Transcript;
 
-App\Models\Subject::lates()->get()
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->students();
+use App\Models\Transcript;
 
-App\Models\Subject::latest()->get()
-$grade = Grade::gradeAcademicYearActive()->get()->random();
-$grade = Grade::gradeAcademicYearActive()->get()'?>
-$grade = Grade::gradeAcademicYearActive()->get();
-$grade = Grade::gradeAcademicYearActive();
-$grade = Grade::gradeAcademicYearActive()->get();
-$grade = Grade::get();
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->get();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first()->students()->get();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first()->student()->get();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first()->students();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first()->grade();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first()->grade()->get();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->grade()->students()->get();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first()->grade()->first()->students()->get();
+use App\Models\Transcript;
+
+$transcript = Transcript::find('01k54ase66xm713fc3yax4f8w4');
+$students = $transcript->subject()->first()->grade()->first()->students()->pluck('id');
+use App\Models\TranscriptStudent;
+
+$transcript = TranscriptStudent::get();
+use App\Models\TranscriptStudent;
+
+$transcript = TranscriptStudent::get();

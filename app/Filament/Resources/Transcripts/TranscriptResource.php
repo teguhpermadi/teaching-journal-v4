@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Transcripts;
 use App\Filament\Resources\Transcripts\Pages\CreateTranscript;
 use App\Filament\Resources\Transcripts\Pages\EditTranscript;
 use App\Filament\Resources\Transcripts\Pages\ListTranscripts;
+use App\Filament\Resources\Transcripts\RelationManagers\TranscriptStudentsRelationManager;
 use App\Filament\Resources\Transcripts\Schemas\TranscriptForm;
 use App\Filament\Resources\Transcripts\Tables\TranscriptsTable;
 use App\Models\Transcript;
@@ -35,7 +36,7 @@ class TranscriptResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TranscriptStudentsRelationManager::class,
         ];
     }
 

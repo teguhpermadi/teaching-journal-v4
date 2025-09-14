@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class TranscriptForm
 {
@@ -19,6 +20,8 @@ class TranscriptForm
             ->components([
                 Hidden::make('academic_year_id')
                     ->default(AcademicYear::active()->first()->id),
+                Hidden::make('user_id')
+                    ->default(Auth::id()),
                 Select::make('subject_id')
                     ->options(Subject::mySubjects()->pluck('name', 'id'))
                     ->required(),
