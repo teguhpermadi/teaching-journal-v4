@@ -41,4 +41,11 @@ class Grade extends Model
             $query->where('active', true);
         });
     }
+
+    public function studentWithoutAttendance($date)
+    {
+        return $this->students()->whereDoesntHave('attendances', function ($query) use ($date) {
+            $query->where('date', $date);
+        });
+    }
 }

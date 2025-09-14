@@ -58,13 +58,6 @@ class JournalForm
                     ->openable()
                     ->collection('activity_photos')
                     ->image(),
-                SpatieMediaLibraryFileUpload::make('teaching_content')
-                    ->hint('Upload teaching content')
-                    ->label('Teaching Content')
-                    ->disk('public')
-                    ->multiple()
-                    ->openable()
-                    ->collection('teaching_content'),
             ]);
-    }
+        }
 }

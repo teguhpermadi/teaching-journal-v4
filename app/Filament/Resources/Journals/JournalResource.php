@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Journals;
 use App\Filament\Resources\Journals\Pages\CreateJournal;
 use App\Filament\Resources\Journals\Pages\EditJournal;
 use App\Filament\Resources\Journals\Pages\ListJournals;
+use App\Filament\Resources\Journals\RelationManagers\AttendanceRelationManager;
 use App\Filament\Resources\Journals\Schemas\JournalForm;
 use App\Filament\Resources\Journals\Tables\JournalsTable;
 use App\Models\Journal;
@@ -37,7 +38,7 @@ class JournalResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            AttendanceRelationManager::class,
         ];
     }
 

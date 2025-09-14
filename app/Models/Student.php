@@ -30,6 +30,11 @@ class Student extends Model
         return $this->belongsToMany(Grade::class, 'grade_student');
     }
 
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function scopeStudentWithoutGradeActive()
     {
         $gradeActive = Grade::gradeAcademicYearActive()->get();

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('status');
             $table->softDeletes();
             $table->timestamps();
+
+            $table->unique(['journal_id', 'student_id', 'date'], 'unique_journal_student_date');
         });
     }
 
