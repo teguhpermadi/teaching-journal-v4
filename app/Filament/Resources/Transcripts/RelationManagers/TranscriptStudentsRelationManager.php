@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Transcripts\RelationManagers;
 
+use App\Models\Transcript;
+use App\Models\TranscriptStudent;
+use Filament\Actions\Action;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -49,6 +52,8 @@ class TranscriptStudentsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
+                Action::make('Generate')
+                    ->action($this->generateTranscript()),
                 // CreateAction::make(),
                 // AssociateAction::make(),
             ])
@@ -64,5 +69,31 @@ class TranscriptStudentsRelationManager extends RelationManager
                 // ]),
             ])
             ->paginated(false);
+    }
+
+    public function generateTranscript()
+    {
+        $transcript = $this->getOwnerRecord();
+        $data = [
+            'transcript_id' => $transcript->id,
+            'academic_year_id' => $transcript->academic_year_id,
+            'subject_id' => $transcript->subject_id,
+            'grade_id' => $transcript->grade_id,
+            'score' => 0,
+        ];
+
+        $students = $transcript->grade()->first()->students()->pluck('id');
+
+        foreach ($students as $student) {
+            TranscriptStudent::updateOrCreate([
+                'transcript_id' => $transcript->id,
+                'academic_year_id' => $transcript->academic_year_id,
+                'subject_id' => $transcript->subject_id,
+                'grade_id' => $transcript->grade_id,
+                'student_id' => $student,
+            ],[
+                'score' => 0,
+            ]);
+        }
     }
 }

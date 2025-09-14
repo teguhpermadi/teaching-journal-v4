@@ -72,4 +72,9 @@ class Journal extends Model implements HasMedia
     {
         return $query->where('user_id', Auth::id());
     }
+
+    public function transcripts()
+    {
+        return $this->hasMany(Transcript::class);
+    }
 }
