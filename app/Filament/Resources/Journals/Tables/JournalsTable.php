@@ -10,6 +10,7 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class JournalsTable
 {
@@ -44,6 +45,9 @@ class JournalsTable
                     RestoreBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('date', 'desc');
+            ->defaultSort('date', 'desc')
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->myJournals();
+            });
     }
 }
