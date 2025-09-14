@@ -31,6 +31,9 @@ class JournalsTable
                     ->label('Target')
                     ->wrap()
                     ->searchable(),
+                TextColumn::make('attendance_count')
+                    ->counts('attendance')
+                    ->label('Attendance Count'),
             ])
             ->filters([
                 TrashedFilter::make(),

@@ -2,7 +2,9 @@
 
 namespace App;
 
-enum ScheduleEnum: string
+use Filament\Support\Contracts\HasLabel;
+
+enum ScheduleEnum: string implements HasLabel
 {
     case MONDAY = 'monday';
     case TUESDAY = 'tuesday';

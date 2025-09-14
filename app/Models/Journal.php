@@ -57,6 +57,11 @@ class Journal extends Model implements HasMedia
         return $this->belongsTo(User::class);
     }
 
+    public function attendance()
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function scopeMyJournals($query)
     {
         return $query->where('user_id', Auth::id());

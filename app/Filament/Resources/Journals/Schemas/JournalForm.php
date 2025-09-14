@@ -25,6 +25,7 @@ class JournalForm
                 Hidden::make('user_id')
                     ->default(Auth::id()),
                 DatePicker::make('date')
+                    ->default(now())
                     ->required(),
                 Select::make('subject_id')
                     ->options(fn () => Subject::mySubjects()->pluck('name', 'id'))
@@ -50,6 +51,7 @@ class JournalForm
                 Textarea::make('notes')
                     ->columnSpan('full'),
                 SpatieMediaLibraryFileUpload::make('activity_photos')
+                    ->hint('Upload photos of the activity')
                     ->label('Photos')
                     ->disk('public')
                     ->multiple()
@@ -57,6 +59,7 @@ class JournalForm
                     ->collection('activity_photos')
                     ->image(),
                 SpatieMediaLibraryFileUpload::make('teaching_content')
+                    ->hint('Upload teaching content')
                     ->label('Teaching Content')
                     ->disk('public')
                     ->multiple()
