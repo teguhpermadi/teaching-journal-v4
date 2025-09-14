@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Models\Scopes\AcademicYearScope;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 #[ScopedBy(AcademicYearScope::class)]
 class Journal extends Model
@@ -30,6 +32,14 @@ class Journal extends Model
         'date' => 'date',
     ];
 
+    protected static function booted(): void
+    {
+        // add default sort
+        static::addGlobalScope('sort', function (Builder $builder) {
+            $builder->orderBy('date', 'desc');
+        });
+    }
+
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);
@@ -43,5 +53,10 @@ class Journal extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scopeMyJournals($query)
+    {
+        return $query->where('user_id', Auth::id());
     }
 }
