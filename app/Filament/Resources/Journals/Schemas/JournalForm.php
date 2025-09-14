@@ -49,13 +49,19 @@ class JournalForm
                     ->required(),
                 Textarea::make('notes')
                     ->columnSpan('full'),
-                SpatieMediaLibraryFileUpload::make('photo')
+                SpatieMediaLibraryFileUpload::make('activity_photos')
                     ->label('Photos')
                     ->disk('public')
                     ->multiple()
-                    ->collection('photos')
+                    ->openable()
+                    ->collection('activity_photos')
                     ->image(),
-
+                SpatieMediaLibraryFileUpload::make('teaching_content')
+                    ->label('Teaching Content')
+                    ->disk('public')
+                    ->multiple()
+                    ->openable()
+                    ->collection('teaching_content'),
             ]);
     }
 }
