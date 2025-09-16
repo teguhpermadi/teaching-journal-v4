@@ -49,6 +49,13 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            $user->assignRole('teacher');
+        });
+    }
+
     public function subjects()
     {
         return $this->hasMany(Subject::class);
