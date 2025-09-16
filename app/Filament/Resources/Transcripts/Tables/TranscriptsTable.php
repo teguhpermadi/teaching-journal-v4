@@ -15,19 +15,19 @@ class TranscriptsTable
     {
         return $table
             ->columns([
-                TextColumn::make('subject.name')
-                    ->label('Subject'),
-                TextColumn::make('grade.name')
-                    ->label('Grade'),
-                TextColumn::make('journal.chapter')
-                    ->wrap()
-                    ->label('Journal Chapter'),
+                // TextColumn::make('subject.name')
+                //     ->label('Subject'),
+                // TextColumn::make('grade.name')
+                //     ->label('Grade'),
                 TextColumn::make('title')
                     ->wrap()
                     ->label('Title'),
                 TextColumn::make('description')
                     ->wrap()
                     ->label('Description'),
+                TextColumn::make('journal.chapter')
+                    ->wrap()
+                    ->label('Journal Chapter'),
             ])
             ->filters([
                 //

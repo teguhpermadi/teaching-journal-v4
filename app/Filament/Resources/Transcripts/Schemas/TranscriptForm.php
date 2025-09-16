@@ -5,7 +5,9 @@ namespace App\Filament\Resources\Transcripts\Schemas;
 use App\Models\AcademicYear;
 use App\Models\Journal;
 use App\Models\Subject;
+use Carbon\Carbon;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -36,8 +38,17 @@ class TranscriptForm
                     })
                     ->reactive()
                     ->required(),
-                Select::make('journal_id')
-                    ->options(Journal::myJournals()->pluck('chapter', 'id'))
+                Radio::make('journal_id')
+                    ->options(function($get){
+                        // get journal by subject_id
+                        return Journal::myJournals()->where('subject_id', $get('subject_id'))->get()->map(function ($journal) {
+                            return [
+                                'label' => Carbon::parse($journal->date)->format('d-m-Y') . ' | ' . $journal->chapter,
+                                'value' => $journal->id,
+                            ];
+                        })->pluck('label', 'value');
+                    })
+                    ->reactive()
                     ->required(),
                 Textarea::make('title')
                     ->required(),
