@@ -24,11 +24,26 @@ class JournalForm
                     ->default(AcademicYear::active()->first()->id),
                 Hidden::make('user_id')
                     ->default(Auth::id()),
+                Hidden::make('grade_id')
+                    ->reactive(),
                 DatePicker::make('date')
                     ->default(now())
                     ->required(),
                 Select::make('subject_id')
-                    ->options(fn () => Subject::mySubjects()->pluck('name', 'id'))
+                    ->options(
+                        fn () => Subject::mySubjects()
+                        ->get()
+                        ->map(
+                            fn ($subject) => [
+                                'label' => $subject->code . ' - ' . $subject->grade->name,
+                                'value' => $subject->id
+                            ]
+                        )->pluck('label', 'value')
+                    )
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $set('grade_id', Subject::find($state)->grade_id);
+                    })
                     ->searchable()
                     ->preload()
                     ->required(),
