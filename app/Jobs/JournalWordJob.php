@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Attendance;
 use App\Models\Journal;
 use App\Notifications\JournalFileFinished;
 use Filament\Notifications\Notification;
@@ -15,6 +16,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Shared\Html;
 
 class JournalWordJob implements ShouldQueue
 {
@@ -117,7 +119,7 @@ class JournalWordJob implements ShouldQueue
             ]
         );
         $section->addText(
-            'Semester: ' . ($firstJournal->academicYear->semester ?? 'N/A') ,
+            'Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A') ,
             [
                 'bold' => true,
                 'size' => 14,
@@ -145,10 +147,19 @@ class JournalWordJob implements ShouldQueue
             $section->addText('Chapter:', ['bold' => true]);
             $section->addText($journal->chapter);
             $section->addText('Aktivitas:', ['bold' => true]);
-            $section->addText($journal->activity);
+            // $section->addText($journal->activity);
+            Html::addHtml($section, $journal->activity);
             $section->addText('Catatan:', ['bold' => true]);
             $section->addText($journal->notes);
-            $section->addText('Foto:', ['bold' => true]);
+
+            // attendance
+            $section->addText('Ketidakhadiran:', ['bold' => true]);
+            $attendance = $journal->attendance;
+            foreach ($attendance as $item) {
+                $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
+            }
+
+            $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
             $images = $journal->getMedia('activity_photos');
 
@@ -182,6 +193,58 @@ class JournalWordJob implements ShouldQueue
                 }
             }
         }
+
+        // Add Page Break
+        $section->addPageBreak();
+
+        $phpWord->addNumberingStyle(
+            'multilevel',
+            array(
+                'type' => 'multilevel',
+                'levels' => array(
+                    array('format' => 'decimal', 'text' => '%1.', 'left' => 360, 'hanging' => 360, 'tabPos' => 360),
+                    array('format' => 'lowerLetter', 'text' => '%2.', 'left' => 720, 'hanging' => 360, 'tabPos' => 720),
+                    array('format' => 'bullet', 'text' => '•', 'left' => 1080, 'hanging' => 360, 'tabPos' => 1080),
+                )
+            )
+        );
+
+        // rekap attendance
+        $section->addText('Rekap Ketidakhadiran:', ['bold' => true, 'size' => 14]);
+        $attendance = Attendance::query()
+            ->whereIn('journal_id', $journals->pluck('id'))
+            ->get();
+        
+        $attendanceByStudent = $attendance->groupBy('student_id');
+        $studentNumber = 1;
+        
+        $attendanceByStudent->each(function ($studentAttendance) use ($section, &$studentNumber) {
+            $studentName = $studentAttendance->first()->student->name;
+            
+            // Tambahkan nama siswa dengan nomor urut
+            $section->addListItem($studentName, 0, ['bold' => true, 'numbering' => 'multilevel']);
+            
+            // Group attendance by status untuk siswa ini
+            $attendanceByStatus = $studentAttendance->groupBy('status');
+            
+            // Tampilkan setiap status dengan jumlahnya dan tanggalnya
+            foreach (\App\StatusAttendanceEnum::cases() as $status) {
+                $statusAttendance = $attendanceByStatus->get($status->value);
+                $count = $statusAttendance?->count() ?? 0;
+                
+                if ($count > 0) {
+                    $section->addListItem($status->getLabel() . ': ' . $count . ' kali', 1, ['numbering' => 'multilevel']);
+                    
+                    // Tampilkan tanggal-tanggal untuk status ini
+                    $statusAttendance->each(function ($attendance) use ($section) {
+                        $date = $attendance->date->format('d/m/Y');
+                        $section->addListItem($date, 2, ['numbering' => 'multilevel']);
+                    });
+                }
+            }
+            
+            $studentNumber++;
+        });
 
         try {
             // Pastikan direktori journals ada

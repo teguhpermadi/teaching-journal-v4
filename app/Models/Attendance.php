@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\StatusAttendanceEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -21,6 +22,7 @@ class Attendance extends Model
 
     protected $casts = [
         'date' => 'date',
+        'status' => StatusAttendanceEnum::class,
     ];
 
     public function student()

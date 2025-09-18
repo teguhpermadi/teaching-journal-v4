@@ -13,7 +13,11 @@ enum StatusAttendanceEnum : string implements HasColor, HasLabel
 
     public function getLabel(): string
     {
-        return $this->value;
+        return match ($this) {
+            self::ABSENT => 'Tanpa Keterangan',
+            self::SICK => 'Sakit',
+            self::LEAVE => 'Izin',
+        };
     }
 
     public function getColor(): string

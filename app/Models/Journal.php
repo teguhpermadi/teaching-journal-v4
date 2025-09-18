@@ -87,27 +87,6 @@ class Journal extends Model implements HasMedia, Eventable
             ->title($this->chapter)
             ->start($this->date)
             ->end($this->date)
-            ->allDay(true)
-            // ->backgroundColor($this->getEventColor())
-            // ->textColor('#ffffff')
-            ;
-    }
-
-    protected function getEventColor(): string
-    {
-        // Warna berdasarkan mata pelajaran
-        $colors = [
-            '#3B82F6', // blue
-            '#10B981', // green
-            '#F59E0B', // yellow
-            '#EF4444', // red
-            '#8B5CF6', // purple
-            '#06B6D4', // cyan
-            '#F97316', // orange
-            '#84CC16', // lime
-        ];
-        
-        $subjectId = $this->subject_id ?? 0;
-        return $colors[$subjectId % count($colors)];
+            ->allDay(true);
     }
 }
