@@ -162,8 +162,11 @@ class JournalWordJob implements ShouldQueue
             $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
             $images = $journal->getMedia('activity_photos');
-
-            if ($images->isNotEmpty()) {
+            
+            // if image is empty, add text 'Jurnal ini tidak memiliki dokumentasi kegiatan'
+            if($images->isEmpty()) {
+                $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
+            } else {
                 foreach ($images as $image) {
                     try {
                         // Dapatkan path file yang sebenarnya dari media library
@@ -192,6 +195,29 @@ class JournalWordJob implements ShouldQueue
                     }
                 }
             }
+
+            // add signature from teacher
+            $section->addText('Mengetahui,');
+            $section->addText('Guru Pengajar');
+            $section->addTextBreak(5);
+            $section->addText('Nama: ' . $journal->user->name, ['bold' => true]);
+            $section->addText('NIP: ' . ( $journal->user->nip ?? '-'), ['bold' => true]);
+
+            // add signature from headmaster
+            $section->addTextBreak(1);
+            $section->addText('Mengetahui,');
+            $section->addText('Kepala Sekolah');
+            $section->addTextBreak(5);
+            $section->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true]);
+            $section->addText('NIP: ' . ( $journal->academicYear->headmaster_nip ?? '-'), ['bold' => true]);
+
+            // add note
+            $section->addTextBreak(2);
+            $section->addText('Catatan Kepala Sekolah: ' );
+            $section->addText('...............................................');
+
+            // add page break
+            $section->addPageBreak();
         }
 
         // Add Page Break
@@ -245,6 +271,21 @@ class JournalWordJob implements ShouldQueue
             
             $studentNumber++;
         });
+
+        // add signature from teacher
+        $section->addText('Mengetahui,');
+        $section->addText('Guru Pengajar');
+        $section->addTextBreak(5);
+        $section->addText('Nama: ' . $journal->user->name, ['bold' => true]);
+        $section->addText('NIP: ' . ( $journal->user->nip ?? '-'), ['bold' => true]);
+
+        // add signature from headmaster
+        $section->addTextBreak(1);
+        $section->addText('Mengetahui,');
+        $section->addText('Kepala Sekolah');
+        $section->addTextBreak(5);
+        $section->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true]);
+        $section->addText('NIP: ' . ( $journal->academicYear->headmaster_nip ?? '-'), ['bold' => true]);
 
         try {
             // Pastikan direktori journals ada
