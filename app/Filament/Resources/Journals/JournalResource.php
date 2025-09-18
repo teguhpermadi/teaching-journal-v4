@@ -9,6 +9,7 @@ use App\Filament\Resources\Journals\RelationManagers\AttendanceRelationManager;
 use App\Filament\Resources\Journals\RelationManagers\TranscriptsRelationManager;
 use App\Filament\Resources\Journals\Schemas\JournalForm;
 use App\Filament\Resources\Journals\Tables\JournalsTable;
+use App\Filament\Resources\Journals\Widgets\JournalWidget;
 use App\Models\Journal;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -59,5 +60,12 @@ class JournalResource extends Resource
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            JournalWidget::class,
+        ];
     }
 }

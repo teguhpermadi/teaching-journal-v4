@@ -51,6 +51,7 @@ class JournalsTable
             ->defaultSort('date', 'desc')
             ->modifyQueryUsing(function (Builder $query) {
                 $query->myJournals();
-            });
+            })
+            ->poll('10s');
     }
 }

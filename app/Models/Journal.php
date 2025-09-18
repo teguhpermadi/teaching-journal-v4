@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Scopes\AcademicYearScope;
+use Guava\Calendar\Contracts\Eventable;
+use Guava\Calendar\ValueObjects\CalendarEvent;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -14,7 +16,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 #[ScopedBy(AcademicYearScope::class)]
-class Journal extends Model implements HasMedia
+class Journal extends Model implements HasMedia, Eventable
 {
     /** @use HasFactory<\Database\Factories\JournalFactory> */
     use HasFactory, HasUlids, SoftDeletes, InteractsWithMedia;
@@ -76,5 +78,36 @@ class Journal extends Model implements HasMedia
     public function transcripts()
     {
         return $this->hasMany(Transcript::class);
+    }
+
+    public function toCalendarEvent(): CalendarEvent
+    {
+        // For eloquent models, make sure to pass the model to the constructor
+        return CalendarEvent::make($this)
+            ->title($this->chapter)
+            ->start($this->date)
+            ->end($this->date)
+            ->allDay(true)
+            // ->backgroundColor($this->getEventColor())
+            // ->textColor('#ffffff')
+            ;
+    }
+
+    protected function getEventColor(): string
+    {
+        // Warna berdasarkan mata pelajaran
+        $colors = [
+            '#3B82F6', // blue
+            '#10B981', // green
+            '#F59E0B', // yellow
+            '#EF4444', // red
+            '#8B5CF6', // purple
+            '#06B6D4', // cyan
+            '#F97316', // orange
+            '#84CC16', // lime
+        ];
+        
+        $subjectId = $this->subject_id ?? 0;
+        return $colors[$subjectId % count($colors)];
     }
 }

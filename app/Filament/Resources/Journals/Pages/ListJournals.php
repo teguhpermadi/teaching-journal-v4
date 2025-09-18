@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Journals\Pages;
 
 use App\Filament\Resources\Journals\JournalResource;
+use App\Filament\Resources\Journals\Widgets\JournalWidget;
 use App\Jobs\JournalWordJob;
 use App\Models\AcademicYear;
 use App\Models\Journal;
@@ -99,5 +100,12 @@ class ListJournals extends ListRecords
         }
 
         return $tabs;
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            JournalWidget::class,
+        ];
     }
 }
