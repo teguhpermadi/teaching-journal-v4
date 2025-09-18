@@ -13,6 +13,6 @@ class JournalSeeder extends Seeder
      */
     public function run(): void
     {
-        Journal::factory()->count(30)->create();
+        Journal::factory()->count(10)->create();
     }
 }

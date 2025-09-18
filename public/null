@@ -1,3 +1,662 @@
-use App\Models\Grade;
+$journals = Journal::query()
+            ->myJournals()
+            ->get();
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
 
-Grade::find('01k54djqk3wwqmckfxkcj0fx4b')
+$journals->first()->subject->name
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
+
+        $firstJournal = $journals->first();
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
+
+$firstJournal = $journals->first();
+$firstJournal->subject->name;
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
+
+$firstJournal = $journals->first();
+
+$data = ["academic_year_id" => "01k594mevtfqnaqaw0v4wk4vss"
+  "user_id" => "01k594mtn4b162cyq6a3tpnf3p"
+  "grade_id" => "01k594mtgxcq0eqhejcmcqx9rh"
+  "subject_id" => "01k594mtrah8zp9kf2p6dhrc25"
+  "start_date" => "2025-09-01"
+  "end_date" => "2025-09-16"];
+  
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
+
+$firstJournal = $journals->first();
+
+$data = ["academic_year_id" => "01k594mevtfqnaqaw0v4wk4vss"
+  "user_id" => "01k594mtn4b162cyq6a3tpnf3p"
+  "grade_id" => "01k594mtgxcq0eqhejcmcqx9rh"
+  "subject_id" => "01k594mtrah8zp9kf2p6dhrc25"
+  "start_date" => "2025-09-01"
+  "end_date" => "2025-09-16"];
+  
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
+
+
+
+$data = ["academic_year_id" => "01k594mevtfqnaqaw0v4wk4vss"
+  "user_id" => "01k594mtn4b162cyq6a3tpnf3p"
+  "grade_id" => "01k594mtgxcq0eqhejcmcqx9rh"
+  "subject_id" => "01k594mtrah8zp9kf2p6dhrc25"
+  "start_date" => "2025-09-01"
+  "end_date" => "2025-09-16"
+		];
+  
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
+
+
+
+$data = ["academic_year_id" => "01k594mevtfqnaqaw0v4wk4vss",
+  "user_id" => "01k594mtn4b162cyq6a3tpnf3p",
+  "grade_id" => "01k594mtgxcq0eqhejcmcqx9rh",
+  "subject_id" => "01k594mtrah8zp9kf2p6dhrc25",
+  "start_date" => "2025-09-01",
+  "end_date" => "2025-09-16",
+		];
+  
+$journals = Journal::query()
+  ->myJournals()
+  ->get();
+
+
+
+$data = ["academic_year_id" => "01k594mevtfqnaqaw0v4wk4vss",
+  "user_id" => "01k594mtn4b162cyq6a3tpnf3p",
+  "grade_id" => "01k594mtgxcq0eqhejcmcqx9rh",
+  "subject_id" => "01k594mtrah8zp9kf2p6dhrc25",
+  "start_date" => "2025-09-01",
+  "end_date" => "2025-09-16",
+		];
+  
+$journals = Journal::query()
+  ->where('academic_year_id', $data['academic_year_id'])
+  ->get();
+
+
+
+$data = ["academic_year_id" => "01k594mevtfqnaqaw0v4wk4vss",
+  "user_id" => "01k594mtn4b162cyq6a3tpnf3p",
+  "grade_id" => "01k594mtgxcq0eqhejcmcqx9rh",
+  "subject_id" => "01k594mtrah8zp9kf2p6dhrc25",
+  "start_date" => "2025-09-01",
+  "end_date" => "2025-09-16",
+		];
+  
+$journals = Journal::query()
+  ->where('academic_year_id', $data['academic_year_id'])
+  ->where('user_id', $data['user_id'])
+  ->get();
+
+
+
+Journal::find('01k594mtx01eejer8cb0avsmbv')
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia()
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('photos')
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('photos')
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('photo')
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('photos')
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('activity_photos')
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('activity_photos')->first()
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('activity_photos')->first()->getPath()
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('activity_photos')->first()
+Journal::find('01k594mtx01eejer8cb0avsmbv')->getMedia('activity_photos')->first()->getUrl()
+$journals = [
+'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+            ->where('user_id', $journals['user_id'])
+            ->where('academic_year_id', $this->journals['academic_year_id'])
+            ->where('grade_id', $journals['grade_id'])
+            ->where('subject_id', $journals['subject_id'])
+            ->when($this->journals['month'] !== null, function (Builder $query) {
+                $query->whereMonth('date', $journals['month']);
+            })
+            ->orderBy('date', 'asc')
+            ->get();
+$journals = [
+'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+            ->where('user_id', $journals['user_id'])
+            ->where('academic_year_id', $this->journals['academic_year_id'])
+            ->where('grade_id', $journals['grade_id'])
+            ->where('subject_id', $journals['subject_id'])
+            
+            ->orderBy('date', 'asc')
+            ->get();
+$journals = [
+'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+            ->where('user_id', $journals['user_id'])
+            ->where('academic_year_id', $this->journals['academic_year_id'])
+            ->where('grade_id', $journals['grade_id'])
+            ->where('subject_id', $journals['subject_id'])
+            ->orderBy('date', 'asc')
+            ->get();
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $this->journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->orderBy('date', 'asc')
+  ->get();
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->orderBy('date', 'asc')
+  ->get();
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Query\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Eloquent\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Eloquent\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Eloquent\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+use Illuminate\Database\Eloquent\Builder;
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->when($journals['month'] !== null, function (Builder $query) {
+	$query->whereMonth('date', $journals['month']);
+  })
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->whereMonth('date', $this->journals['month'])
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => 'September',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->whereMonth('date', $journals['month'])
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => '9',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->whereMonth('date', $journals['month'])
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => '9',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->whereMonth('date', $journals['month'])
+  ->orderBy('date', 'asc')
+  ->get();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => '9',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->whereMonth('date', $journals['month'])
+  ->orderBy('date', 'asc')
+  ->first();
+
+
+$journals = [
+  'academic_year_id' => '01k594mevtfqnaqaw0v4wk4vss',
+  'user_id' => '01k594mtn4b162cyq6a3tpnf3p',
+  'grade_id' => '01k594mtgxcq0eqhejcmcqx9rh',
+  'subject_id' => '01k594mtrah8zp9kf2p6dhrc25',
+  'month' => '9',
+];
+
+$journals = Journal::query()
+  ->where('user_id', $journals['user_id'])
+  ->where('academic_year_id', $journals['academic_year_id'])
+  ->where('grade_id', $journals['grade_id'])
+  ->where('subject_id', $journals['subject_id'])
+  ->whereMonth('date', $journals['month'])
+  ->orderBy('date', 'asc')
+  ->first()->getMedia('activity_photos');
