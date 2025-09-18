@@ -1,0 +1,122 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Permission;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class PermissionsSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $permissions = [
+          "ViewAny:Role",
+          "View:Role",
+          "Create:Role",
+          "Update:Role",
+          "Delete:Role",
+          "Restore:Role",
+          "ForceDelete:Role",
+          "ForceDeleteAny:Role",
+          "RestoreAny:Role",
+          "Replicate:Role",
+          "Reorder:Role",
+          "ViewAny:User",
+          "View:User",
+          "Create:User",
+          "Update:User",
+          "Delete:User",
+          "Restore:User",
+          "ForceDelete:User",
+          "ForceDeleteAny:User",
+          "RestoreAny:User",
+          "Replicate:User",
+          "Reorder:User",
+          "ViewAny:AcademicYear",
+          "View:AcademicYear",
+          "Create:AcademicYear",
+          "Update:AcademicYear",
+          "Delete:AcademicYear",
+          "Restore:AcademicYear",
+          "ForceDelete:AcademicYear",
+          "ForceDeleteAny:AcademicYear",
+          "RestoreAny:AcademicYear",
+          "Replicate:AcademicYear",
+          "Reorder:AcademicYear",
+          "ViewAny:Grade",
+          "View:Grade",
+          "Create:Grade",
+          "Update:Grade",
+          "Delete:Grade",
+          "Restore:Grade",
+          "ForceDelete:Grade",
+          "ForceDeleteAny:Grade",
+          "RestoreAny:Grade",
+          "Replicate:Grade",
+          "Reorder:Grade",
+          "ViewAny:Subject",
+          "View:Subject",
+          "Create:Subject",
+          "Update:Subject",
+          "Delete:Subject",
+          "Restore:Subject",
+          "ForceDelete:Subject",
+          "ForceDeleteAny:Subject",
+          "RestoreAny:Subject",
+          "Replicate:Subject",
+          "Reorder:Subject",
+          "ViewAny:Journal",
+          "View:Journal",
+          "Create:Journal",
+          "Update:Journal",
+          "Delete:Journal",
+          "Restore:Journal",
+          "ForceDelete:Journal",
+          "ForceDeleteAny:Journal",
+          "RestoreAny:Journal",
+          "Replicate:Journal",
+          "Reorder:Journal",
+          "ViewAny:Transcript",
+          "View:Transcript",
+          "Create:Transcript",
+          "Update:Transcript",
+          "Delete:Transcript",
+          "Restore:Transcript",
+          "ForceDelete:Transcript",
+          "ForceDeleteAny:Transcript",
+          "RestoreAny:Transcript",
+          "Replicate:Transcript",
+          "Reorder:Transcript",
+          "ViewAny:Attendance",
+          "View:Attendance",
+          "Create:Attendance",
+          "Update:Attendance",
+          "Delete:Attendance",
+          "Restore:Attendance",
+          "ForceDelete:Attendance",
+          "ForceDeleteAny:Attendance",
+          "RestoreAny:Attendance",
+          "Replicate:Attendance",
+          "Reorder:Attendance",
+          "ViewAny:Student",
+          "View:Student",
+          "Create:Student",
+          "Update:Student",
+          "Delete:Student",
+          "Restore:Student",
+          "ForceDelete:Student",
+          "ForceDeleteAny:Student",
+          "RestoreAny:Student",
+          "Replicate:Student",
+          "Reorder:Student",
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+    }
+}
