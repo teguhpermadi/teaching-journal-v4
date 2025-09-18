@@ -14,6 +14,8 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "laravolt/avatar": "^6.3",
+        "opcodesio/log-viewer": "^3.19",
+        "phpoffice/phpword": "^1.4",
         "spatie/laravel-medialibrary": "^11.14",
         "spatie/laravel-permission": "^6.21",
         "stechstudio/filament-impersonate": "^4.0"
