@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AcademicYears\Schemas;
 
+use App\SemesterEnum;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Forms\Components\TextInput;
@@ -23,10 +24,7 @@ class AcademicYearForm
                     ->placeholder('e.g., 2023/2024'),
                 Select::make('semester')
                     ->label('Semester')
-                    ->options([
-                        'odd' => 'Odd',
-                        'even' => 'Even',
-                    ])
+                    ->options(SemesterEnum::class)
                     ->required()
                     ->placeholder('Select Semester'),
                 TextInput::make('headmaster_name')

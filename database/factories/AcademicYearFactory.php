@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\SemesterEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +19,7 @@ class AcademicYearFactory extends Factory
     {
         return [
             'year' => $this->faker->year(),
-            'semester' => $this->faker->randomElement(['Odd', 'Even']),
+            'semester' => $this->faker->randomElement(SemesterEnum::cases()),
             'headmaster_name' => $this->faker->name(),
             'headmaster_nip' => $this->faker->numerify('################'),
             'date_start' => $this->faker->date(),

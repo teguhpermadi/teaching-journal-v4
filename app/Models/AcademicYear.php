@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Grade;
+use App\SemesterEnum;
 
 class AcademicYear extends Model
 {
@@ -27,6 +28,7 @@ class AcademicYear extends Model
         'date_start' => 'date',
         'date_end' => 'date',
         'active' => 'boolean',
+        'semester' => SemesterEnum::class,
     ];
 
     public function grades()

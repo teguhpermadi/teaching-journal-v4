@@ -117,7 +117,7 @@ class JournalWordJob implements ShouldQueue
             ]
         );
         $section->addText(
-            'Semester: ' . ($firstJournal->academicYear->semester ?? 'N/A'),
+            'Semester: ' . ($firstJournal->academicYear->semester ?? 'N/A') ,
             [
                 'bold' => true,
                 'size' => 14,
@@ -153,14 +153,6 @@ class JournalWordJob implements ShouldQueue
             $images = $journal->getMedia('activity_photos');
 
             if ($images->isNotEmpty()) {
-                $section->addText(
-                    'Dokumentasi:',
-                    [
-                        'bold' => true,
-                        'size' => 14,
-                    ]
-                );
-
                 foreach ($images as $image) {
                     try {
                         // Dapatkan path file yang sebenarnya dari media library
@@ -172,7 +164,7 @@ class JournalWordJob implements ShouldQueue
                             $imageInfo = getimagesize($imagePath);
                             if ($imageInfo !== false) {
                                 $section->addImage($imagePath, [
-                                    'width'         => 100,
+                                    'width'         => 200,
                                     'wrappingStyle' => 'inline'
                                 ]);
                                 $section->addTextBreak(1); // Tambahkan spasi antar gambar
@@ -259,12 +251,14 @@ class JournalWordJob implements ShouldQueue
                         ->actions([
                             Action::make('download')
                                 ->label('Download')
+                                ->button()
                                 ->url(asset('storage/journals/' . basename($fullpath)))
                                 ->openUrlInNewTab(),
-                            Action::make('view')
-                                ->button()
+                            Action::make('read')
+                                ->label('Mark as Read')
                                 ->markAsRead(),
                         ])
+                        ->send()
                         ->sendToDatabase($recipient);
 
                     Log::info('Filament notification sent successfully');
