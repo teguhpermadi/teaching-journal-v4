@@ -20,15 +20,10 @@ class Subject extends Model
     protected $fillable = [
         'name',
         'code',
-        'schedule',
         'user_id',
         'grade_id',
         'academic_year_id',
         'color',
-    ];
-
-    protected $casts = [
-        'schedule' => 'array',
     ];
 
     protected static function boot()
@@ -37,7 +32,9 @@ class Subject extends Model
 
         static::creating(function ($model) {
             // generate random color
-            $model->color = RandomColor::one();
+            if (!$model->color) {
+                $model->color = RandomColor::one();
+            }
         });
     }
 

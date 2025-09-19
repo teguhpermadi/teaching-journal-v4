@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Subjects\Schemas;
 
-use App\ScheduleEnum;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -32,11 +31,6 @@ class SubjectForm
                 Select::make('grade_id')
                     ->label('Grade')
                     ->relationship(name: 'grade', titleAttribute: 'name', modifyQueryUsing: fn (Builder $query) => Grade::gradeAcademicYearActive($query))
-                    ->required(),
-                Select::make('schedule')
-                    ->label('Schedule')
-                    ->options(ScheduleEnum::class)
-                    ->multiple()
                     ->required(),
                 ColorPicker::make('color')
                     ->label('Color')

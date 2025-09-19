@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
 use App\Models\Grade;
 use App\Models\AcademicYear;
-use App\ScheduleEnum;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Subject>
@@ -20,11 +19,10 @@ class SubjectFactory extends Factory
      */
     public function definition(): array
     {
-        $grade = Grade::get()->random();
+        $grade = Grade::gradeAcademicYearActive()->get()->random();
         return [
             'name' => fake()->word(),
             'code' => fake()->bothify('SUB-####'),
-            'schedule' => fake()->randomElements(ScheduleEnum::cases(), 2),
             'user_id' => User::factory()->afterCreating(function (User $user) {
                 $user->assignRole('teacher');
             }),

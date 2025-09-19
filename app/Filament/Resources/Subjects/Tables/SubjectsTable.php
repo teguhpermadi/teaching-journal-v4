@@ -33,11 +33,6 @@ class SubjectsTable
                     ->label('Grade')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('schedule')
-                    ->label('Schedule')
-                    ->bulleted()
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('user.name')
                     ->label('Teacher')
                     ->searchable()

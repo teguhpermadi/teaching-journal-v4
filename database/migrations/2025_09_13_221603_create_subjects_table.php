@@ -15,7 +15,6 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('name');
             $table->string('code');
-            $table->json('schedule');
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('grade_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
