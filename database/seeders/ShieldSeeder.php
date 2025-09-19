@@ -110,7 +110,18 @@ class ShieldSeeder extends Seeder
                     'ForceDeleteAny:Transcript',
                     'RestoreAny:Transcript',
                     'Replicate:Transcript',
-                    'Reorder:Transcript'
+                    'Reorder:Transcript',
+                    'ViewAny:Attendance',
+                    'View:Attendance',
+                    'Create:Attendance',
+                    'Update:Attendance',
+                    'Delete:Attendance',
+                    'Restore:Attendance',
+                    'ForceDelete:Attendance',
+                    'ForceDeleteAny:Attendance',
+                    'RestoreAny:Attendance',
+                    'Replicate:Attendance',
+                    'Reorder:Attendance'
                 ]
             ],
             [

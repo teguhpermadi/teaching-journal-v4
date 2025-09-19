@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class JournalsTable
 {
@@ -50,7 +51,10 @@ class JournalsTable
             ])
             ->defaultSort('date', 'desc')
             ->modifyQueryUsing(function (Builder $query) {
-                $query->myJournals();
+                // check if user role teacher
+                if (Auth::user()->hasRole('teacher')) {
+                    $query->myJournals();
+                }
             })
             ->poll('10s');
     }

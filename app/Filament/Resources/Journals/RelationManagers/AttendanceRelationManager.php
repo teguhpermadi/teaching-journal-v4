@@ -63,12 +63,7 @@ class AttendanceRelationManager extends RelationManager
                     ->searchable(),
                 TextColumn::make('status')
                     ->searchable()
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'Sick' => 'warning',
-                        'Leave' => 'info',
-                        'Absent' => 'danger',
-                    }),
+                    ->badge(),
             ])
             ->filters([
                 //
