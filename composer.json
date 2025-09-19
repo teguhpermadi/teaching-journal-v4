@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^4.0",
+        "dutchcodingcompany/filament-socialite": "^3.0",
         "filament/filament": "4.0",
         "filament/spatie-laravel-media-library-plugin": "4.0",
         "guava/calendar": "^2.0",
@@ -17,6 +18,7 @@
         "laravolt/avatar": "^6.3",
         "mistic100/randomcolor": "^1.1",
         "opcodesio/log-viewer": "^3.19",
+        "owenvoke/blade-fontawesome": "^2.9",
         "phpoffice/phpword": "^1.4",
         "spatie/laravel-medialibrary": "^11.14",
         "spatie/laravel-permission": "^6.21",
