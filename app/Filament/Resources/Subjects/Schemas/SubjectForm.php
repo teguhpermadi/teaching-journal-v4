@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AcademicYear;
 use App\Models\Grade;
+use Filament\Forms\Components\ColorPicker;
 
 class SubjectForm
 {
@@ -36,6 +37,10 @@ class SubjectForm
                     ->label('Schedule')
                     ->options(ScheduleEnum::class)
                     ->multiple()
+                    ->required(),
+                ColorPicker::make('color')
+                    ->label('Color')
+                    ->rgb()
                     ->required(),
             ]);
     }

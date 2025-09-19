@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Scopes\AcademicYearScope;
+use Colors\RandomColor;
 
 #[ScopedBy(AcademicYearScope::class)]
 class Subject extends Model
@@ -23,11 +24,22 @@ class Subject extends Model
         'user_id',
         'grade_id',
         'academic_year_id',
+        'color',
     ];
 
     protected $casts = [
         'schedule' => 'array',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // generate random color
+            $model->color = RandomColor::one();
+        });
+    }
 
     public function user()
     {

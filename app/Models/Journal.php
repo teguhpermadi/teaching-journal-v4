@@ -87,6 +87,7 @@ class Journal extends Model implements HasMedia, Eventable
             ->title($this->chapter)
             ->start($this->date)
             ->end($this->date)
+            ->backgroundColor($this->subject->color)
             ->allDay(true);
     }
 }

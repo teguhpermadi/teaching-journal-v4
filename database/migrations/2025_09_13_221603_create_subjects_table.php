@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('grade_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('academic_year_id')->constrained()->cascadeOnDelete();
+            $table->string('color')->default('#000000');
             $table->softDeletes();
             $table->timestamps();
         });

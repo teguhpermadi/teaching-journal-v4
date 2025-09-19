@@ -7,9 +7,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class SubjectsTable
 {
@@ -17,6 +19,8 @@ class SubjectsTable
     {
         return $table
             ->columns([
+                ColorColumn::make('color')
+                    ->label('Color'),
                 TextColumn::make('name')
                     ->label('Subject Name')
                     ->searchable()
@@ -53,8 +57,12 @@ class SubjectsTable
                 ]),
             ])
             ->modifyQueryUsing(function ($query) {
-                $query->subjectWithGradeActive()
-                    ->mySubjects();
+                // check spatie role
+                if (Auth::user()->hasRole('teacher')) {
+                    $query->mySubjects();
+                } else {
+                    $query->subjectWithGradeActive();
+                }
             });
     }
 }
