@@ -18,13 +18,13 @@ class DatabaseSeeder extends Seeder
             // PermissionsSeeder::class,
             ShieldSeeder::class,
             UserSeeder::class,
-            AcademicYearSeeder::class,
-            StudentSeeder::class,
-            GradeSeeder::class,
-            SubjectSeeder::class,
-            JournalSeeder::class,
-            AttendanceSeeder::class,
-            TranscriptSeeder::class,
+            // AcademicYearSeeder::class,
+            // StudentSeeder::class,
+            // GradeSeeder::class,
+            // SubjectSeeder::class,
+            // JournalSeeder::class,
+            // AttendanceSeeder::class,
+            // TranscriptSeeder::class,
         ]);
     }
 }
