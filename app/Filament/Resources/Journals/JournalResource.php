@@ -41,7 +41,7 @@ class JournalResource extends Resource
     {
         return [
             AttendanceRelationManager::class,
-            TranscriptsRelationManager::class,
+            // TranscriptsRelationManager::class,
         ];
     }
 

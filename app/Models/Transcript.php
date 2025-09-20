@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
-#[ObservedBy(TranscriptObserver::class)]
+// #[ObservedBy(TranscriptObserver::class)]
 class Transcript extends Model
 {
     /** @use HasFactory<\Database\Factories\TranscriptFactory> */
