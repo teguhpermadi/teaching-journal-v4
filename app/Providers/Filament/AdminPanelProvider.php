@@ -70,14 +70,35 @@ class AdminPanelProvider extends PanelProvider
                     ),
                 FilamentSocialitePlugin::make()
                     ->providers([
-                        // Create a provider 'gitlab' corresponding to the Socialite driver with the same name.
                         Provider::make('google')
                             ->label('Google')
                             ->icon('fab-google')
-                            ->color(Color::hex('#2f2a6b')),
+                            ->color(Color::hex('#4285f4')),
                     ])
                     ->registration(true)
-                    ->domainAllowList(['localhost'])
+                    ->rememberLogin(true)
+                    ->createUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
+                        $user = \App\Models\User::create([
+                            'name' => $oauthUser->getName(),
+                            'email' => $oauthUser->getEmail(),
+                            'email_verified_at' => now(),
+                        ]);
+
+                        \App\Models\SocialiteUser::create([
+                            'user_id' => $user->id,
+                            'provider' => $provider,
+                            'provider_id' => $oauthUser->getId(),
+                        ]);
+
+                        return $user;
+                    })
+                    ->resolveUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
+                        $socialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
+                            ->where('provider_id', $oauthUser->getId())
+                            ->first();
+
+                        return $socialiteUser?->user;
+                    })
             ])
             ->authMiddleware([
                 Authenticate::class,
