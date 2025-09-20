@@ -95,12 +95,6 @@ class JournalWidget extends CalendarWidget
 
     protected function onEventDrop(EventDropInfo $info, Model $event): bool
     {
-        // Coba akses dengan reflection karena property protected
-        // $reflection = new \ReflectionClass($info->event);
-        // $startProperty = $reflection->getProperty('start');
-        // $startProperty->setAccessible(true);
-        // $startDate = $startProperty->getValue($info->event);
-        // dd($startDate->format('d m Y'));
         if ($event instanceof Journal) {
             try {
                 // Akses tanggal baru dengan reflection karena property protected
@@ -142,6 +136,7 @@ class JournalWidget extends CalendarWidget
     public function createJournalAction(): CreateAction
     {
         return $this->createAction(Journal::class)
+            ->slideOver()
             ->form($this->getJournalForm())
             ->fillForm(function (array $arguments): array {
                 // Gunakan tanggal yang disimpan dari onDateClick
@@ -192,6 +187,7 @@ class JournalWidget extends CalendarWidget
     {
         return EditAction::make()
             ->form($this->getJournalForm())
+            ->slideOver()
             ->mutateFormDataUsing(function (array $data): array {
                 if (isset($data['subject_id'])) {
                     $subject = Subject::find($data['subject_id']);
