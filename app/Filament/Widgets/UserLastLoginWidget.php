@@ -15,6 +15,12 @@ class UserLastLoginWidget extends BaseWidget
         $user = Auth::user();
         $lastLogin = $user->last_login_at;
         
+        // Get the most recent user who logged in (excluding current user)
+        $lastLoginUser = User::whereNotNull('last_login_at')
+            ->where('id', '!=', $user->id)
+            ->orderBy('last_login_at', 'desc')
+            ->first();
+        
         // Get recent users (last 7 days)
         $recentUsers = User::whereNotNull('last_login_at')
             ->where('last_login_at', '>=', now()->subDays(7))
@@ -34,6 +40,11 @@ class UserLastLoginWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-clock')
                 ->color($lastLogin ? 'success' : 'warning'),
                 
+            Stat::make('User Login Terakhir', $lastLoginUser ? $lastLoginUser->name : 'Tidak ada data')
+                ->description($lastLoginUser ? $lastLoginUser->last_login_at->diffForHumans() . ' - ' . $lastLoginUser->last_login_at->format('d M Y, H:i') : 'Belum ada user lain yang login')
+                ->descriptionIcon('heroicon-m-user')
+                ->color($lastLoginUser ? 'info' : 'gray'),
+                
             Stat::make('Pengguna Aktif Hari Ini', $todayUsers)
                 ->description('Total login hari ini')
                 ->descriptionIcon('heroicon-m-users')
@@ -43,11 +54,6 @@ class UserLastLoginWidget extends BaseWidget
                 ->description('Login dalam 7 hari terakhir')
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('primary'),
-                
-            Stat::make('Total Pengguna Terdaftar', $totalUsersWithLogin)
-                ->description('Yang pernah login')
-                ->descriptionIcon('heroicon-m-user-group')
-                ->color('gray'),
         ];
     }
 }

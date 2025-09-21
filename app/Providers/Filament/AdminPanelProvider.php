@@ -16,6 +16,7 @@ use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use App\Filament\Widgets\UserLastLoginWidget;
+use App\Filament\Widgets\RecentLoginsWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -47,6 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 UserLastLoginWidget::class,
+                RecentLoginsWidget::class,
                 FilamentInfoWidget::class,
             ])
             ->middleware([
