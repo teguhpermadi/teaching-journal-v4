@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Students\Schemas;
 
+use App\GenderEnum;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -18,10 +19,8 @@ class StudentForm
                     ->required(),
                 Select::make('gender')
                     ->label('Jenis Kelamin')
-                    ->options([
-                        'Laki-laki' => 'Laki-laki',
-                        'Perempuan' => 'Perempuan',
-                    ])->required(),
+                    ->options(GenderEnum::class)
+                    ->required(),
                 TextInput::make('nisn')
                     ->label('NISN')
                     ->required()

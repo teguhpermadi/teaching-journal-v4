@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\GenderEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -23,6 +24,7 @@ class Student extends Model
 
     protected $casts = [
         'active' => 'boolean',
+        'gender' => GenderEnum::class,
     ];
 
     public function grades()
