@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('targets', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->timestamps();
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('subject_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('grade_id')->constrained()->cascadeOnDelete();

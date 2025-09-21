@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::table('journals', function (Blueprint $table) {
             // change target to target_id
             $table->foreignUlid('target_id')->constrained('targets')->cascadeOnDelete();
+            $table->dropColumn('target');
         });
     }
 
@@ -26,6 +27,7 @@ return new class extends Migration
             // remove target_id
             $table->dropForeign(['target_id']);
             $table->dropColumn('target_id');
+            $table->text('target');
         });
     }
 };

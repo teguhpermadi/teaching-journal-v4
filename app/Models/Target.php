@@ -44,9 +44,9 @@ class Target extends Model
     public function scopeMyTargetsInSubject($query, $subject)
     {
         // check academic year is active
-        $academicYear = AcademicYear::academicYearActive()->first();
+        $academicYear = AcademicYear::active()->first();
         return $query->where('user_id', Auth::id())
             ->where('academic_year_id', $academicYear->id)
-            ->where('subject_id', $subject->id);
+            ->where('subject_id', $subject);
     }
 }

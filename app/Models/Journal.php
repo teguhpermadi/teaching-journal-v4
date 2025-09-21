@@ -27,7 +27,7 @@ class Journal extends Model implements HasMedia, Eventable
         'grade_id',
         'user_id',
         'date',
-        'target',
+        'target_id',
         'chapter',
         'activity',
         'notes',
@@ -70,14 +70,19 @@ class Journal extends Model implements HasMedia, Eventable
         return $this->hasMany(Attendance::class);
     }
 
-    public function scopeMyJournals($query)
-    {
-        return $query->where('user_id', Auth::id());
-    }
-
     public function transcripts()
     {
         return $this->hasMany(Transcript::class);
+    }
+
+    public function target()
+    {
+        return $this->belongsTo(Target::class);
+    }
+
+    public function scopeMyJournals($query)
+    {
+        return $query->where('user_id', Auth::id());
     }
 
     public function toCalendarEvent(): CalendarEvent

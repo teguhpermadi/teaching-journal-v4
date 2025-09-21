@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Journals\Schemas;
 
 use App\Models\AcademicYear;
 use App\Models\Subject;
+use App\Models\Target;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
@@ -47,8 +48,53 @@ class JournalForm
                     ->searchable()
                     ->preload()
                     ->required(),
-                TextInput::make('target')
-                    ->columnSpan('full')
+                Select::make('target_id')
+                    ->options(
+                        function ($get){
+                            $targets = Target::myTargetsInSubject($get('subject_id'))
+                            ->get();
+
+                            if($targets->isEmpty()){
+                                return [];
+                            }
+
+                            return $targets->map(
+                                fn ($target) => [
+                                    'label' => $target->target,
+                                    'value' => $target->id
+                                ]
+                            )->pluck('label', 'value');
+                        }
+                    )
+                    ->createOptionForm([
+                        // Hidden::make('subject_id')
+                        //     ->reactive()
+                        //     ->default(fn ($get) => $get('subject_id')),
+                        // Hidden::make('grade_id')
+                        //     ->reactive()
+                        //     ->default(fn ($get) => $get('grade_id')),
+                        // Hidden::make('academic_year_id')
+                        //     ->reactive()
+                        //     ->default(fn ($get) => $get('academic_year_id')),
+                        // Hidden::make('user_id')
+                        //     ->reactive()
+                        //     ->default(fn ($get) => $get('user_id')),
+                        TextInput::make('target')
+                            ->required(),
+                    ])
+                    ->createOptionUsing(function($data, $get){
+                        // dd($get('subject_id'));
+                        Target::create([
+                            'subject_id' => $get('subject_id'),
+                            'grade_id' => $get('grade_id'),
+                            'academic_year_id' => $get('academic_year_id'),
+                            'user_id' => $get('user_id'),
+                            'target' => $data['target'],
+                        ]);
+                    })
+                    ->reactive()
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 TextInput::make('chapter')
                     ->columnSpan('full')

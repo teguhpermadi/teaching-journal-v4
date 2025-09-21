@@ -1,1 +1,9 @@
-Subject::get()
+use Illuminate\Support\Facades\Auth;
+
+Auth::id()
+use Illuminate\Support\Facades\Auth;
+
+AcademicYear::get()
+use Illuminate\Support\Facades\Auth;
+
+$academicYear = AcademicYear::active()->first();

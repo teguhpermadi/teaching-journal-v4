@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Journal;
 use App\Models\Subject;
+use App\Models\Target;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -29,7 +30,7 @@ class JournalFactory extends Factory
             'grade_id' => $subject->grade_id,
             'user_id' => $subject->user_id,
             'date' => Carbon::now()->subDays(rand(0, 6)),
-            'target' => fake()->sentence(10),
+            'target_id' => Target::factory(),
             'chapter' => fake()->sentence(10),
             'activity' => fake()->paragraph(5),
             'notes' => fake()->paragraph(1),
