@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Students\Schemas;
 
 use App\GenderEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -20,6 +21,15 @@ class StudentForm
                 Select::make('gender')
                     ->label('Jenis Kelamin')
                     ->options(GenderEnum::class)
+                    ->required(),
+                TextInput::make('nick_name')
+                    ->label('Nama Panggilan')
+                    ->required(),
+                TextInput::make('city_born')
+                    ->label('Kota Lahir')
+                    ->required(),
+                DatePicker::make('birthday')
+                    ->label('Tanggal Lahir')
                     ->required(),
                 TextInput::make('nisn')
                     ->label('NISN')

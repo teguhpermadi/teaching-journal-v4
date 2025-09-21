@@ -24,13 +24,19 @@ class ListStudents extends ListRecords
                     sampleData: [
                         [
                             'name' => 'John Doe',
+                            'nick_name' => 'John',
                             'gender' => 'Male',
+                            'city_born' => 'Bandung',
+                            'birthday' => '2000-01-01',
                             'nisn' => '1234567890',
                             'nis' => '1234567890',
                         ],
                         [
                             'name' => 'Jane Doe',
+                            'nick_name' => 'Jane',
                             'gender' => 'Female',
+                            'city_born' => 'Bandung',
+                            'birthday' => '2000-01-01',
                             'nisn' => '1234567890',
                             'nis' => '1234567890',
                         ],

@@ -20,6 +20,8 @@ class StudentImport implements ToCollection, WithHeadingRow
             ], [
                 'name' => $row['name'],
                 'gender' => $row['gender'],
+                'city_born' => $row['city_born'],
+                'birthday' => $row['birthday'],
                 'nis' => $row['nis'],
             ]);
         });

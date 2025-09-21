@@ -10,6 +10,7 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Laravolt\Avatar\Facade as Avatar;
@@ -29,6 +30,12 @@ class StudentsTable
                     ->circular(),
                 TextColumn::make('name')
                     ->searchable(),
+                TextColumn::make('nick_name')
+                    ->searchable(),
+                // TextColumn::make('city_born')
+                //     ->searchable(),
+                // TextColumn::make('birthday')
+                //     ->searchable(),
                 TextColumn::make('nisn')
                     ->searchable(),
                 TextColumn::make('nis')
@@ -37,6 +44,8 @@ class StudentsTable
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
+                    ->label('Active'),
+                ToggleColumn::make('active')
                     ->label('Active'),
             ])
             ->defaultSort('name', 'asc')

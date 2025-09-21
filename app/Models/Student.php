@@ -15,6 +15,9 @@ class Student extends Model
 
     protected $fillable = [
         'name',
+        'nick_name',
+        'city_born',
+        'birthday',
         'gender',
         'nisn',
         'nis',
@@ -25,6 +28,7 @@ class Student extends Model
     protected $casts = [
         'active' => 'boolean',
         'gender' => GenderEnum::class,
+        'birthday' => 'date',
     ];
 
     public function grades()
