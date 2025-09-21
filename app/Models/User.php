@@ -25,6 +25,7 @@ class User extends Authenticatable
         'email',
         'password',
         'last_login_at',
+        'last_logout_at',
     ];
 
     /**
@@ -48,6 +49,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_login_at' => 'datetime',
+            'last_logout_at' => 'datetime',
         ];
     }
 
@@ -66,5 +68,56 @@ class User extends Authenticatable
     public function socialiteUsers()
     {
         return $this->hasMany(SocialiteUser::class);
+    }
+
+    /**
+     * Determine if user is currently online based on login/logout times
+     */
+    public function isOnline(): bool
+    {
+        // If never logged in, definitely not online
+        if (!$this->last_login_at) {
+            return false;
+        }
+
+        // If never logged out, check if login was recent (within 5 minutes)
+        if (!$this->last_logout_at) {
+            return $this->last_login_at->diffInMinutes(now()) <= 5;
+        }
+
+        // If logged out after last login, user is offline
+        if ($this->last_logout_at->greaterThan($this->last_login_at)) {
+            return false;
+        }
+
+        // If last login is more recent than logout, check if it's within 5 minutes
+        return $this->last_login_at->diffInMinutes(now()) <= 5;
+    }
+
+    /**
+     * Get user status string
+     */
+    public function getStatusAttribute(): string
+    {
+        if (!$this->last_login_at) {
+            return 'Belum Login';
+        }
+
+        // If logged out after login, user is offline
+        if ($this->last_logout_at && $this->last_logout_at->greaterThan($this->last_login_at)) {
+            return 'Offline';
+        }
+
+        $diffInMinutes = $this->last_login_at->diffInMinutes(now());
+
+        if ($diffInMinutes <= 5) {
+            return 'Online';
+        } elseif ($diffInMinutes <= 30) {
+            return 'Baru Saja';
+        } elseif ($this->last_login_at->isToday()) {
+            return 'Hari Ini';
+        } else {
+            return 'Offline';
+        }
     }
 }

@@ -41,23 +41,7 @@ class RecentLoginsWidget extends BaseWidget
                     
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
-                    ->getStateUsing(function ($record) {
-                        if (!$record->last_login_at) {
-                            return 'Belum Login';
-                        }
-                        
-                        $diffInMinutes = $record->last_login_at->diffInMinutes(now());
-                        
-                        if ($diffInMinutes <= 5) {
-                            return 'Online';
-                        } elseif ($diffInMinutes <= 30) {
-                            return 'Baru Saja';
-                        } elseif ($record->last_login_at->isToday()) {
-                            return 'Hari Ini';
-                        } else {
-                            return 'Offline';
-                        }
-                    })
+                    ->getStateUsing(fn ($record) => $record->status)
                     ->colors([
                         'success' => 'Online',
                         'warning' => 'Baru Saja',

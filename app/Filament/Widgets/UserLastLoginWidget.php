@@ -21,17 +21,25 @@ class UserLastLoginWidget extends BaseWidget
             ->orderBy('last_login_at', 'desc')
             ->first();
         
-        // Get recent users (last 7 days)
-        $recentUsers = User::whereNotNull('last_login_at')
-            ->where('last_login_at', '>=', now()->subDays(7))
+        // Get users currently online (logged in within 5 minutes and not logged out after)
+        $onlineUsers = User::whereNotNull('last_login_at')
+            ->where('last_login_at', '>=', now()->subMinutes(5))
+            ->where(function ($query) {
+                $query->whereNull('last_logout_at')
+                      ->orWhereRaw('last_login_at > last_logout_at');
+            })
             ->count();
             
         // Get total users with login history
         $totalUsersWithLogin = User::whereNotNull('last_login_at')->count();
         
-        // Get users logged in today
+        // Get users logged in today (and not logged out after)
         $todayUsers = User::whereNotNull('last_login_at')
             ->whereDate('last_login_at', today())
+            ->where(function ($query) {
+                $query->whereNull('last_logout_at')
+                      ->orWhereRaw('last_login_at > last_logout_at');
+            })
             ->count();
 
         return [
@@ -50,10 +58,10 @@ class UserLastLoginWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-users')
                 ->color('info'),
                 
-            Stat::make('Pengguna Aktif 7 Hari', $recentUsers)
-                ->description('Login dalam 7 hari terakhir')
-                ->descriptionIcon('heroicon-m-calendar-days')
-                ->color('primary'),
+            Stat::make('Pengguna Online', $onlineUsers)
+                ->description('Sedang online sekarang')
+                ->descriptionIcon('heroicon-m-signal')
+                ->color('success'),
         ];
     }
 }
