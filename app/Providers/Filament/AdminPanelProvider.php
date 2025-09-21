@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\User;
 use Filament\Http\Middleware\Authenticate;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DutchCodingCompany\FilamentSocialite\FilamentSocialitePlugin;
@@ -78,38 +79,27 @@ class AdminPanelProvider extends PanelProvider
                     ->registration(true)
                     ->rememberLogin(true)
                     ->createUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
-                        // Check if socialite user already exists
-                        $existingSocialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
+                        // Pertama, cek apakah ada pengguna yang sudah terdaftar dengan ID penyedia (provider) ini
+                        $socialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
                             ->where('provider_id', $oauthUser->getId())
                             ->first();
 
-                        if ($existingSocialiteUser) {
-                            return $existingSocialiteUser->user;
+                        if ($socialiteUser) {
+                            // Jika ada, kembalikan pengguna yang sudah ada
+                            return $socialiteUser->user;
                         }
 
-                        // Check if user exists by email
-                        $existingUser = \App\Models\User::where('email', $oauthUser->getEmail())->first();
+                        // Jika tidak, cari atau buat pengguna berdasarkan email
+                        $user = User::firstOrCreate(
+                            ['email' => $oauthUser->getEmail()],
+                            [
+                                'name' => $oauthUser->getName(),
+                                'email_verified_at' => now(),
+                            ]
+                        );
 
-                        if ($existingUser) {
-                            // Link existing user to social account
-                            \App\Models\SocialiteUser::create([
-                                'user_id' => $existingUser->id,
-                                'provider' => $provider,
-                                'provider_id' => $oauthUser->getId(),
-                            ]);
-
-                            return $existingUser;
-                        }
-
-                        // Create new user
-                        $user = \App\Models\User::create([
-                            'name' => $oauthUser->getName(),
-                            'email' => $oauthUser->getEmail(),
-                            'email_verified_at' => now(),
-                        ]);
-
-                        \App\Models\SocialiteUser::create([
-                            'user_id' => $user->id,
+                        // Buat entri SocialiteUser dan kaitkan dengan pengguna
+                        $user->socialiteUsers()->create([
                             'provider' => $provider,
                             'provider_id' => $oauthUser->getId(),
                         ]);
@@ -122,7 +112,7 @@ class AdminPanelProvider extends PanelProvider
                             ->first();
 
                         return $socialiteUser?->user;
-                    })
+                    }),
             ])
             ->authMiddleware([
                 Authenticate::class,
