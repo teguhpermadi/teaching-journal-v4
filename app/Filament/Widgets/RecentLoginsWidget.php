@@ -12,6 +12,8 @@ class RecentLoginsWidget extends BaseWidget
     protected static ?string $heading = 'Login Terbaru';
     
     protected int | string | array $columnSpan = 'full';
+
+    protected static ?int $sort = 3;
     
     public function table(Table $table): Table
     {

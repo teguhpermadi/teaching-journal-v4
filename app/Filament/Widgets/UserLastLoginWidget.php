@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 
 class UserLastLoginWidget extends BaseWidget
 {
+    protected static ?int $sort = 2;
+
+    protected int | string | array $columnSpan = 'full';
     
     protected function getStats(): array
     {
