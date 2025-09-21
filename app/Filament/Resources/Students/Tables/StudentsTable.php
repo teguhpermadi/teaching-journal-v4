@@ -29,22 +29,28 @@ class StudentsTable
                     ->disk('public')
                     ->circular(),
                 TextColumn::make('name')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('nick_name')
+                    ->sortable()
                     ->searchable(),
                 // TextColumn::make('city_born')
+                //     ->sortable()
                 //     ->searchable(),
                 // TextColumn::make('birthday')
+                //     ->sortable()
                 //     ->searchable(),
                 TextColumn::make('nisn')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('nis')
+                    ->sortable()
                     ->searchable(),
-                IconColumn::make('active')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->label('Active'),
+                // IconColumn::make('active')
+                //     ->boolean()
+                //     ->trueIcon('heroicon-o-check-circle')
+                //     ->falseIcon('heroicon-o-x-circle')
+                //     ->label('Active'),
                 ToggleColumn::make('active')
                     ->label('Active'),
             ])
