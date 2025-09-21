@@ -6,14 +6,14 @@ use Filament\Support\Contracts\HasLabel;
 
 enum GenderEnum: string implements HasLabel
 {
-    case Male = 'Male';
-    case Female = 'Female';
+    case Male = 'male';
+    case Female = 'female';
 
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Male => 'Male',
-            self::Female => 'Female',
+            self::Male => 'Laki-laki',
+            self::Female => 'Perempuan',
         };
     }
 }
