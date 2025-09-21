@@ -14,6 +14,8 @@ class AcademicYearScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        $builder->where('academic_year_id', AcademicYear::active()->first()->id);
+        if(AcademicYear::active()->exists()) {
+            $builder->where('academic_year_id', AcademicYear::active()->first()->id);
+        }
     }
 }

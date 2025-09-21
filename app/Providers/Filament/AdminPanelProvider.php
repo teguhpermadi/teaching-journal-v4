@@ -78,6 +78,30 @@ class AdminPanelProvider extends PanelProvider
                     ->registration(true)
                     ->rememberLogin(true)
                     ->createUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
+                        // Check if socialite user already exists
+                        $existingSocialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
+                            ->where('provider_id', $oauthUser->getId())
+                            ->first();
+
+                        if ($existingSocialiteUser) {
+                            return $existingSocialiteUser->user;
+                        }
+
+                        // Check if user exists by email
+                        $existingUser = \App\Models\User::where('email', $oauthUser->getEmail())->first();
+
+                        if ($existingUser) {
+                            // Link existing user to social account
+                            \App\Models\SocialiteUser::create([
+                                'user_id' => $existingUser->id,
+                                'provider' => $provider,
+                                'provider_id' => $oauthUser->getId(),
+                            ]);
+
+                            return $existingUser;
+                        }
+
+                        // Create new user
                         $user = \App\Models\User::create([
                             'name' => $oauthUser->getName(),
                             'email' => $oauthUser->getEmail(),
