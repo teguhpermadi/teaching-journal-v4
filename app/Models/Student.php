@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
 
 #[ScopedBy(StudentActiveScope::class)]
 class Student extends Model
@@ -33,6 +34,13 @@ class Student extends Model
         'gender' => GenderEnum::class,
         'birthday' => 'date',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('sort', function (Builder $builder) {
+            $builder->orderBy('nis', 'asc');
+        });
+    }
 
     public function grades()
     {
