@@ -69,50 +69,50 @@ class AdminPanelProvider extends PanelProvider
                         hasAvatars: false, // Enables the avatar upload form component (default = false)
                         slug: 'my-profile' // Sets the slug for the profile page (default = 'my-profile')
                     ),
-                FilamentSocialitePlugin::make()
-                    ->providers([
-                        Provider::make('google')
-                            ->label('Google')
-                            ->icon('fab-google')
-                            ->color(Color::hex('#4285f4')),
-                    ])
-                    ->registration(true)
-                    ->rememberLogin(true)
-                    ->createUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
-                        // Pertama, cek apakah ada pengguna yang sudah terdaftar dengan ID penyedia (provider) ini
-                        $socialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
-                            ->where('provider_id', $oauthUser->getId())
-                            ->first();
+                // FilamentSocialitePlugin::make()
+                //     ->providers([
+                //         Provider::make('google')
+                //             ->label('Google')
+                //             ->icon('fab-google')
+                //             ->color(Color::hex('#4285f4')),
+                //     ])
+                //     ->registration(true)
+                //     ->rememberLogin(true)
+                //     ->createUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
+                //         // Pertama, cek apakah ada pengguna yang sudah terdaftar dengan ID penyedia (provider) ini
+                //         $socialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
+                //             ->where('provider_id', $oauthUser->getId())
+                //             ->first();
 
-                        if ($socialiteUser) {
-                            // Jika ada, kembalikan pengguna yang sudah ada
-                            return $socialiteUser->user;
-                        }
+                //         if ($socialiteUser) {
+                //             // Jika ada, kembalikan pengguna yang sudah ada
+                //             return $socialiteUser->user;
+                //         }
 
-                        // Jika tidak, cari atau buat pengguna berdasarkan email
-                        $user = User::firstOrCreate(
-                            ['email' => $oauthUser->getEmail()],
-                            [
-                                'name' => $oauthUser->getName(),
-                                'email_verified_at' => now(),
-                            ]
-                        );
+                //         // Jika tidak, cari atau buat pengguna berdasarkan email
+                //         $user = User::firstOrCreate(
+                //             ['email' => $oauthUser->getEmail()],
+                //             [
+                //                 'name' => $oauthUser->getName(),
+                //                 'email_verified_at' => now(),
+                //             ]
+                //         );
 
-                        // Buat entri SocialiteUser dan kaitkan dengan pengguna
-                        $user->socialiteUsers()->create([
-                            'provider' => $provider,
-                            'provider_id' => $oauthUser->getId(),
-                        ]);
+                //         // Buat entri SocialiteUser dan kaitkan dengan pengguna
+                //         $user->socialiteUsers()->create([
+                //             'provider' => $provider,
+                //             'provider_id' => $oauthUser->getId(),
+                //         ]);
 
-                        return $user;
-                    })
-                    ->resolveUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
-                        $socialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
-                            ->where('provider_id', $oauthUser->getId())
-                            ->first();
+                //         return $user;
+                //     })
+                //     ->resolveUserUsing(function (\Laravel\Socialite\Contracts\User $oauthUser, string $provider) {
+                //         $socialiteUser = \App\Models\SocialiteUser::where('provider', $provider)
+                //             ->where('provider_id', $oauthUser->getId())
+                //             ->first();
 
-                        return $socialiteUser?->user;
-                    }),
+                //         return $socialiteUser?->user;
+                //     }),
             ])
             ->authMiddleware([
                 Authenticate::class,
