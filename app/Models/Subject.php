@@ -70,4 +70,9 @@ class Subject extends Model
     {
         return $this->hasMany(Journal::class);
     }
+
+    public function targets()
+    {
+        return $this->hasMany(Target::class);
+    }
 }
