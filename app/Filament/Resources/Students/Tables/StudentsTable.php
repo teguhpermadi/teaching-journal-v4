@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Students\Tables;
 
+use App\Models\Scopes\StudentActiveScope;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -59,11 +60,11 @@ class StudentsTable
             ->defaultSort('name', 'asc')
             ->filters([
                 TrashedFilter::make(),
-                Filter::make('active')
+                Filter::make('inactive')
                     ->query(function (Builder $query) {
-                        $query->where('active', true);
+                        $query->withoutGlobalScope(StudentActiveScope::class)->where('active', false);
                     })
-                    ->label('Active'),
+                    ->label('Inactive'),
             ])
             ->recordActions([
                 EditAction::make(),
