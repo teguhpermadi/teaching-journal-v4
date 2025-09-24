@@ -1,9 +1,32 @@
-use Illuminate\Support\Facades\Auth;
-
-Auth::id()
-use Illuminate\Support\Facades\Auth;
-
-AcademicYear::get()
-use Illuminate\Support\Facades\Auth;
-
-$academicYear = AcademicYear::active()->first();
+Juournal::last()->get()
+Journal::last()
+Journal::last()
+Journal::lastes()
+Journal::get()
+Journal::find('01k5xjqas8vjhpvhf84gq8y786')
+$j = Journal::find('01k5xjqas8vjhpvhf84gq8y786')
+$j->target
+$j = Journal::find('01k5xjqas8vjhpvhf84gq8y786');
+$j->target
+$journal = Journal::find('01k5xjqas8vjhpvhf84gq8y786');
+foreach ($journal->target as $target) {
+                $section->addListItem($target->target);
+            }
+$journal = Journal::find('01k5xjqas8vjhpvhf84gq8y786');
+foreach ($journal->target as $target) {
+                return ($target->target);
+            }
+$journal = Journal::find('01k5xjqas8vjhpvhf84gq8y786');
+foreach ($journal->target_id as $target) {
+                return ($target->target);
+            }
+$journal = Journal::find('01k5xjqas8vjhpvhf84gq8y786');
+$journal->target_id
+$journal = Journal::find('01k5xjqas8vjhpvhf84gq8y786');
+$journal->target_id->map(function($q){
+	$q->target->target
+})
+$journal = Journal::find('01k5xjqas8vjhpvhf84gq8y786');
+$journal->target_id->map(function($q){
+	$q->target->target;
+})

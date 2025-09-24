@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('journals', function (Blueprint $table) {
             $table->dropForeign(['target_id']);
             $table->dropColumn('target_id');
-            $table->json('target_id')->nullable();
+            $table->text('target_id')->nullable();
             $table->foreignUlid('main_target_id')->constrained()->cascadeOnDelete();
         });
     }

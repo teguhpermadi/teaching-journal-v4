@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Subjects;
 use App\Filament\Resources\Subjects\Pages\CreateSubject;
 use App\Filament\Resources\Subjects\Pages\EditSubject;
 use App\Filament\Resources\Subjects\Pages\ListSubjects;
+use App\Filament\Resources\Subjects\RelationManagers\MainTargetsRelationManager;
 use App\Filament\Resources\Subjects\RelationManagers\TargetsRelationManager;
 use App\Filament\Resources\Subjects\Schemas\SubjectForm;
 use App\Filament\Resources\Subjects\Tables\SubjectsTable;
@@ -38,6 +39,7 @@ class SubjectResource extends Resource
     public static function getRelations(): array
     {
         return [
+            MainTargetsRelationManager::class,
             TargetsRelationManager::class,
         ];
     }

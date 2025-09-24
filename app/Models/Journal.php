@@ -27,6 +27,7 @@ class Journal extends Model implements HasMedia, Eventable
         'grade_id',
         'user_id',
         'date',
+        'main_target_id',
         'target_id',
         'chapter',
         'activity',
@@ -35,6 +36,7 @@ class Journal extends Model implements HasMedia, Eventable
 
     protected $casts = [
         'date' => 'date',
+        'target_id' => 'array',
     ];
 
     protected static function booted(): void
@@ -75,9 +77,14 @@ class Journal extends Model implements HasMedia, Eventable
         return $this->hasMany(Transcript::class);
     }
 
-    public function target()
+    public function targets()
     {
-        return $this->belongsTo(Target::class);
+        return $this->belongsTo(Target::class, 'target_id', 'id');
+    }
+
+    public function mainTarget()
+    {
+        return $this->belongsTo(MainTarget::class);
     }
 
     public function scopeMyJournals($query)

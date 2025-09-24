@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Journals\Widgets;
 
 use App\Models\AcademicYear;
 use App\Models\Journal;
+use App\Models\MainTarget;
 use App\Models\Subject;
+use App\Models\Target;
 use Filament\Actions\Action;
 use Guava\Calendar\Filament\Actions\CreateAction;
 use Guava\Calendar\Filament\Actions\EditAction;
@@ -249,11 +251,77 @@ class JournalWidget extends CalendarWidget
                 ->searchable()
                 ->preload()
                 ->required(),
-                
-            TextInput::make('target')
-                ->label('Target Pembelajaran')
-                ->required()
-                ->columnSpanFull(),
+
+                Select::make('main_target_id')
+                ->options(
+                    function ($get){
+                        $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
+                        ->get();
+
+                        if($mainTargets->isEmpty()){
+                            return [];
+                        }
+
+                        return $mainTargets->map(
+                            fn ($mainTarget) => [
+                                'label' => $mainTarget->main_target,
+                                'value' => $mainTarget->id
+                            ]
+                        )->pluck('label', 'value');
+                    }
+                )
+                ->required(),
+            Select::make('target_id')
+                ->options(
+                    function ($get){
+                        $targets = Target::myTargetsInSubject($get('subject_id'))
+                        ->where('main_target_id', $get('main_target_id'))
+                        ->get();
+
+                        if($targets->isEmpty()){
+                            return [];
+                        }
+
+                        return $targets->map(
+                            fn ($target) => [
+                                'label' => $target->target,
+                                'value' => $target->id
+                            ]
+                        )->pluck('label', 'value');
+                    }
+                )
+                ->multiple()
+                ->createOptionForm([
+                    // Hidden::make('subject_id')
+                    //     ->reactive()
+                    //     ->default(fn ($get) => $get('subject_id')),
+                    // Hidden::make('grade_id')
+                    //     ->reactive()
+                    //     ->default(fn ($get) => $get('grade_id')),
+                    // Hidden::make('academic_year_id')
+                    //     ->reactive()
+                    //     ->default(fn ($get) => $get('academic_year_id')),
+                    // Hidden::make('user_id')
+                    //     ->reactive()
+                    //     ->default(fn ($get) => $get('user_id')),
+                    TextInput::make('target')
+                        ->required(),
+                ])
+                ->createOptionUsing(function($data, $get){
+                    // dd($get('subject_id'));
+                    Target::create([
+                        'subject_id' => $get('subject_id'),
+                        'grade_id' => $get('grade_id'),
+                        'academic_year_id' => $get('academic_year_id'),
+                        'user_id' => $get('user_id'),
+                        'target' => $data['target'],
+                        'main_target_id' => $get('main_target_id'),
+                    ]);
+                })
+                ->reactive()
+                ->searchable()
+                ->preload()
+                ->required(),
                 
             TextInput::make('chapter')
                 ->label('Bab/Materi')

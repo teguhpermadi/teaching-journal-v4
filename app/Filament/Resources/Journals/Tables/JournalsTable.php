@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Journals\Tables;
 
+use App\Models\Target;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -23,14 +24,24 @@ class JournalsTable
                     ->label('Date')
                     ->date('d, M Y')
                     ->sortable(),
+                TextColumn::make('mainTarget.main_target')
+                    ->label('Main Target')
+                    ->wrap()
+                    ->searchable(),
                 TextColumn::make('chapter')
                     ->label('Chapter')
                     ->wrap()
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('target')
+                TextColumn::make('target_id')
                     ->label('Target')
+                    ->getStateUsing(function ($record) {
+                        return collect($record->target_id)->map(function ($target_id) {
+                            return Target::find($target_id)->target;
+                        });
+                    })
                     ->wrap()
+                    ->bulleted()
                     ->searchable(),
                 TextColumn::make('attendance_count')
                     ->counts('attendance')

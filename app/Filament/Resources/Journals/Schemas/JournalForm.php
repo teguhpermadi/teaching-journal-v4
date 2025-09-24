@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Journals\Schemas;
 
 use App\Models\AcademicYear;
+use App\Models\MainTarget;
 use App\Models\Subject;
 use App\Models\Target;
 use Filament\Forms\Components\DatePicker;
@@ -48,10 +49,30 @@ class JournalForm
                     ->searchable()
                     ->preload()
                     ->required(),
+                Select::make('main_target_id')
+                    ->options(
+                        function ($get){
+                            $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
+                            ->get();
+
+                            if($mainTargets->isEmpty()){
+                                return [];
+                            }
+
+                            return $mainTargets->map(
+                                fn ($mainTarget) => [
+                                    'label' => $mainTarget->main_target,
+                                    'value' => $mainTarget->id
+                                ]
+                            )->pluck('label', 'value');
+                        }
+                    )
+                    ->required(),
                 Select::make('target_id')
                     ->options(
                         function ($get){
                             $targets = Target::myTargetsInSubject($get('subject_id'))
+                            ->where('main_target_id', $get('main_target_id'))
                             ->get();
 
                             if($targets->isEmpty()){
@@ -66,6 +87,7 @@ class JournalForm
                             )->pluck('label', 'value');
                         }
                     )
+                    ->multiple()
                     ->createOptionForm([
                         // Hidden::make('subject_id')
                         //     ->reactive()
@@ -90,6 +112,7 @@ class JournalForm
                             'academic_year_id' => $get('academic_year_id'),
                             'user_id' => $get('user_id'),
                             'target' => $data['target'],
+                            'main_target_id' => $get('main_target_id'),
                         ]);
                     })
                     ->reactive()

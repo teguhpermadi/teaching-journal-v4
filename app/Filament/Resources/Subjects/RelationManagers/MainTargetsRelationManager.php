@@ -2,9 +2,7 @@
 
 namespace App\Filament\Resources\Subjects\RelationManagers;
 
-use App\Models\AcademicYear;
 use App\Models\MainTarget;
-use App\Models\Target;
 use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -14,7 +12,6 @@ use Filament\Actions\DissociateAction;
 use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -23,30 +20,24 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
-class TargetsRelationManager extends RelationManager
+class MainTargetsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'targets';
+    protected static string $relationship = 'mainTargets';
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Hidden::make('academic_year_id')
-                    ->default(AcademicYear::active()->first()->id),
                 Hidden::make('user_id')
                     ->default(Auth::id()),
                 Hidden::make('subject_id')
                     ->default($this->getOwnerRecord()->id),
                 Hidden::make('grade_id')
                     ->default($this->getOwnerRecord()->grade_id),
-                Select::make('main_target_id')
-                    ->options(function () {
-                        return MainTarget::myMainTargetsInSubject($this->getOwnerRecord()->id)->pluck('main_target', 'id');
-                    })
-                    ->required(),
-                Textarea::make('target')
+                Hidden::make('academic_year_id')
+                    ->default($this->getOwnerRecord()->academic_year_id),
+                Textarea::make('main_target')
                     ->required()
-                    ->label('Target')
                     ->columnSpanFull()
                     ->rows(3),
             ]);
@@ -55,13 +46,10 @@ class TargetsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('target')
+            ->recordTitleAttribute('main_target')
             ->columns([
-                TextColumn::make('mainTarget.main_target')
-                    ->sortable()
-                    ->searchable(),
-                TextColumn::make('target')
-                    ->sortable()
+                TextColumn::make('main_target')
+                    ->wrap()
                     ->searchable(),
             ])
             ->filters([
@@ -70,19 +58,20 @@ class TargetsRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->action(function($data){
-                        $lines = preg_split('/\r\n|\r|\n/', $data['target']);
+                        // Pecah string berdasarkan baris baru
+                        // '\r\n' untuk Windows, '\n' untuk Unix/Linux/macOS
+                        $lines = preg_split('/\r\n|\r|\n/', $data['main_target']);
                         foreach ($lines as $line) {
                             $trimmedLine = trim($line);
                     
                             // Pastikan baris tidak kosong sebelum menyimpan
                             if (!empty($trimmedLine)) {
-                                Target::create([
-                                    'target' => $trimmedLine,
+                                MainTarget::create([
+                                    'main_target' => $trimmedLine,
                                     'user_id' => Auth::id(),
                                     'subject_id' => $this->getOwnerRecord()->id,
                                     'grade_id' => $this->getOwnerRecord()->grade_id,
                                     'academic_year_id' => $this->getOwnerRecord()->academic_year_id,
-                                    'main_target_id' => $data['main_target_id'],
                                 ]);
                             }
                         }

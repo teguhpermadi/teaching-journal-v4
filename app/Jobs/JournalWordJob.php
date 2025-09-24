@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Attendance;
 use App\Models\Journal;
+use App\Models\Target;
 use App\Notifications\JournalFileFinished;
 use Filament\Notifications\Notification;
 use Filament\Actions\Action;
@@ -56,20 +57,29 @@ class JournalWordJob implements ShouldQueue
         // Check if journals exist
         if ($journals->isEmpty()) {
             Log::error('No journals found for criteria', $this->journals);
-            
+
             // Kirim notifikasi ke user bahwa tidak ada journal ditemukan
             if ($this->userId) {
                 $recipient = \App\Models\User::find($this->userId);
-                
+
                 if ($recipient) {
                     $monthName = [
-                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                        1 => 'Januari',
+                        2 => 'Februari',
+                        3 => 'Maret',
+                        4 => 'April',
+                        5 => 'Mei',
+                        6 => 'Juni',
+                        7 => 'Juli',
+                        8 => 'Agustus',
+                        9 => 'September',
+                        10 => 'Oktober',
+                        11 => 'November',
+                        12 => 'Desember'
                     ];
-                    
+
                     $month = $monthName[$this->journals['month']] ?? 'Bulan tidak diketahui';
-                    
+
                     // Kirim notifikasi Filament
                     Notification::make()
                         ->title('Tidak Ada Jurnal Ditemukan')
@@ -77,7 +87,7 @@ class JournalWordJob implements ShouldQueue
                         ->icon('heroicon-o-exclamation-triangle')
                         ->warning()
                         ->sendToDatabase($recipient);
-                    
+
                     Log::info('Notifikasi "tidak ada jurnal" berhasil dikirim ke user ID: ' . $this->userId);
                 } else {
                     Log::error('User tidak ditemukan dengan ID: ' . $this->userId);
@@ -85,7 +95,7 @@ class JournalWordJob implements ShouldQueue
             } else {
                 Log::error('User ID tidak tersedia untuk mengirim notifikasi');
             }
-            
+
             return;
         }
 
@@ -119,7 +129,7 @@ class JournalWordJob implements ShouldQueue
             ]
         );
         $section->addText(
-            'Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A') ,
+            'Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A'),
             [
                 'bold' => true,
                 'size' => 14,
@@ -142,8 +152,14 @@ class JournalWordJob implements ShouldQueue
                     'size' => 14,
                 ]
             );
+            $section->addText('Main Target:', ['bold' => true]);
+            $section->addText($journal->mainTarget->main_target);
             $section->addText('Target:', ['bold' => true]);
-            $section->addText($journal->target);
+            // add list target
+            foreach ($journal->target_id as $target_id) {
+                $section->addListItem(Target::find($target_id)->target);
+            }
+
             $section->addText('Chapter:', ['bold' => true]);
             $section->addText($journal->chapter);
             $section->addText('Aktivitas:', ['bold' => true]);
@@ -162,9 +178,9 @@ class JournalWordJob implements ShouldQueue
             $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
             $images = $journal->getMedia('activity_photos');
-            
+
             // if image is empty, add text 'Jurnal ini tidak memiliki dokumentasi kegiatan'
-            if($images->isEmpty()) {
+            if ($images->isEmpty()) {
                 $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
             } else {
                 foreach ($images as $image) {
@@ -197,23 +213,40 @@ class JournalWordJob implements ShouldQueue
             }
 
             // add signature from teacher
-            $section->addText('Mengetahui,');
-            $section->addText('Guru Pengajar');
-            $section->addTextBreak(5);
-            $section->addText('Nama: ' . $journal->user->name, ['bold' => true]);
-            $section->addText('NIP: ' . ( $journal->user->nip ?? '-'), ['bold' => true]);
+            // add table with 1 row and 2 column for signatures
+            $tableStyle = array(
+                'borderSize' => 0,
+                'borderColor' => 'FFFFFF',
+                'cellMargin' => 80
+            );
 
-            // add signature from headmaster
-            $section->addTextBreak(1);
-            $section->addText('Mengetahui,');
-            $section->addText('Kepala Sekolah');
-            $section->addTextBreak(5);
-            $section->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true]);
-            $section->addText('NIP: ' . ( $journal->academicYear->headmaster_nip ?? '-'), ['bold' => true]);
+            $cellStyle = array(
+                'borderSize' => 0,
+                'borderColor' => 'FFFFFF'
+            );
+
+            $table = $section->addTable($tableStyle);
+            $table->addRow();
+
+            // Kolom pertama - Tanda tangan Kepala Sekolah
+            $cell1 = $table->addCell(4500, $cellStyle);
+            $cell1->addText('Mengetahui,', ['alignment' => 'center']);
+            $cell1->addText('Kepala Sekolah', ['alignment' => 'center']);
+            $cell1->addTextBreak(4);
+            $cell1->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
+            $cell1->addText('NIP: ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
+
+            // Kolom kedua - Tanda tangan Guru
+            $cell2 = $table->addCell(4500, $cellStyle);
+            $cell2->addText('Mengetahui,', ['alignment' => 'center']);
+            $cell2->addText('Guru Pengajar', ['alignment' => 'center']);
+            $cell2->addTextBreak(4);
+            $cell2->addText('Nama: ' . $journal->user->name, ['bold' => true, 'alignment' => 'center']);
+            $cell2->addText('NIP: ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
             // add note
             $section->addTextBreak(2);
-            $section->addText('Catatan Kepala Sekolah: ' );
+            $section->addText('Catatan Kepala Sekolah: ');
             $section->addText('...............................................');
 
             // add page break
@@ -240,52 +273,75 @@ class JournalWordJob implements ShouldQueue
         $attendance = Attendance::query()
             ->whereIn('journal_id', $journals->pluck('id'))
             ->get();
-        
+
         $attendanceByStudent = $attendance->groupBy('student_id');
         $studentNumber = 1;
-        
-        $attendanceByStudent->each(function ($studentAttendance) use ($section, &$studentNumber) {
-            $studentName = $studentAttendance->first()->student->name;
-            
-            // Tambahkan nama siswa dengan nomor urut
-            $section->addListItem($studentName, 0, ['bold' => true, 'numbering' => 'multilevel']);
-            
-            // Group attendance by status untuk siswa ini
-            $attendanceByStatus = $studentAttendance->groupBy('status');
-            
-            // Tampilkan setiap status dengan jumlahnya dan tanggalnya
-            foreach (\App\StatusAttendanceEnum::cases() as $status) {
-                $statusAttendance = $attendanceByStatus->get($status->value);
-                $count = $statusAttendance?->count() ?? 0;
-                
-                if ($count > 0) {
-                    $section->addListItem($status->getLabel() . ': ' . $count . ' kali', 1, ['numbering' => 'multilevel']);
-                    
-                    // Tampilkan tanggal-tanggal untuk status ini
-                    $statusAttendance->each(function ($attendance) use ($section) {
-                        $date = $attendance->date->format('d/m/Y');
-                        $section->addListItem($date, 2, ['numbering' => 'multilevel']);
-                    });
+
+        // jika attendanceByStudent kosong, tambahkan text 'Semua siswa hadir'
+        if ($attendanceByStudent->isEmpty()) {
+            $section->addText('Pada bulan ' . $journal->date->format('F Y') . ', semua siswa hadir');
+
+        } else {
+            $section->addText('Pada bulan ' . $journal->date->format('F Y') . ', rekap ketidakhadiran:');
+            $attendanceByStudent->each(function ($studentAttendance) use ($section, &$studentNumber) {
+                $studentName = $studentAttendance->first()->student->name;
+
+                // Tambahkan nama siswa dengan nomor urut
+                $section->addListItem($studentName, 0, ['bold' => true, 'numbering' => 'multilevel']);
+
+                // Group attendance by status untuk siswa ini
+                $attendanceByStatus = $studentAttendance->groupBy('status');
+
+                // Tampilkan setiap status dengan jumlahnya dan tanggalnya
+                foreach (\App\StatusAttendanceEnum::cases() as $status) {
+                    $statusAttendance = $attendanceByStatus->get($status->value);
+                    $count = $statusAttendance?->count() ?? 0;
+
+                    if ($count > 0) {
+                        $section->addListItem($status->getLabel() . ': ' . $count . ' kali', 1, ['numbering' => 'multilevel']);
+
+                        // Tampilkan tanggal-tanggal untuk status ini
+                        $statusAttendance->each(function ($attendance) use ($section) {
+                            $date = $attendance->date->format('d/m/Y');
+                            $section->addListItem($date, 2, ['numbering' => 'multilevel']);
+                        });
+                    }
                 }
-            }
-            
-            $studentNumber++;
-        });
 
-        // add signature from teacher
-        $section->addText('Mengetahui,');
-        $section->addText('Guru Pengajar');
-        $section->addTextBreak(5);
-        $section->addText('Nama: ' . $journal->user->name, ['bold' => true]);
-        $section->addText('NIP: ' . ( $journal->user->nip ?? '-'), ['bold' => true]);
+                $studentNumber++;
+            });
+        }
 
-        // add signature from headmaster
-        $section->addTextBreak(1);
-        $section->addText('Mengetahui,');
-        $section->addText('Kepala Sekolah');
-        $section->addTextBreak(5);
-        $section->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true]);
-        $section->addText('NIP: ' . ( $journal->academicYear->headmaster_nip ?? '-'), ['bold' => true]);
+        // add table with 1 row and 2 column for signatures
+        $tableStyle = array(
+            'borderSize' => 0,
+            'borderColor' => 'FFFFFF',
+            'cellMargin' => 80
+        );
+
+        $cellStyle = array(
+            'borderSize' => 0,
+            'borderColor' => 'FFFFFF'
+        );
+
+        $table = $section->addTable($tableStyle);
+        $table->addRow();
+
+        // Kolom pertama - Tanda tangan Kepala Sekolah
+        $cell1 = $table->addCell(4500, $cellStyle);
+        $cell1->addText('Mengetahui,', ['alignment' => 'center']);
+        $cell1->addText('Kepala Sekolah', ['alignment' => 'center']);
+        $cell1->addTextBreak(4);
+        $cell1->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
+        $cell1->addText('NIP: ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
+
+        // Kolom kedua - Tanda tangan Guru
+        $cell2 = $table->addCell(4500, $cellStyle);
+        $cell2->addText('Mengetahui,', ['alignment' => 'center']);
+        $cell2->addText('Guru Pengajar', ['alignment' => 'center']);
+        $cell2->addTextBreak(4);
+        $cell2->addText('Nama: ' . $journal->user->name, ['bold' => true, 'alignment' => 'center']);
+        $cell2->addText('NIP: ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
         try {
             // Pastikan direktori journals ada
@@ -307,11 +363,11 @@ class JournalWordJob implements ShouldQueue
         } catch (\Throwable $th) {
             Log::error("Error saat membuat Word document: " . $th->getMessage());
             Log::error("Stack trace: " . $th->getTraceAsString());
-            
+
             // Kirim notifikasi ke user bahwa terjadi error
             if ($this->userId) {
                 $recipient = \App\Models\User::find($this->userId);
-                
+
                 if ($recipient) {
                     Notification::make()
                         ->title('Gagal Membuat File Jurnal')
@@ -319,11 +375,11 @@ class JournalWordJob implements ShouldQueue
                         ->icon('heroicon-o-x-circle')
                         ->danger()
                         ->sendToDatabase($recipient);
-                    
+
                     Log::info('Notifikasi error berhasil dikirim ke user ID: ' . $this->userId);
                 }
             }
-            
+
             throw $th; // Re-throw untuk memastikan job gagal jika ada error
         }
 
