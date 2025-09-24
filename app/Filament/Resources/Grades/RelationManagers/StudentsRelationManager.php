@@ -62,7 +62,7 @@ class StudentsRelationManager extends RelationManager
                 // CreateAction::make(),
                 AttachAction::make()
                     ->preloadRecordSelect()
-                    ->recordSelectOptionsQuery(fn (Builder $query) => $query->studentWithoutGradeActive())
+                    ->recordSelectOptionsQuery(fn (Builder $query) => $query->studentWithoutGradeActive()->where('active', true))
                     ->multiple(),
             ])
             ->recordActions([
