@@ -6,8 +6,8 @@ use Filament\Support\Contracts\HasLabel;
 
 enum GenderEnum: string implements HasLabel
 {
-    case Male = 'male';
-    case Female = 'female';
+    case Male = 'laki-laki';
+    case Female = 'perempuan';
 
     public function getLabel(): ?string
     {
