@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
 
-#[ScopedBy(StudentActiveScope::class)]
+// #[ScopedBy(StudentActiveScope::class)]
 class Student extends Model
 {
     /** @use HasFactory<\Database\Factories\StudentFactory> */

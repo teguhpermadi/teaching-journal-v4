@@ -71,7 +71,18 @@ class ShieldSeeder extends Seeder
                     'ForceDeleteAny:Subject',
                     'RestoreAny:Subject',
                     'Replicate:Subject',
-                    'Reorder:Subject'
+                    'Reorder:Subject',
+                    'ViewAny:Student',
+                    'View:Student',
+                    'Create:Student',
+                    'Update:Student',
+                    'Delete:Student',
+                    'Restore:Student',
+                    'ForceDelete:Student',
+                    'ForceDeleteAny:Student',
+                    'RestoreAny:Student',
+                    'Replicate:Student',
+                    'Reorder:Student',
                 ]
             ],
             [
