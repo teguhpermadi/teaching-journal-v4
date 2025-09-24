@@ -75,4 +75,9 @@ class Subject extends Model
     {
         return $this->hasMany(Target::class);
     }
+
+    public function mainTargets()
+    {
+        return $this->hasMany(MainTarget::class);
+    }
 }

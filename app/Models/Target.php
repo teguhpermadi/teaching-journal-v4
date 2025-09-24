@@ -18,6 +18,7 @@ class Target extends Model
         'subject_id',
         'grade_id',
         'academic_year_id',
+        'main_target_id',
         'target',
     ];
 
@@ -39,6 +40,11 @@ class Target extends Model
     public function academicYear()
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function mainTarget()
+    {
+        return $this->belongsTo(MainTarget::class);
     }
 
     public function scopeMyTargetsInSubject($query, $subject)
