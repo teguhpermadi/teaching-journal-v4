@@ -11,9 +11,11 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Laravolt\Avatar\Facade as Avatar;
+use Illuminate\Database\Eloquent\Builder;
 
 class StudentsTable
 {
@@ -57,6 +59,11 @@ class StudentsTable
             ->defaultSort('name', 'asc')
             ->filters([
                 TrashedFilter::make(),
+                Filter::make('active')
+                    ->query(function (Builder $query) {
+                        $query->where('active', true);
+                    })
+                    ->label('Active'),
             ])
             ->recordActions([
                 EditAction::make(),
