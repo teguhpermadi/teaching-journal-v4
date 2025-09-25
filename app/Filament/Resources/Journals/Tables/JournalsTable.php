@@ -26,6 +26,7 @@ class JournalsTable
                     ->sortable(),
                 TextColumn::make('mainTarget.main_target')
                     ->label('Main Target')
+                    ->limit(100)
                     ->wrap()
                     ->searchable(),
                 TextColumn::make('chapter')
