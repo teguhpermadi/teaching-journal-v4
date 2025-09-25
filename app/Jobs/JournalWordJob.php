@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Attendance;
 use App\Models\Journal;
 use App\Models\Target;
+use App\Models\User;
 use App\Notifications\JournalFileFinished;
 use Filament\Notifications\Notification;
 use Filament\Actions\Action;
@@ -14,29 +15,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\Shared\Html;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class JournalWordJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $journals;
-    public $userId;
-    /**
-     * Create a new job instance.
-     */
-    public function __construct($journals, $userId = null)
+    public array $journals;
+    public ?string $userId;
+
+    public function __construct(array $journals, ?string $userId = null)
     {
         $this->journals = $journals;
-        $this->userId = $userId ?? ($journals['user_id'] ?? null);
+        $this->userId = $userId;
     }
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
         Log::info('JournalWordJob started', [
@@ -44,394 +40,242 @@ class JournalWordJob implements ShouldQueue
             'user_id' => $this->userId
         ]);
 
-        // 1. Ambil data dari model Journal
         $journals = Journal::query()
             ->where('user_id', $this->journals['user_id'])
             ->where('academic_year_id', $this->journals['academic_year_id'])
             ->where('grade_id', $this->journals['grade_id'])
             ->where('subject_id', $this->journals['subject_id'])
             ->whereMonth('date', $this->journals['month'])
+            ->with(['subject', 'academicYear', 'user', 'targets', 'attendance.student', 'media'])
             ->orderBy('date', 'asc')
             ->get();
 
-        // Check if journals exist
         if ($journals->isEmpty()) {
-            Log::error('No journals found for criteria', $this->journals);
-
-            // Kirim notifikasi ke user bahwa tidak ada journal ditemukan
-            if ($this->userId) {
-                $recipient = \App\Models\User::find($this->userId);
-
-                if ($recipient) {
-                    $monthName = [
-                        1 => 'Januari',
-                        2 => 'Februari',
-                        3 => 'Maret',
-                        4 => 'April',
-                        5 => 'Mei',
-                        6 => 'Juni',
-                        7 => 'Juli',
-                        8 => 'Agustus',
-                        9 => 'September',
-                        10 => 'Oktober',
-                        11 => 'November',
-                        12 => 'Desember'
-                    ];
-
-                    $month = $monthName[$this->journals['month']] ?? 'Bulan tidak diketahui';
-
-                    // Kirim notifikasi Filament
-                    Notification::make()
-                        ->title('Tidak Ada Jurnal Ditemukan')
-                        ->body("Tidak ada jurnal yang ditemukan untuk bulan {$month}. Pastikan Anda sudah membuat jurnal untuk periode tersebut.")
-                        ->icon('heroicon-o-exclamation-triangle')
-                        ->warning()
-                        ->sendToDatabase($recipient);
-
-                    Log::info('Notifikasi "tidak ada jurnal" berhasil dikirim ke user ID: ' . $this->userId);
-                } else {
-                    Log::error('User tidak ditemukan dengan ID: ' . $this->userId);
-                }
-            } else {
-                Log::error('User ID tidak tersedia untuk mengirim notifikasi');
-            }
-
+            $this->sendNoJournalNotification();
             return;
         }
 
-        Log::info('Found journals', ['count' => $journals->count()]);
-
-        // 2. Generate Word
         $phpWord = new PhpWord();
         $section = $phpWord->addSection();
-        $section->addText(
-            'Laporan Jurnal Mengajar',
-            [
-                'alignment' => 'center',
-                'size' => 24,
-                'bold' => true,
-            ]
-        );
-
         $firstJournal = $journals->first();
-        $section->addText(
-            'Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A'),
-            [
-                'bold' => true,
-                'size' => 14,
-            ]
-        );
-        $section->addText(
-            'Tahun Ajaran: ' . ($firstJournal->academicYear->year ?? 'N/A'),
-            [
-                'bold' => true,
-                'size' => 14,
-            ]
-        );
-        $section->addText(
-            'Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A'),
-            [
-                'bold' => true,
-                'size' => 14,
-            ]
-        );
-        $section->addText(
-            'Periode: ' . $journals->last()->date->format('d F Y') . ' - ' . $journals->first()->date->format('d F Y'),
-            [
-                'bold' => true,
-                'size' => 14,
-            ]
-        );
+        $lastJournal = $journals->last();
+
+        $this->addHeaderToSection($section, $firstJournal, $lastJournal);
 
         foreach ($journals as $journal) {
-            $section->addText('--------------------------------****--------------------------------');
-            $section->addText(
-                $journal->date->format('d F Y'),
-                [
-                    'alignment' => 'center',
-                    'size' => 14,
-                ]
-            );
-            $section->addText('Main Target:', ['bold' => true]);
-            $section->addText($journal->mainTarget->main_target);
-            $section->addText('Target:', ['bold' => true]);
-            // add list target
-            foreach ($journal->target_id as $target_id) {
-                $section->addListItem(Target::find($target_id)->target);
-            }
-
-            $section->addText('Chapter:', ['bold' => true]);
-            $section->addText($journal->chapter);
-            $section->addText('Aktivitas:', ['bold' => true]);
-            // $section->addText($journal->activity);
-            Html::addHtml($section, $journal->activity);
-            $section->addText('Catatan:', ['bold' => true]);
-            $section->addText($journal->notes);
-
-            // attendance
-            $section->addText('Ketidakhadiran:', ['bold' => true]);
-            $attendance = $journal->attendance;
-            foreach ($attendance as $item) {
-                $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
-            }
-
-            $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
-
-            $images = $journal->getMedia('activity_photos');
-
-            // if image is empty, add text 'Jurnal ini tidak memiliki dokumentasi kegiatan'
-            if ($images->isEmpty()) {
-                $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
-            } else {
-                foreach ($images as $image) {
-                    try {
-                        // Dapatkan path file yang sebenarnya dari media library
-                        $imagePath = $image->getPath();
-
-                        // Pastikan file gambar ada dan dapat dibaca
-                        if (file_exists($imagePath) && is_readable($imagePath)) {
-                            // Validasi bahwa ini adalah file gambar
-                            $imageInfo = getimagesize($imagePath);
-                            if ($imageInfo !== false) {
-                                $section->addImage($imagePath, [
-                                    'width'         => 200,
-                                    'wrappingStyle' => 'inline'
-                                ]);
-                                $section->addTextBreak(1); // Tambahkan spasi antar gambar
-                            } else {
-                                Log::warning("File bukan gambar yang valid: " . $imagePath);
-                            }
-                        } else {
-                            Log::warning("File gambar tidak ditemukan atau tidak dapat dibaca: " . $imagePath);
-                        }
-                    } catch (\Exception $e) {
-                        Log::error("Error saat memproses gambar: " . $e->getMessage());
-                        // Lanjutkan ke gambar berikutnya tanpa menghentikan proses
-                        continue;
-                    }
-                }
-            }
-
-            // add signature from teacher
-            // add table with 1 row and 2 column for signatures
-            $tableStyle = array(
-                'borderSize' => 0,
-                'borderColor' => 'FFFFFF',
-                'cellMargin' => 80
-            );
-
-            $cellStyle = array(
-                'borderSize' => 0,
-                'borderColor' => 'FFFFFF'
-            );
-
-            $table = $section->addTable($tableStyle);
-            $table->addRow();
-
-            // Kolom pertama - Tanda tangan Kepala Sekolah
-            $cell1 = $table->addCell(4500, $cellStyle);
-            $cell1->addText('Mengetahui,', ['alignment' => 'center']);
-            $cell1->addText('Kepala Sekolah', ['alignment' => 'center']);
-            $cell1->addTextBreak(4);
-            $cell1->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
-            $cell1->addText('NIP: ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
-
-            // Kolom kedua - Tanda tangan Guru
-            $cell2 = $table->addCell(4500, $cellStyle);
-            $cell2->addText('Mengetahui,', ['alignment' => 'center']);
-            $cell2->addText('Guru Pengajar', ['alignment' => 'center']);
-            $cell2->addTextBreak(4);
-            $cell2->addText('Nama: ' . $journal->user->name, ['bold' => true, 'alignment' => 'center']);
-            $cell2->addText('NIP: ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
-
-            // add note
-            $section->addTextBreak(2);
-            $section->addText('Catatan Kepala Sekolah: ');
-            $section->addText('...............................................');
-
-            // add page break
-            $section->addPageBreak();
+            $this->addJournalContentToSection($section, $journal);
         }
 
-        // Add Page Break
+        $this->addAttendanceSummaryToSection($section, $journals);
+
+        $this->addSignaturesToSection($section, $firstJournal);
+
+        try {
+            $this->saveWordDocument($phpWord, $firstJournal->user->id);
+            Log::info("Word document successfully created.");
+            $this->sendSuccessNotification();
+        } catch (\Throwable $th) {
+            Log::error("Error creating Word document: " . $th->getMessage());
+            $this->sendErrorNotification();
+            throw $th;
+        }
+    }
+
+    protected function addHeaderToSection($section, $firstJournal, $lastJournal)
+    {
+        $section->addText('Laporan Jurnal Mengajar', ['alignment' => 'center', 'size' => 24, 'bold' => true]);
+        $section->addText('Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A'), ['bold' => true, 'size' => 14]);
+        $section->addText('Tahun Ajaran: ' . ($firstJournal->academicYear->year ?? 'N/A'), ['bold' => true, 'size' => 14]);
+        $section->addText('Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A'), ['bold' => true, 'size' => 14]);
+        $section->addText('Periode: ' . $lastJournal->date->format('d F Y') . ' - ' . $firstJournal->date->format('d F Y'), ['bold' => true, 'size' => 14]);
+    }
+
+    protected function addJournalContentToSection($section, $journal)
+    {
+        $section->addTextBreak(1);
+        $section->addText('--------------------------------****--------------------------------');
+        $section->addText($journal->date->format('d F Y'), ['alignment' => 'center', 'size' => 14]);
+        $section->addText('Main Target:', ['bold' => true]);
+        $section->addText($journal->mainTarget->main_target);
+        $section->addText('Target:', ['bold' => true]);
+        
+        $journal->targets->each(function ($target) use ($section) {
+            $section->addListItem($target->target);
+        });
+
+        $section->addText('Chapter:', ['bold' => true]);
+        $section->addText($journal->chapter);
+        $section->addText('Aktivitas:', ['bold' => true]);
+        Html::addHtml($section, $journal->activity);
+        $section->addText('Catatan:', ['bold' => true]);
+        $section->addText($journal->notes);
+
+        $this->addAttendanceToList($section, $journal);
+        $this->addActivityPhotos($section, $journal);
+        
         $section->addPageBreak();
+    }
 
-        $phpWord->addNumberingStyle(
-            'multilevel',
-            array(
-                'type' => 'multilevel',
-                'levels' => array(
-                    array('format' => 'decimal', 'text' => '%1.', 'left' => 360, 'hanging' => 360, 'tabPos' => 360),
-                    array('format' => 'lowerLetter', 'text' => '%2.', 'left' => 720, 'hanging' => 360, 'tabPos' => 720),
-                    array('format' => 'bullet', 'text' => '•', 'left' => 1080, 'hanging' => 360, 'tabPos' => 1080),
-                )
-            )
-        );
+    protected function addAttendanceToList($section, $journal)
+    {
+        $section->addText('Ketidakhadiran:', ['bold' => true]);
+        $journal->attendance->each(function ($item) use ($section) {
+            $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
+        });
+    }
 
-        // rekap attendance
+    protected function addActivityPhotos($section, $journal)
+    {
+        $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
+        $images = $journal->getMedia('activity_photos');
+
+        if ($images->isEmpty()) {
+            $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
+        } else {
+            foreach ($images as $image) {
+                try {
+                    $imagePath = $image->getPath();
+                    if (file_exists($imagePath) && is_readable($imagePath) && getimagesize($imagePath) !== false) {
+                        $section->addImage($imagePath, [
+                            'width' => 200,
+                            'wrappingStyle' => 'inline'
+                        ]);
+                        $section->addTextBreak(1);
+                    } else {
+                        Log::warning("File gambar tidak valid, tidak ditemukan, atau tidak dapat dibaca: " . $imagePath);
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Error saat memproses gambar: " . $e->getMessage());
+                    continue;
+                }
+            }
+        }
+    }
+
+    protected function addAttendanceSummaryToSection($section, $journals)
+    {
+        $section->addTextBreak(1);
         $section->addText('Rekap Ketidakhadiran:', ['bold' => true, 'size' => 14]);
+
         $attendance = Attendance::query()
             ->whereIn('journal_id', $journals->pluck('id'))
             ->get();
 
         $attendanceByStudent = $attendance->groupBy('student_id');
-        $studentNumber = 1;
 
-        // jika attendanceByStudent kosong, tambahkan text 'Semua siswa hadir'
         if ($attendanceByStudent->isEmpty()) {
-            $section->addText('Pada bulan ' . $journal->date->format('F Y') . ', semua siswa hadir');
-
+            $section->addText('Semua siswa hadir.');
         } else {
-            $section->addText('Pada bulan ' . $journal->date->format('F Y') . ', rekap ketidakhadiran:');
-            $attendanceByStudent->each(function ($studentAttendance) use ($section, &$studentNumber) {
+            $attendanceByStudent->each(function ($studentAttendance) use ($section) {
                 $studentName = $studentAttendance->first()->student->name;
-
-                // Tambahkan nama siswa dengan nomor urut
-                $section->addListItem($studentName, 0, ['bold' => true, 'numbering' => 'multilevel']);
-
-                // Group attendance by status untuk siswa ini
+                $section->addListItem($studentName, 0, ['bold' => true]);
+                
                 $attendanceByStatus = $studentAttendance->groupBy('status');
-
-                // Tampilkan setiap status dengan jumlahnya dan tanggalnya
                 foreach (\App\StatusAttendanceEnum::cases() as $status) {
                     $statusAttendance = $attendanceByStatus->get($status->value);
                     $count = $statusAttendance?->count() ?? 0;
-
                     if ($count > 0) {
-                        $section->addListItem($status->getLabel() . ': ' . $count . ' kali', 1, ['numbering' => 'multilevel']);
-
-                        // Tampilkan tanggal-tanggal untuk status ini
+                        $section->addListItem($status->getLabel() . ': ' . $count . ' kali', 1);
                         $statusAttendance->each(function ($attendance) use ($section) {
                             $date = $attendance->date->format('d/m/Y');
-                            $section->addListItem($date, 2, ['numbering' => 'multilevel']);
+                            $section->addListItem($date, 2);
                         });
                     }
                 }
-
-                $studentNumber++;
             });
         }
+    }
 
-        // add table with 1 row and 2 column for signatures
-        $tableStyle = array(
-            'borderSize' => 0,
-            'borderColor' => 'FFFFFF',
-            'cellMargin' => 80
-        );
-
-        $cellStyle = array(
-            'borderSize' => 0,
-            'borderColor' => 'FFFFFF'
-        );
-
-        $table = $section->addTable($tableStyle);
+    protected function addSignaturesToSection($section, $journal)
+    {
+        $section->addTextBreak(2);
+        $table = $section->addTable(['borderSize' => 0, 'borderColor' => 'FFFFFF', 'cellMargin' => 80]);
         $table->addRow();
-
-        // Kolom pertama - Tanda tangan Kepala Sekolah
-        $cell1 = $table->addCell(4500, $cellStyle);
+        
+        $cell1 = $table->addCell(4500);
         $cell1->addText('Mengetahui,', ['alignment' => 'center']);
         $cell1->addText('Kepala Sekolah', ['alignment' => 'center']);
         $cell1->addTextBreak(4);
         $cell1->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
         $cell1->addText('NIP: ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
-
-        // Kolom kedua - Tanda tangan Guru
-        $cell2 = $table->addCell(4500, $cellStyle);
+        
+        $cell2 = $table->addCell(4500);
         $cell2->addText('Mengetahui,', ['alignment' => 'center']);
         $cell2->addText('Guru Pengajar', ['alignment' => 'center']);
         $cell2->addTextBreak(4);
         $cell2->addText('Nama: ' . $journal->user->name, ['bold' => true, 'alignment' => 'center']);
         $cell2->addText('NIP: ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
+    }
 
-        try {
-            // Pastikan direktori journals ada
-            $journalsDir = storage_path('app/public/journals');
-            if (!file_exists($journalsDir)) {
-                mkdir($journalsDir, 0755, true);
-            }
-
-            $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-            $filename = 'jurnal_' . date('Y-m-d') . '_' . \Ramsey\Uuid\Uuid::uuid4()->toString() . '.docx';
-            $fullpath = $journalsDir . '/' . $filename;
-
-            $writer->save($fullpath);
-
-            Log::info("Word document berhasil dibuat: " . $fullpath);
-
-            // Simpan path file untuk referensi jika diperlukan
-            $this->journals['generated_file'] = $fullpath;
-        } catch (\Throwable $th) {
-            Log::error("Error saat membuat Word document: " . $th->getMessage());
-            Log::error("Stack trace: " . $th->getTraceAsString());
-
-            // Kirim notifikasi ke user bahwa terjadi error
-            if ($this->userId) {
-                $recipient = \App\Models\User::find($this->userId);
-
-                if ($recipient) {
-                    Notification::make()
-                        ->title('Gagal Membuat File Jurnal')
-                        ->body('Terjadi kesalahan saat membuat file Word jurnal. Silakan coba lagi atau hubungi administrator.')
-                        ->icon('heroicon-o-x-circle')
-                        ->danger()
-                        ->sendToDatabase($recipient);
-
-                    Log::info('Notifikasi error berhasil dikirim ke user ID: ' . $this->userId);
-                }
-            }
-
-            throw $th; // Re-throw untuk memastikan job gagal jika ada error
+    protected function saveWordDocument(PhpWord $phpWord, $userId)
+    {
+        $journalsDir = storage_path('app/public/journals');
+        if (!file_exists($journalsDir)) {
+            mkdir($journalsDir, 0755, true);
         }
 
+        $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        $filename = 'jurnal_' . date('Y-m-d') . '_' . \Ramsey\Uuid\Uuid::uuid4()->toString() . '.docx';
+        $fullpath = $journalsDir . '/' . $filename;
 
-        // 3. Kirim notifikasi ke user
-        Log::info('Attempting to send notifications', ['user_id' => $this->userId]);
+        $writer->save($fullpath);
+    }
 
+    protected function sendNoJournalNotification()
+    {
         if ($this->userId) {
-            $recipient = \App\Models\User::find($this->userId);
-
+            $recipient = User::find($this->userId);
             if ($recipient) {
-                Log::info('User found, sending notifications', [
-                    'user_id' => $recipient->id,
-                    'user_name' => $recipient->name,
-                    'file_path' => $fullpath
-                ]);
+                $monthName = [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                    7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ];
+                $month = $monthName[$this->journals['month']] ?? 'Bulan tidak diketahui';
 
-                try {
-                    // Kirim notifikasi custom
-                    $recipient->notify(new JournalFileFinished($this->journals, $fullpath));
-                    Log::info('Custom notification sent successfully');
-
-                    // Kirim notifikasi Filament
-                    Notification::make()
-                        ->title('File Jurnal Siap')
-                        ->body('File jurnal Word Anda sudah siap untuk didownload')
-                        ->icon('heroicon-o-document-text')
-                        ->success()
-                        ->actions([
-                            Action::make('download')
-                                ->label('Download')
-                                ->button()
-                                ->url(asset('storage/journals/' . basename($fullpath)))
-                                ->openUrlInNewTab(),
-                            Action::make('read')
-                                ->label('Mark as Read')
-                                ->markAsRead(),
-                        ])
-                        ->send()
-                        ->sendToDatabase($recipient);
-
-                    Log::info('Filament notification sent successfully');
-                    Log::info('All notifications sent successfully to user ID: ' . $this->userId);
-                } catch (\Exception $e) {
-                    Log::error('Error sending notifications: ' . $e->getMessage());
-                    Log::error('Stack trace: ' . $e->getTraceAsString());
-                }
-            } else {
-                Log::error('User tidak ditemukan dengan ID: ' . $this->userId);
+                Notification::make()
+                    ->title('Tidak Ada Jurnal Ditemukan')
+                    ->body("Tidak ada jurnal yang ditemukan untuk bulan {$month}. Pastikan Anda sudah membuat jurnal untuk periode tersebut.")
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->warning()
+                    ->sendToDatabase($recipient);
             }
-        } else {
-            Log::error('User ID tidak tersedia untuk mengirim notifikasi');
+        }
+    }
+
+    protected function sendSuccessNotification()
+    {
+        if ($this->userId) {
+            $recipient = User::find($this->userId);
+            if ($recipient) {
+                Notification::make()
+                    ->title('File Jurnal Siap')
+                    ->body('File jurnal Word Anda sudah siap untuk diunduh.')
+                    ->icon('heroicon-o-document-text')
+                    ->success()
+                    ->actions([
+                        Action::make('download')
+                            ->label('Download')
+                            ->button()
+                            ->url(asset('storage/journals/' . basename($this->journals['generated_file'])))
+                            ->openUrlInNewTab(),
+                    ])
+                    ->sendToDatabase($recipient);
+            }
+        }
+    }
+
+    protected function sendErrorNotification()
+    {
+        if ($this->userId) {
+            $recipient = User::find($this->userId);
+            if ($recipient) {
+                Notification::make()
+                    ->title('Gagal Membuat File Jurnal')
+                    ->body('Terjadi kesalahan saat membuat file Word jurnal. Silakan coba lagi atau hubungi administrator.')
+                    ->icon('heroicon-o-x-circle')
+                    ->danger()
+                    ->sendToDatabase($recipient);
+            }
         }
     }
 }
