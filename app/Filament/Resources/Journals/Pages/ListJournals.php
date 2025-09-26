@@ -82,8 +82,8 @@ class ListJournals extends ListRecords
                         ->required(),
                 ])
                 ->action(function (array $data) {
-                    // Dispatch job dengan user ID untuk notifikasi
-                    JournalWordJob::dispatch($data, Auth::id());
+                    // Redirect to download route for automatic Word download
+                    return redirect()->route('download-journal', $data);
                 }),
         ];
     }
