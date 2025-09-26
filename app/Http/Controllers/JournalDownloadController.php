@@ -229,7 +229,11 @@ class JournalDownloadController extends Controller
             return new StreamedResponse(function() use ($phpWord) {
                 $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
                 $writer->save('php://output');
-            }, 200);
+            }, 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'max-age=0',
+            ]);
 
         } catch (\Exception $e) {
             Log::error("Error generating journal download", [
