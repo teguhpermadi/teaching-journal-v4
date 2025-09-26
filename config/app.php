@@ -136,4 +136,18 @@ return [
 
     'use_alternative_download' => env('USE_ALTERNATIVE_DOWNLOAD', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Image Processing Limits
+    |--------------------------------------------------------------------------
+    |
+    | These options control the limits for image processing in Word documents.
+    | Adjust these values based on your server's memory capacity.
+    |
+    */
+
+    'image_max_width' => env('IMAGE_MAX_WIDTH', 6000),
+    'image_max_height' => env('IMAGE_MAX_HEIGHT', 6000),
+    'image_max_filesize_mb' => env('IMAGE_MAX_FILESIZE_MB', 5),
+
 ];

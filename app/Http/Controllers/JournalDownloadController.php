@@ -26,7 +26,12 @@ class JournalDownloadController extends Controller
                 'request_data' => $request->all(),
                 'user_id' => Auth::id(),
                 'memory_limit' => ini_get('memory_limit'),
-                'max_execution_time' => ini_get('max_execution_time')
+                'max_execution_time' => ini_get('max_execution_time'),
+                'image_limits' => [
+                    'max_width' => config('app.image_max_width', 6000),
+                    'max_height' => config('app.image_max_height', 6000),
+                    'max_filesize_mb' => config('app.image_max_filesize_mb', 5)
+                ]
             ]);
 
             // Validasi input
@@ -172,7 +177,10 @@ class JournalDownloadController extends Controller
                             if (file_exists($imagePath) && is_readable($imagePath)) {
                                 // Check file size to prevent memory issues
                                 $fileSize = filesize($imagePath);
-                                if ($fileSize > 5 * 1024 * 1024) { // 5MB limit
+                                $maxFileSizeMB = config('app.image_max_filesize_mb', 5);
+                                $maxFileSizeBytes = $maxFileSizeMB * 1024 * 1024;
+                                
+                                if ($fileSize > $maxFileSizeBytes) {
                                     Log::warning("Image file too large, skipping", [
                                         'file_path' => $imagePath,
                                         'file_size' => $fileSize,
@@ -184,23 +192,39 @@ class JournalDownloadController extends Controller
 
                                 $imageInfo = getimagesize($imagePath);
                                 if ($imageInfo !== false) {
-                                    // Validate image dimensions to prevent memory issues
+                                    // Validate image dimensions and calculate appropriate display size
                                     $width = $imageInfo[0];
                                     $height = $imageInfo[1];
                                     
-                                    if ($width > 4000 || $height > 4000) {
+                                    // Get configurable limits for image dimensions
+                                    $maxWidth = config('app.image_max_width', 6000);
+                                    $maxHeight = config('app.image_max_height', 6000);
+                                    
+                                    if ($width > $maxWidth || $height > $maxHeight) {
                                         Log::warning("Image dimensions too large, skipping", [
                                             'file_path' => $imagePath,
                                             'width' => $width,
                                             'height' => $height,
-                                            'journal_id' => $journal->id
+                                            'journal_id' => $journal->id,
+                                            'max_allowed' => "{$maxWidth}x{$maxHeight}"
                                         ]);
                                         $section->addText('[Gambar terlalu besar: ' . basename($imagePath) . ' (' . $width . 'x' . $height . ')]');
                                         continue;
                                     }
 
+                                    // Calculate appropriate display width based on image aspect ratio
+                                    $displayWidth = 200; // Default width
+                                    $aspectRatio = $width / $height;
+                                    
+                                    // Adjust display size for very wide or very tall images
+                                    if ($aspectRatio > 2) { // Very wide image
+                                        $displayWidth = 300;
+                                    } elseif ($aspectRatio < 0.5) { // Very tall image
+                                        $displayWidth = 150;
+                                    }
+
                                     $section->addImage($imagePath, [
-                                        'width' => 200,
+                                        'width' => $displayWidth,
                                         'wrappingStyle' => 'inline'
                                     ]);
                                     $section->addTextBreak(1);

@@ -39,14 +39,46 @@ Jika Anda mengalami masalah file Word yang corrupt saat di-deploy di shared host
 1. **Tambahkan ke file `.env`:**
    ```
    USE_ALTERNATIVE_DOWNLOAD=true
+   
+   # Konfigurasi batas gambar (opsional)
+   IMAGE_MAX_WIDTH=6000
+   IMAGE_MAX_HEIGHT=6000
+   IMAGE_MAX_FILESIZE_MB=5
    ```
 
 2. **Atau set langsung di config/app.php:**
    ```php
    'use_alternative_download' => true,
+   'image_max_width' => 6000,
+   'image_max_height' => 6000,
+   'image_max_filesize_mb' => 5,
    ```
 
 ### Troubleshooting
+
+#### Jika Gambar Di-Skip (Image dimensions too large):
+
+1. **Sesuaikan Batas Dimensi:**
+   ```env
+   # Untuk smartphone modern (default: 6000x6000)
+   IMAGE_MAX_WIDTH=8000
+   IMAGE_MAX_HEIGHT=8000
+   
+   # Untuk server dengan memory terbatas
+   IMAGE_MAX_WIDTH=4000
+   IMAGE_MAX_HEIGHT=4000
+   ```
+
+2. **Sesuaikan Batas Ukuran File:**
+   ```env
+   # Default: 5MB
+   IMAGE_MAX_FILESIZE_MB=10
+   ```
+
+3. **Kompres Gambar Sebelum Upload:**
+   - Resize gambar ke maksimal 2000x2000 pixel
+   - Kompres kualitas JPEG ke 80-90%
+   - Gunakan format JPEG untuk foto, PNG untuk diagram
 
 #### Jika File Masih Corrupt:
 
