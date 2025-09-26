@@ -258,8 +258,23 @@ class JournalDownloadController extends Controller
             ];
             
             $monthName = $monthNames[$request->month];
-            $subjectName = str_replace(' ', '_', $firstJournal->subject->name ?? 'Subject');
-            $filename = "Jurnal_{$subjectName}_{$monthName}_{$firstJournal->academicYear->year}.docx";
+            
+            // Clean subject name and academic year for filename
+            $subjectName = $this->cleanFilename($firstJournal->subject->name ?? 'Subject');
+            $subjectName = str_replace(' ', '_', $subjectName);
+            
+            $academicYear = $this->cleanFilename($firstJournal->academicYear->year ?? date('Y'));
+            
+            $filename = "Jurnal_{$subjectName}_{$monthName}_{$academicYear}.docx";
+            
+            // Log filename generation for debugging
+            Log::info('Generated filename', [
+                'original_subject' => $firstJournal->subject->name ?? 'Subject',
+                'cleaned_subject' => $subjectName,
+                'original_year' => $firstJournal->academicYear->year ?? date('Y'),
+                'cleaned_year' => $academicYear,
+                'final_filename' => $filename
+            ]);
 
             // Check if we should use alternative method for shared hosting
             $useAlternativeMethod = config('app.use_alternative_download', false);
@@ -318,14 +333,34 @@ class JournalDownloadController extends Controller
     }
 
     /**
+     * Clean filename by removing invalid characters
+     */
+    private function cleanFilename($filename)
+    {
+        // Remove invalid filename characters: / \ : * ? " < > |
+        $cleaned = preg_replace('/[\/\\\\:*?"<>|]/', '_', $filename);
+        
+        // Replace multiple underscores with single underscore
+        $cleaned = preg_replace('/_+/', '_', $cleaned);
+        
+        // Trim underscores from start and end
+        $cleaned = trim($cleaned, '_');
+        
+        return $cleaned;
+    }
+
+    /**
      * Alternative download method for shared hosting environments
      * This method saves the file temporarily and then serves it
      */
     private function downloadJournalAlternative($phpWord, $filename)
     {
         try {
+            // Ensure filename is clean for temporary path
+            $cleanFilename = $this->cleanFilename($filename);
+            
             // Create temporary file path
-            $tempPath = storage_path('app/temp/' . uniqid() . '_' . $filename);
+            $tempPath = storage_path('app/temp/' . uniqid() . '_' . $cleanFilename);
             
             // Ensure temp directory exists
             $tempDir = dirname($tempPath);

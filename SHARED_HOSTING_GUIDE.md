@@ -10,6 +10,7 @@ Jika Anda mengalami masalah file Word yang corrupt saat di-deploy di shared host
 2. **Memory Limitations**: Shared hosting memiliki batasan memory yang lebih ketat
 3. **PHP Configuration**: Konfigurasi PHP yang berbeda antara local dan production
 4. **File Path Issues**: Path file yang berbeda di shared hosting
+5. **Invalid Filename Characters**: Karakter slash (/ \) dan karakter khusus lainnya dalam nama file
 
 ### Solusi yang Telah Diimplementasikan
 
@@ -23,7 +24,12 @@ Jika Anda mengalami masalah file Word yang corrupt saat di-deploy di shared host
 - Validasi dimensi gambar (maksimal 4000x4000 pixel)
 - Penanganan error yang lebih robust
 
-#### 3. Method Alternatif untuk Shared Hosting
+#### 3. Pembersihan Nama File
+- Menghapus karakter tidak valid dari nama file (/ \ : * ? " < > |)
+- Membersihkan nama mata pelajaran dan tahun akademik
+- Logging untuk debugging masalah filename
+
+#### 4. Method Alternatif untuk Shared Hosting
 - Menyimpan file ke temporary storage terlebih dahulu
 - Menggunakan Laravel's download response
 - Automatic cleanup file temporary
