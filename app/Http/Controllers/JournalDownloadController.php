@@ -141,63 +141,63 @@ class JournalDownloadController extends Controller
                     $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
                 }
 
-                // $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
+                $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
-                // $images = $journal->getMedia('activity_photos');
+                $images = $journal->getMedia('activity_photos');
 
-                // if ($images->isEmpty()) {
-                //     $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
-                // } else {
-                //     foreach ($images as $image) {
-                //         try {
-                //             $imagePath = $image->getPath();
+                if ($images->isEmpty()) {
+                    $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
+                } else {
+                    foreach ($images as $image) {
+                        try {
+                            $imagePath = $image->getPath();
 
-                //             // Log untuk debugging
-                //             Log::info('Processing image', [
-                //                 'image_id' => $image->id,
-                //                 'path' => $imagePath,
-                //                 'exists' => file_exists($imagePath),
-                //                 'readable' => is_readable($imagePath)
-                //             ]);
+                            // Log untuk debugging
+                            Log::info('Processing image', [
+                                'image_id' => $image->id,
+                                'path' => $imagePath,
+                                'exists' => file_exists($imagePath),
+                                'readable' => is_readable($imagePath)
+                            ]);
 
-                //             if (file_exists($imagePath) && is_readable($imagePath)) {
-                //                 $imageInfo = getimagesize($imagePath);
-                //                 if ($imageInfo !== false) {
-                //                     $section->addImage($imagePath, [
-                //                         'width' => 200,
-                //                         'wrappingStyle' => 'inline'
-                //                     ]);
-                //                     $section->addTextBreak(1);
-                //                 } else {
-                //                     Log::error("File corrupt - bukan gambar yang valid", [
-                //                         'file_path' => $imagePath,
-                //                         'journal_id' => $journal->id,
-                //                         'image_id' => $image->id
-                //                     ]);
-                //                     $section->addText('[Gambar corrupt: ' . basename($imagePath) . ']');
-                //                 }
-                //             } else {
-                //                 Log::error("File corrupt - tidak ditemukan atau tidak dapat dibaca", [
-                //                     'file_path' => $imagePath,
-                //                     'journal_id' => $journal->id,
-                //                     'image_id' => $image->id,
-                //                     'file_exists' => file_exists($imagePath),
-                //                     'is_readable' => is_readable($imagePath)
-                //                 ]);
-                //                 $section->addText('[File tidak ditemukan: ' . basename($imagePath) . ']');
-                //             }
-                //         } catch (\Exception $e) {
-                //             Log::error("File corrupt - error saat memproses gambar", [
-                //                 'journal_id' => $journal->id,
-                //                 'image_id' => $image->id,
-                //                 'error' => $e->getMessage(),
-                //                 'trace' => $e->getTraceAsString()
-                //             ]);
-                //             $section->addText('[Error memproses gambar: ' . $e->getMessage() . ']');
-                //             continue;
-                //         }
-                //     }
-                // }
+                            if (file_exists($imagePath) && is_readable($imagePath)) {
+                                $imageInfo = getimagesize($imagePath);
+                                if ($imageInfo !== false) {
+                                    $section->addImage($imagePath, [
+                                        'width' => 200,
+                                        'wrappingStyle' => 'inline'
+                                    ]);
+                                    $section->addTextBreak(1);
+                                } else {
+                                    Log::error("File corrupt - bukan gambar yang valid", [
+                                        'file_path' => $imagePath,
+                                        'journal_id' => $journal->id,
+                                        'image_id' => $image->id
+                                    ]);
+                                    $section->addText('[Gambar corrupt: ' . basename($imagePath) . ']');
+                                }
+                            } else {
+                                Log::error("File corrupt - tidak ditemukan atau tidak dapat dibaca", [
+                                    'file_path' => $imagePath,
+                                    'journal_id' => $journal->id,
+                                    'image_id' => $image->id,
+                                    'file_exists' => file_exists($imagePath),
+                                    'is_readable' => is_readable($imagePath)
+                                ]);
+                                $section->addText('[File tidak ditemukan: ' . basename($imagePath) . ']');
+                            }
+                        } catch (\Exception $e) {
+                            Log::error("File corrupt - error saat memproses gambar", [
+                                'journal_id' => $journal->id,
+                                'image_id' => $image->id,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+                            $section->addText('[Error memproses gambar: ' . $e->getMessage() . ']');
+                            continue;
+                        }
+                    }
+                }
 
                 // Signature table
                 $this->addSignatureTable($section, $journal);
