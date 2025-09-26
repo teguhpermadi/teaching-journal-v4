@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Alternative Download Method
+    |--------------------------------------------------------------------------
+    |
+    | This option determines whether to use alternative download method for
+    | Word documents. Set to true for shared hosting environments that have
+    | issues with StreamedResponse or output buffering.
+    |
+    */
+
+    'use_alternative_download' => env('USE_ALTERNATIVE_DOWNLOAD', false),
+
 ];

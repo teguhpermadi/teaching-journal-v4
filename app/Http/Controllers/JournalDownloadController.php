@@ -17,9 +17,16 @@ class JournalDownloadController extends Controller
     public function downloadJournal(Request $request)
     {
         try {
+            // Clear any existing output buffers to prevent corruption
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+            
             Log::info('Journal download started', [
                 'request_data' => $request->all(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
+                'memory_limit' => ini_get('memory_limit'),
+                'max_execution_time' => ini_get('max_execution_time')
             ]);
 
             // Validasi input
@@ -152,17 +159,46 @@ class JournalDownloadController extends Controller
                         try {
                             $imagePath = $image->getPath();
 
-                            // Log untuk debugging
+                            // Log untuk debugging dengan informasi lebih lengkap
                             Log::info('Processing image', [
                                 'image_id' => $image->id,
                                 'path' => $imagePath,
                                 'exists' => file_exists($imagePath),
-                                'readable' => is_readable($imagePath)
+                                'readable' => is_readable($imagePath),
+                                'filesize' => file_exists($imagePath) ? filesize($imagePath) : 0,
+                                'mime_type' => file_exists($imagePath) ? mime_content_type($imagePath) : null
                             ]);
 
                             if (file_exists($imagePath) && is_readable($imagePath)) {
+                                // Check file size to prevent memory issues
+                                $fileSize = filesize($imagePath);
+                                if ($fileSize > 5 * 1024 * 1024) { // 5MB limit
+                                    Log::warning("Image file too large, skipping", [
+                                        'file_path' => $imagePath,
+                                        'file_size' => $fileSize,
+                                        'journal_id' => $journal->id
+                                    ]);
+                                    $section->addText('[Gambar terlalu besar: ' . basename($imagePath) . ' (' . round($fileSize/1024/1024, 2) . 'MB)]');
+                                    continue;
+                                }
+
                                 $imageInfo = getimagesize($imagePath);
                                 if ($imageInfo !== false) {
+                                    // Validate image dimensions to prevent memory issues
+                                    $width = $imageInfo[0];
+                                    $height = $imageInfo[1];
+                                    
+                                    if ($width > 4000 || $height > 4000) {
+                                        Log::warning("Image dimensions too large, skipping", [
+                                            'file_path' => $imagePath,
+                                            'width' => $width,
+                                            'height' => $height,
+                                            'journal_id' => $journal->id
+                                        ]);
+                                        $section->addText('[Gambar terlalu besar: ' . basename($imagePath) . ' (' . $width . 'x' . $height . ')]');
+                                        continue;
+                                    }
+
                                     $section->addImage($imagePath, [
                                         'width' => 200,
                                         'wrappingStyle' => 'inline'
@@ -225,14 +261,47 @@ class JournalDownloadController extends Controller
             $subjectName = str_replace(' ', '_', $firstJournal->subject->name ?? 'Subject');
             $filename = "Jurnal_{$subjectName}_{$monthName}_{$firstJournal->academicYear->year}.docx";
 
-            // Create streamed response for direct download
-            return new StreamedResponse(function() use ($phpWord) {
-                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-                $writer->save('php://output');
+            // Check if we should use alternative method for shared hosting
+            $useAlternativeMethod = config('app.use_alternative_download', false);
+            
+            if ($useAlternativeMethod) {
+                return $this->downloadJournalAlternative($phpWord, $filename);
+            }
+
+            // Create streamed response for direct download with better error handling
+            return new StreamedResponse(function() use ($phpWord, $filename) {
+                try {
+                    // Ensure no output before file content
+                    if (ob_get_level()) {
+                        ob_end_clean();
+                    }
+                    
+                    // Set error reporting to prevent any notices/warnings from corrupting output
+                    $originalErrorReporting = error_reporting(0);
+                    
+                    // Create writer and save to output
+                    $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                    $writer->save('php://output');
+                    
+                    // Restore error reporting
+                    error_reporting($originalErrorReporting);
+                    
+                    Log::info('Journal file successfully generated', ['filename' => $filename]);
+                    
+                } catch (\Exception $e) {
+                    Log::error('Error in StreamedResponse', [
+                        'error' => $e->getMessage(),
+                        'filename' => $filename
+                    ]);
+                    // Don't output anything else as it will corrupt the file
+                    throw $e;
+                }
             }, 200, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Cache-Control' => 'max-age=0',
+                'Cache-Control' => 'max-age=0, no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
             ]);
 
         } catch (\Exception $e) {
@@ -245,6 +314,51 @@ class JournalDownloadController extends Controller
             return response()->json([
                 'error' => 'Terjadi kesalahan saat membuat file jurnal: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Alternative download method for shared hosting environments
+     * This method saves the file temporarily and then serves it
+     */
+    private function downloadJournalAlternative($phpWord, $filename)
+    {
+        try {
+            // Create temporary file path
+            $tempPath = storage_path('app/temp/' . uniqid() . '_' . $filename);
+            
+            // Ensure temp directory exists
+            $tempDir = dirname($tempPath);
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+            
+            // Save to temporary file first
+            $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+            $writer->save($tempPath);
+            
+            Log::info('Journal file saved to temp', [
+                'temp_path' => $tempPath,
+                'file_size' => filesize($tempPath)
+            ]);
+            
+            // Return file download response
+            return response()->download($tempPath, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ])->deleteFileAfterSend(true);
+            
+        } catch (\Exception $e) {
+            Log::error('Error in alternative download method', [
+                'error' => $e->getMessage(),
+                'filename' => $filename
+            ]);
+            
+            // Clean up temp file if it exists
+            if (isset($tempPath) && file_exists($tempPath)) {
+                unlink($tempPath);
+            }
+            
+            throw $e;
         }
     }
 
