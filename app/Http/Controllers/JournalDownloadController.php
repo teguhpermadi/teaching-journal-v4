@@ -200,7 +200,7 @@ class JournalDownloadController extends Controller
                 }
 
                 // Signature table
-                // $this->addSignatureTable($section, $journal);
+                $this->addSignatureTable($section, $journal);
 
                 // Add page break except for last journal
                 if (!$journal->is($journals->last())) {
@@ -212,7 +212,7 @@ class JournalDownloadController extends Controller
             $this->addAttendanceSummary($section, $journals);
 
             // Final signature table
-            // $this->addSignatureTable($section, $firstJournal);
+            $this->addSignatureTable($section, $firstJournal);
 
             // Generate filename
             $monthNames = [
