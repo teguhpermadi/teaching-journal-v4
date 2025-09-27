@@ -122,8 +122,10 @@ class JournalDownloadController extends Controller
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
                 
-                // Use a more robust manual HTML parser to avoid corruption
-                $this->addHtmlToSection($section, $journal->activity);
+                $htmlContent = $journal->activity;
+                // remove if html content contains &amd;
+                $htmlContent = str_replace('&amd;', ' dan ', $htmlContent);
+                Html::addHtml($section, $htmlContent);
 
                 $section->addText('Catatan:', ['bold' => true]);
                 $section->addText($journal->notes);
@@ -342,75 +344,6 @@ class JournalDownloadController extends Controller
                     }
                 }
             });
-        }
-    }
-
-    private function addHtmlToSection($section, $html)
-    {
-        if (empty($html)) {
-            return;
-        }
-
-        // Wrap the HTML in a single root element for valid parsing
-        $html = '<div>' . $html . '</div>';
-
-        // Suppress warnings for malformed HTML, as DOMDocument will try to fix it
-        libxml_use_internal_errors(true);
-        $dom = new \DOMDocument();
-        $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        libxml_clear_errors();
-
-        $this->parseDomNode($dom->documentElement, $section);
-    }
-
-    private function parseDomNode(\DOMNode $node, $phpWordObject, $listDepth = 0)
-    {
-        if ($node->nodeType === XML_TEXT_NODE) {
-            $phpWordObject->addText(htmlspecialchars($node->nodeValue));
-            return;
-        }
-
-        if ($node->nodeType !== XML_ELEMENT_NODE) {
-            return;
-        }
-
-        $style = [];
-        $isList = false;
-
-        switch (strtolower($node->nodeName)) {
-            case 'strong':
-            case 'b':
-                $style['bold'] = true;
-                break;
-            case 'em':
-            case 'i':
-                $style['italic'] = true;
-                break;
-            case 'p':
-                // Add a paragraph break before adding the new paragraph content
-                if (!$phpWordObject instanceof \PhpOffice\PhpWord\Element\Section) {
-                     $phpWordObject->addTextBreak();
-                }
-                break;
-            case 'ul':
-            case 'ol':
-                $listDepth++;
-                $isList = true;
-                break;
-            case 'li':
-                $phpWordObject->addListItem(trim($node->textContent), $listDepth - 1);
-                return; // Stop further processing for this node
-        }
-
-        if ($node->hasChildNodes()) {
-            foreach ($node->childNodes as $childNode) {
-                if ($isList) {
-                    $this->parseDomNode($childNode, $phpWordObject, $listDepth);
-                } else {
-                    $textRun = $phpWordObject->addTextRun($style);
-                    $this->parseDomNode($childNode, $textRun, $listDepth);
-                }
-            }
         }
     }
 
