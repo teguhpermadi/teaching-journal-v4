@@ -153,40 +153,12 @@ class JournalDownloadController extends Controller
                         try {
                             $imagePath = $image->getUrl();
 
-                            // Log untuk debugging
-                            Log::info('Processing image', [
-                                'image_id' => $image->id,
-                                'path' => $imagePath,
-                                'exists' => file_exists($imagePath),
-                                'readable' => is_readable($imagePath)
+                            $section->addImage($imagePath, [
+                                'width' => 100,
+                                'wrappingStyle' => 'inline'
                             ]);
-
-                            if (file_exists($imagePath) && is_readable($imagePath)) {
-                                $imageInfo = getimagesize($imagePath);
-                                if ($imageInfo !== false) {
-                                    $section->addImage($imagePath, [
-                                        'width' => 100,
-                                        'wrappingStyle' => 'inline'
-                                    ]);
-                                    $section->addTextBreak(1);
-                                } else {
-                                    Log::error("File corrupt - bukan gambar yang valid", [
-                                        'file_path' => $imagePath,
-                                        'journal_id' => $journal->id,
-                                        'image_id' => $image->id
-                                    ]);
-                                    $section->addText('[Gambar corrupt: ' . basename($imagePath) . ']');
-                                }
-                            } else {
-                                Log::error("File corrupt - tidak ditemukan atau tidak dapat dibaca", [
-                                    'file_path' => $imagePath,
-                                    'journal_id' => $journal->id,
-                                    'image_id' => $image->id,
-                                    'file_exists' => file_exists($imagePath),
-                                    'is_readable' => is_readable($imagePath)
-                                ]);
-                                $section->addText('[File tidak ditemukan: ' . basename($imagePath) . ']');
-                            }
+                            $section->addTextBreak(1);    
+                                                    
                         } catch (\Exception $e) {
                             Log::error("File corrupt - error saat memproses gambar", [
                                 'journal_id' => $journal->id,
