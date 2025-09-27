@@ -107,9 +107,10 @@ class JournalDownloadController extends Controller
                     ]
                 );
 
-                $section->addText('Main Target:', ['bold' => true]);
+                $section->addText('Capaian Pembelajaran:', ['bold' => true]);
                 $section->addText($journal->mainTarget->main_target);
-                $section->addText('Target:', ['bold' => true]);
+
+                $section->addText('Tujuan Pembelajaran:', ['bold' => true]);
 
                 // Add list target
                 foreach ($journal->target_id as $target_id) {
@@ -119,13 +120,11 @@ class JournalDownloadController extends Controller
                     }
                 }
 
-                $section->addText('Chapter:', ['bold' => true]);
+                $section->addText('Bab:', ['bold' => true]);
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
                 
                 $htmlContent = $journal->activity;
-                // remove if html content contains &amd;
-                $htmlContent = str_replace('&amd;', ' dan ', $htmlContent);
                 Html::addHtml($section, $htmlContent);
 
                 $section->addText('Catatan:', ['bold' => true]);
@@ -143,34 +142,18 @@ class JournalDownloadController extends Controller
                 $images = $journal->getMedia('activity_photos');
 
                 if ($images->isEmpty()) {
-                    $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
+                    $section->addText('Pada tanggal ini tidak ada dokumentasi kegiatan.');
                 } else {
                     foreach ($images as $image) {
                         try {
                             $imagePath = $image->getPath();
-                            $maxFileSize = 2 * 1024 * 1024; // 2MB limit
-
-                            if (!file_exists($imagePath) || filesize($imagePath) > $maxFileSize) {
-                                $errorMessage = !file_exists($imagePath)
-                                    ? 'File gambar tidak ditemukan.'
-                                    : 'Ukuran gambar melebihi batas (maks 2MB).';
-
-                                Log::warning('Skipping image in journal download.', [
-                                    'journal_id' => $journal->id,
-                                    'media_id' => $image->id,
-                                    'path' => $imagePath,
-                                    'reason' => $errorMessage
-                                ]);
-                                $section->addText("[$errorMessage]", ['color' => 'ff0000', 'italic' => true]);
-                                continue;
-                            }
-
                             $section->addImage($imagePath, [
-                                'width'         => 450, // Set a fixed width
+                                'width'         => 100, // Set a fixed width
                                 'wrappingStyle' => 'inline',
                                 'align'         => 'center'
                             ]);
                             $section->addTextBreak(1);
+
                         } catch (\Exception $e) {
                             Log::error("File corrupt - error saat memproses gambar", [
                                 'journal_id' => $journal->id,
@@ -225,28 +208,25 @@ class JournalDownloadController extends Controller
 
             $filename = "Jurnal_{$subjectName}_{$monthName}_{$academicYear}.docx";
 
-            // Alternative Download Method: Save to temp file first
-            $tempDir = storage_path('app/temp_journals');
-            if (!is_dir($tempDir)) {
-                mkdir($tempDir, 0775, true);
-            }
-            $tempFilePath = $tempDir . '/' . uniqid() . '_' . $filename;
-
-            try {
-                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-                $writer->save($tempFilePath);
-            } catch (\Exception $e) {
-                Log::error('Failed to save temporary journal file.', [
-                    'path' => $tempFilePath,
-                    'error' => $e->getMessage()
-                ]);
-                return response()->json(['error' => 'Gagal menyimpan file jurnal sementara.'], 500);
+            // Clean any existing output buffer
+            if (ob_get_level() > 0) {
+                ob_end_clean();
             }
 
-            Log::info('Journal saved to temporary file, preparing download.', ['path' => $tempFilePath]);
-
-            // Download the file and delete it after sending
-            return response()->download($tempFilePath, $filename)->deleteFileAfterSend(true);
+            // Create streamed response for direct download
+            return new StreamedResponse(function () use ($phpWord) {
+                try {
+                    $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                    $writer->save('php://output');
+                } catch (\Exception $e) {
+                    Log::error('Error during PhpWord save to output.', ['error' => $e->getMessage()]);
+                }
+            }, 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Cache-Control' => 'max-age=0',
+                'Pragma' => 'public',
+            ]);
         } catch (\Exception $e) {
             Log::error("Error generating journal download", [
                 'error' => $e->getMessage(),
@@ -314,7 +294,7 @@ class JournalDownloadController extends Controller
             )
         );
 
-        $section->addText('Rekap Ketidakhadiran:', ['bold' => true, 'size' => 14]);
+        $section->addText('Rekap Ketidakhadiran Bulan' . $journals->first()->date->format('F Y'), ['bold' => true, 'size' => 14]);
         $attendance = Attendance::query()
             ->whereIn('journal_id', $journals->pluck('id'))
             ->get();
@@ -324,7 +304,6 @@ class JournalDownloadController extends Controller
         if ($attendanceByStudent->isEmpty()) {
             $section->addText('Pada bulan ' . $journals->first()->date->format('F Y') . ', semua siswa hadir');
         } else {
-            $section->addText('Pada bulan ' . $journals->first()->date->format('F Y') . ', rekap ketidakhadiran:');
             $attendanceByStudent->each(function ($studentAttendance) use ($section) {
                 $studentName = $studentAttendance->first()->student->name;
                 $section->addListItem($studentName, 0, ['bold' => true, 'numbering' => 'multilevel']);
