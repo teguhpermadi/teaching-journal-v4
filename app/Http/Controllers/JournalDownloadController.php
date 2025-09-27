@@ -105,17 +105,18 @@ class JournalDownloadController extends Controller
                         'size' => 14,
                     ]
                 );
-                $section->addText('Main Target:', ['bold' => true]);
-                $section->addText($journal->mainTarget->main_target);
-                $section->addText('Target:', ['bold' => true]);
+
+                // $section->addText('Main Target:', ['bold' => true]);
+                // $section->addText($journal->mainTarget->main_target);
+                // $section->addText('Target:', ['bold' => true]);
                 
-                // Add list target
-                foreach ($journal->target_id as $target_id) {
-                    $target = Target::find($target_id);
-                    if ($target) {
-                        $section->addListItem($target->target);
-                    }
-                }
+                // // Add list target
+                // foreach ($journal->target_id as $target_id) {
+                //     $target = Target::find($target_id);
+                //     if ($target) {
+                //         $section->addListItem($target->target);
+                //     }
+                // }
 
                 $section->addText('Chapter:', ['bold' => true]);
                 $section->addText($journal->chapter);
@@ -151,14 +152,13 @@ class JournalDownloadController extends Controller
                 } else {
                     foreach ($images as $image) {
                         try {
-                            $imagePath = $image->getUrl();
+                            $imagePath = $image->getPath();
 
                             $section->addImage($imagePath, [
                                 'width' => 100,
                                 'wrappingStyle' => 'inline'
                             ]);
                             $section->addTextBreak(1);    
-                                                    
                         } catch (\Exception $e) {
                             Log::error("File corrupt - error saat memproses gambar", [
                                 'journal_id' => $journal->id,
