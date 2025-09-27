@@ -44,6 +44,7 @@ class TargetsRelationManager extends RelationManager
                         return MainTarget::myMainTargetsInSubject($this->getOwnerRecord()->id)->pluck('main_target', 'id');
                     })
                     ->columnSpanFull()
+                    ->preload()
                     ->required(),
                 Textarea::make('target')
                     ->required()

@@ -67,6 +67,7 @@ class JournalForm
                             )->pluck('label', 'value');
                         }
                     )
+                    ->preload()
                     ->required(),
                 Select::make('target_id')
                     ->options(
