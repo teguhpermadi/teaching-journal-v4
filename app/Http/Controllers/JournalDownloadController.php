@@ -121,6 +121,7 @@ class JournalDownloadController extends Controller
                 $section->addText('Chapter:', ['bold' => true]);
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
+                $sectionHtml = $phpWord->addSection();
 
                 // Sanitize HTML before adding to Word to prevent corruption
                 // Define your HTML content
@@ -132,7 +133,7 @@ class JournalDownloadController extends Controller
                     </ul>';
 
                 // Add the HTML content to the section
-                Html::addHtml($section, $htmlContent);
+                Html::addHtml($sectionHtml, $htmlContent);
 
                 $section->addText('Catatan:', ['bold' => true]);
                 $section->addText($journal->notes);
