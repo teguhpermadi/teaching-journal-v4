@@ -121,18 +121,9 @@ class JournalDownloadController extends Controller
                 $section->addText('Chapter:', ['bold' => true]);
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
+                
                 $sectionHtml = $phpWord->addSection();
-
-                // Sanitize HTML before adding to Word to prevent corruption
-                // Define your HTML content
-                $htmlContent = '<h1>This is a Heading</h1>
-                    <p>This is a paragraph with <strong>bold text</strong> and <em>italic text</em>.</p>
-                    <ul>
-                        <li>Item 1</li>
-                        <li>Item 2</li>
-                    </ul>';
-
-                // Add the HTML content to the section
+                $htmlContent = $journal->activity;
                 Html::addHtml($sectionHtml, $htmlContent);
 
                 $section->addText('Catatan:', ['bold' => true]);
