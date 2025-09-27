@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AcademicYear;
 use App\Models\Grade;
+use Colors\RandomColor;
 use Filament\Forms\Components\ColorPicker;
 
 class SubjectForm
@@ -33,6 +34,7 @@ class SubjectForm
                     ->relationship(name: 'grade', titleAttribute: 'name', modifyQueryUsing: fn (Builder $query) => Grade::gradeAcademicYearActive($query))
                     ->required(),
                 ColorPicker::make('color')
+                    ->default(RandomColor::one())
                     ->label('Color')
                     ->rgb()
                     ->required(),
