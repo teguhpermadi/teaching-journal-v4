@@ -17,21 +17,9 @@ class JournalDownloadController extends Controller
     public function downloadJournal(Request $request)
     {
         try {
-            // Clear any existing output buffers to prevent corruption
-            while (ob_get_level()) {
-                ob_end_clean();
-            }
-            
             Log::info('Journal download started', [
                 'request_data' => $request->all(),
-                'user_id' => Auth::id(),
-                'memory_limit' => ini_get('memory_limit'),
-                'max_execution_time' => ini_get('max_execution_time'),
-                'image_limits' => [
-                    'max_width' => config('app.image_max_width', 6000),
-                    'max_height' => config('app.image_max_height', 6000),
-                    'max_filesize_mb' => config('app.image_max_filesize_mb', 5)
-                ]
+                'user_id' => Auth::id()
             ]);
 
             // Validasi input
@@ -164,65 +152,17 @@ class JournalDownloadController extends Controller
                         try {
                             $imagePath = $image->getPath();
 
-                            // Log untuk debugging dengan informasi lebih lengkap
+                            // Log untuk debugging
                             Log::info('Processing image', [
                                 'image_id' => $image->id,
                                 'path' => $imagePath,
                                 'exists' => file_exists($imagePath),
-                                'readable' => is_readable($imagePath),
-                                'filesize' => file_exists($imagePath) ? filesize($imagePath) : 0,
-                                'mime_type' => file_exists($imagePath) ? mime_content_type($imagePath) : null
+                                'readable' => is_readable($imagePath)
                             ]);
 
                             if (file_exists($imagePath) && is_readable($imagePath)) {
-                                // Check file size to prevent memory issues
-                                $fileSize = filesize($imagePath);
-                                $maxFileSizeMB = config('app.image_max_filesize_mb', 5);
-                                $maxFileSizeBytes = $maxFileSizeMB * 1024 * 1024;
-                                
-                                if ($fileSize > $maxFileSizeBytes) {
-                                    Log::warning("Image file too large, skipping", [
-                                        'file_path' => $imagePath,
-                                        'file_size' => $fileSize,
-                                        'journal_id' => $journal->id
-                                    ]);
-                                    $section->addText('[Gambar terlalu besar: ' . basename($imagePath) . ' (' . round($fileSize/1024/1024, 2) . 'MB)]');
-                                    continue;
-                                }
-
                                 $imageInfo = getimagesize($imagePath);
                                 if ($imageInfo !== false) {
-                                    // Validate image dimensions and calculate appropriate display size
-                                    $width = $imageInfo[0];
-                                    $height = $imageInfo[1];
-                                    
-                                    // Get configurable limits for image dimensions
-                                    $maxWidth = config('app.image_max_width', 6000);
-                                    $maxHeight = config('app.image_max_height', 6000);
-                                    
-                                    if ($width > $maxWidth || $height > $maxHeight) {
-                                        Log::warning("Image dimensions too large, skipping", [
-                                            'file_path' => $imagePath,
-                                            'width' => $width,
-                                            'height' => $height,
-                                            'journal_id' => $journal->id,
-                                            'max_allowed' => "{$maxWidth}x{$maxHeight}"
-                                        ]);
-                                        $section->addText('[Gambar terlalu besar: ' . basename($imagePath) . ' (' . $width . 'x' . $height . ')]');
-                                        continue;
-                                    }
-
-                                    // Calculate appropriate display width based on image aspect ratio
-                                    $displayWidth = 200; // Default width
-                                    $aspectRatio = $width / $height;
-                                    
-                                    // Adjust display size for very wide or very tall images
-                                    if ($aspectRatio > 2) { // Very wide image
-                                        $displayWidth = 300;
-                                    } elseif ($aspectRatio < 0.5) { // Very tall image
-                                        $displayWidth = 150;
-                                    }
-
                                     $section->addImage($imagePath, [
                                         'width' => $displayWidth,
                                         'wrappingStyle' => 'inline'
@@ -300,47 +240,14 @@ class JournalDownloadController extends Controller
                 'final_filename' => $filename
             ]);
 
-            // Check if we should use alternative method for shared hosting
-            $useAlternativeMethod = config('app.use_alternative_download', false);
-            
-            if ($useAlternativeMethod) {
-                return $this->downloadJournalAlternative($phpWord, $filename);
-            }
-
-            // Create streamed response for direct download with better error handling
-            return new StreamedResponse(function() use ($phpWord, $filename) {
-                try {
-                    // Ensure no output before file content
-                    if (ob_get_level()) {
-                        ob_end_clean();
-                    }
-                    
-                    // Set error reporting to prevent any notices/warnings from corrupting output
-                    $originalErrorReporting = error_reporting(0);
-                    
-                    // Create writer and save to output
-                    $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-                    $writer->save('php://output');
-                    
-                    // Restore error reporting
-                    error_reporting($originalErrorReporting);
-                    
-                    Log::info('Journal file successfully generated', ['filename' => $filename]);
-                    
-                } catch (\Exception $e) {
-                    Log::error('Error in StreamedResponse', [
-                        'error' => $e->getMessage(),
-                        'filename' => $filename
-                    ]);
-                    // Don't output anything else as it will corrupt the file
-                    throw $e;
-                }
+            // Create streamed response for direct download
+            return new StreamedResponse(function() use ($phpWord) {
+                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                $writer->save('php://output');
             }, 200, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Cache-Control' => 'max-age=0, no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0',
+                'Cache-Control' => 'max-age=0',
             ]);
 
         } catch (\Exception $e) {
@@ -353,71 +260,6 @@ class JournalDownloadController extends Controller
             return response()->json([
                 'error' => 'Terjadi kesalahan saat membuat file jurnal: ' . $e->getMessage()
             ], 500);
-        }
-    }
-
-    /**
-     * Clean filename by removing invalid characters
-     */
-    private function cleanFilename($filename)
-    {
-        // Remove invalid filename characters: / \ : * ? " < > |
-        $cleaned = preg_replace('/[\/\\\\:*?"<>|]/', '_', $filename);
-        
-        // Replace multiple underscores with single underscore
-        $cleaned = preg_replace('/_+/', '_', $cleaned);
-        
-        // Trim underscores from start and end
-        $cleaned = trim($cleaned, '_');
-        
-        return $cleaned;
-    }
-
-    /**
-     * Alternative download method for shared hosting environments
-     * This method saves the file temporarily and then serves it
-     */
-    private function downloadJournalAlternative($phpWord, $filename)
-    {
-        try {
-            // Ensure filename is clean for temporary path
-            $cleanFilename = $this->cleanFilename($filename);
-            
-            // Create temporary file path
-            $tempPath = storage_path('app/temp/' . uniqid() . '_' . $cleanFilename);
-            
-            // Ensure temp directory exists
-            $tempDir = dirname($tempPath);
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0755, true);
-            }
-            
-            // Save to temporary file first
-            $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-            $writer->save($tempPath);
-            
-            Log::info('Journal file saved to temp', [
-                'temp_path' => $tempPath,
-                'file_size' => filesize($tempPath)
-            ]);
-            
-            // Return file download response
-            return response()->download($tempPath, $filename, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            ])->deleteFileAfterSend(true);
-            
-        } catch (\Exception $e) {
-            Log::error('Error in alternative download method', [
-                'error' => $e->getMessage(),
-                'filename' => $filename
-            ]);
-            
-            // Clean up temp file if it exists
-            if (isset($tempPath) && file_exists($tempPath)) {
-                unlink($tempPath);
-            }
-            
-            throw $e;
         }
     }
 
