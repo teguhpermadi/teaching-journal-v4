@@ -53,6 +53,7 @@ class JournalDownloadController extends Controller
 
             // 2. Generate Word Document
             $phpWord = new PhpWord();
+            \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
             $section = $phpWord->addSection();
 
             // Header
