@@ -43,6 +43,7 @@ class TargetsRelationManager extends RelationManager
                     ->options(function () {
                         return MainTarget::myMainTargetsInSubject($this->getOwnerRecord()->id)->pluck('main_target', 'id');
                     })
+                    ->columnSpanFull()
                     ->required(),
                 Textarea::make('target')
                     ->required()
@@ -59,9 +60,11 @@ class TargetsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('mainTarget.main_target')
                     ->sortable()
+                    ->wrap()
                     ->searchable(),
                 TextColumn::make('target')
                     ->sortable()
+                    ->wrap()
                     ->searchable(),
             ])
             ->filters([
