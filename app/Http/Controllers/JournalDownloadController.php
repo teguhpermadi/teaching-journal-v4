@@ -151,7 +151,7 @@ class JournalDownloadController extends Controller
                 } else {
                     foreach ($images as $image) {
                         try {
-                            $imagePath = $image->getPath();
+                            $imagePath = $image->getUrl();
 
                             // Log untuk debugging
                             Log::info('Processing image', [
