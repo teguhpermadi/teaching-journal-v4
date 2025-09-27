@@ -122,9 +122,8 @@ class JournalDownloadController extends Controller
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
                 
-                $sectionHtml = $phpWord->addSection();
                 $htmlContent = $journal->activity;
-                Html::addHtml($sectionHtml, $htmlContent);
+                Html::addHtml($section, $htmlContent);
 
                 $section->addText('Catatan:', ['bold' => true]);
                 $section->addText($journal->notes);
