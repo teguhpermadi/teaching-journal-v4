@@ -143,6 +143,7 @@ class JournalDownloadController extends Controller
 
                 $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
+                /*
                 $images = $journal->getMedia('activity_photos');
 
                 if ($images->isEmpty()) {
@@ -198,6 +199,7 @@ class JournalDownloadController extends Controller
                         }
                     }
                 }
+                */
 
                 // Signature table
                 $this->addSignatureTable($section, $journal);
@@ -349,5 +351,10 @@ class JournalDownloadController extends Controller
                 }
             });
         }
+    }
+
+    private function cleanFilename($filename)
+    {
+        return preg_replace('/[^a-zA-Z0-9]/', '', $filename);
     }
 }
