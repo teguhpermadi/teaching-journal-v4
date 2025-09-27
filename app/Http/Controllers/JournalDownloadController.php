@@ -31,26 +31,192 @@ class JournalDownloadController extends Controller
                 'month' => 'required|integer|min:1|max:12'
             ]);
 
-            // --- DEBUGGING: CREATE DUMMY DOCUMENT ---
-            Log::info('--- DEBUG MODE: Creating a dummy Word document. ---');
+            // 1. Ambil data dari model Journal
+            $journals = Journal::query()
+                ->where('user_id', $request->user_id)
+                ->where('academic_year_id', $request->academic_year_id)
+                ->where('grade_id', $request->grade_id)
+                ->where('subject_id', $request->subject_id)
+                ->whereMonth('date', $request->month)
+                ->orderBy('date', 'asc')
+                ->get();
 
+            // Check if journals exist
+            if ($journals->isEmpty()) {
+                Log::warning('No journals found for criteria', $request->all());
+                return response()->json([
+                    'error' => 'Tidak ada jurnal ditemukan untuk kriteria yang diberikan'
+                ], 404);
+            }
+
+            Log::info('Found journals', ['count' => $journals->count()]);
+
+            // 2. Generate Word Document
             $phpWord = new PhpWord();
             $section = $phpWord->addSection();
-
-            $section->addTitle('Tes Dokumen Dummy', 0);
+            
+            // Header
             $section->addText(
-                'Ini adalah file Word yang dibuat untuk tujuan debugging. ' .
-                'Jika file ini dapat diunduh dan dibuka dengan benar, itu berarti proses pembuatan file dan mekanisme unduhan berfungsi.'
-            );
-            $section->addText(
-                'Masalahnya kemungkinan besar terletak pada konten dinamis yang dimasukkan ke dalam dokumen (misalnya, data dari database, pemrosesan HTML, atau penyisipan gambar).'
-            );
-            $section->addTextBreak(1);
-            $section->addText(
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam. Proin sed libero.'
+                'Laporan Jurnal Mengajar',
+                [
+                    'alignment' => 'center',
+                    'size' => 24,
+                    'bold' => true,
+                ]
             );
 
-            $filename = 'dummy_document_test.docx';
+            $firstJournal = $journals->first();
+            $section->addText(
+                'Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A'),
+                [
+                    'bold' => true,
+                    'size' => 14,
+                ]
+            );
+            $section->addText(
+                'Tahun Ajaran: ' . ($firstJournal->academicYear->year ?? 'N/A'),
+                [
+                    'bold' => true,
+                    'size' => 14,
+                ]
+            );
+            $section->addText(
+                'Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A'),
+                [
+                    'bold' => true,
+                    'size' => 14,
+                ]
+            );
+            $section->addText(
+                'Periode: ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'),
+                [
+                    'bold' => true,
+                    'size' => 14,
+                ]
+            );
+
+            // Journal entries
+            foreach ($journals as $journal) {
+                $section->addText('--------------------------------****--------------------------------');
+                $section->addText(
+                    $journal->date->format('d F Y'),
+                    [
+                        'alignment' => 'center',
+                        'size' => 14,
+                    ]
+                );
+
+                $section->addText('Main Target:', ['bold' => true]);
+                $section->addText($journal->mainTarget->main_target);
+                $section->addText('Target:', ['bold' => true]);
+                
+                // Add list target
+                foreach ($journal->target_id as $target_id) {
+                    $target = Target::find($target_id);
+                    if ($target) {
+                        $section->addListItem($target->target);
+                    }
+                }
+
+                $section->addText('Chapter:', ['bold' => true]);
+                $section->addText($journal->chapter);
+                $section->addText('Aktivitas:', ['bold' => true]);
+                
+                // --- DISABLED FOR DEBUGGING ---
+                // Html::addHtml($section, $journal->activity);
+                $section->addText('[Pemrosesan HTML aktivitas dinonaktifkan untuk debugging]');
+                
+                $section->addText('Catatan:', ['bold' => true]);
+                $section->addText($journal->notes);
+
+                // Attendance
+                $section->addText('Ketidakhadiran:', ['bold' => true]);
+                $attendance = $journal->attendance;
+                foreach ($attendance as $item) {
+                    $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
+                }
+
+                $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
+
+                // --- DISABLED FOR DEBUGGING ---
+                $section->addText('[Pemrosesan gambar dinonaktifkan untuk debugging]');
+                /*
+                $images = $journal->getMedia('activity_photos');
+
+                if ($images->isEmpty()) {
+                    $section->addText('Jurnal ini tidak memiliki dokumentasi kegiatan');
+                } else {
+                    foreach ($images as $image) {
+                        try {
+                            $imagePath = $image->getPath();
+                            $maxFileSize = 2 * 1024 * 1024; // 2MB limit
+
+                            if (!file_exists($imagePath) || filesize($imagePath) > $maxFileSize) {
+                                $errorMessage = !file_exists($imagePath) 
+                                    ? 'File gambar tidak ditemukan.' 
+                                    : 'Ukuran gambar melebihi batas (maks 2MB).';
+                                
+                                Log::warning('Skipping image in journal download.', [
+                                    'journal_id' => $journal->id,
+                                    'media_id' => $image->id,
+                                    'path' => $imagePath,
+                                    'reason' => $errorMessage
+                                ]);
+                                $section->addText("[$errorMessage]", ['color' => 'ff0000', 'italic' => true]);
+                                continue;
+                            }
+
+                            $section->addImage($imagePath, [
+                                'width'         => 450, // Set a fixed width
+                                'wrappingStyle' => 'inline',
+                                'align'         => 'center'
+                            ]);
+                            $section->addTextBreak(1);
+                        } catch (\Exception $e) {
+                            Log::error("File corrupt - error saat memproses gambar", [
+                                'journal_id' => $journal->id,
+                                'image_id' => $image->id,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+                            $section->addText('[Error memproses gambar: ' . $e->getMessage() . ']');
+                            continue;
+                        }
+                    }
+                }
+                */
+
+                // Signature table
+                $this->addSignatureTable($section, $journal);
+
+                // Add page break except for last journal
+                if (!$journal->is($journals->last())) {
+                    $section->addPageBreak();
+                }
+            }
+
+            // Add attendance summary
+            $this->addAttendanceSummary($section, $journals);
+
+            // Final signature table
+            $this->addSignatureTable($section, $firstJournal);
+
+            // Generate filename
+            $monthNames = [
+                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            ];
+            
+            $monthName = $monthNames[$request->month];
+            
+            // Clean subject name and academic year for filename
+            $subjectName = $this->cleanFilename($firstJournal->subject->code ?? 'Subject');
+            $subjectName = str_replace(' ', '_', $subjectName);
+            
+            $academicYear = $this->cleanFilename($firstJournal->academicYear->year ?? date('Y'));
+            
+            $filename = "Jurnal_{$subjectName}_{$monthName}_{$academicYear}.docx";
 
             // Alternative Download Method: Save to temp file first
             $tempDir = storage_path('app/temp_journals');
