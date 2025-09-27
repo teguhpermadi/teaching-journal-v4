@@ -145,12 +145,29 @@ class JournalDownloadController extends Controller
                     foreach ($images as $image) {
                         try {
                             $imagePath = $image->getPath();
+                            $maxFileSize = 2 * 1024 * 1024; // 2MB limit
+
+                            if (!file_exists($imagePath) || filesize($imagePath) > $maxFileSize) {
+                                $errorMessage = !file_exists($imagePath) 
+                                    ? 'File gambar tidak ditemukan.' 
+                                    : 'Ukuran gambar melebihi batas (maks 2MB).';
+                                
+                                Log::warning('Skipping image in journal download.', [
+                                    'journal_id' => $journal->id,
+                                    'media_id' => $image->id,
+                                    'path' => $imagePath,
+                                    'reason' => $errorMessage
+                                ]);
+                                $section->addText("[$errorMessage]", ['color' => 'ff0000', 'italic' => true]);
+                                continue;
+                            }
 
                             $section->addImage($imagePath, [
-                                'width' => 100,
-                                'wrappingStyle' => 'inline'
+                                'width'         => 450, // Set a fixed width
+                                'wrappingStyle' => 'inline',
+                                'align'         => 'center'
                             ]);
-                            $section->addTextBreak(1);    
+                            $section->addTextBreak(1);
                         } catch (\Exception $e) {
                             Log::error("File corrupt - error saat memproses gambar", [
                                 'journal_id' => $journal->id,
@@ -206,14 +223,31 @@ class JournalDownloadController extends Controller
                 'final_filename' => $filename
             ]);
 
+            // Clean output buffer before streaming
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+
             // Create streamed response for direct download
             return new StreamedResponse(function() use ($phpWord) {
-                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-                $writer->save('php://output');
+                // Ensure no further output buffering is happening here
+                if (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+                
+                try {
+                    $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                    $writer->save('php://output');
+                } catch (\Exception $e) {
+                    Log::error('Error during PhpWord save to output.', ['error' => $e->getMessage()]);
+                    // We can't send a JSON response here as headers are already sent.
+                    // We can just stop the execution.
+                }
             }, 200, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
                 'Cache-Control' => 'max-age=0',
+                'Pragma' => 'public',
             ]);
 
         } catch (\Exception $e) {
