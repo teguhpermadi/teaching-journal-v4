@@ -106,31 +106,23 @@ class JournalDownloadController extends Controller
                     ]
                 );
 
-                // $section->addText('Main Target:', ['bold' => true]);
-                // $section->addText($journal->mainTarget->main_target);
-                // $section->addText('Target:', ['bold' => true]);
+                $section->addText('Main Target:', ['bold' => true]);
+                $section->addText($journal->mainTarget->main_target);
+                $section->addText('Target:', ['bold' => true]);
                 
-                // // Add list target
-                // foreach ($journal->target_id as $target_id) {
-                //     $target = Target::find($target_id);
-                //     if ($target) {
-                //         $section->addListItem($target->target);
-                //     }
-                // }
+                // Add list target
+                foreach ($journal->target_id as $target_id) {
+                    $target = Target::find($target_id);
+                    if ($target) {
+                        $section->addListItem($target->target);
+                    }
+                }
 
                 $section->addText('Chapter:', ['bold' => true]);
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
                 
-                try {
-                    Html::addHtml($section, $journal->activity);
-                } catch (\Exception $e) {
-                    Log::warning('Error adding HTML activity, using plain text', [
-                        'journal_id' => $journal->id,
-                        'error' => $e->getMessage()
-                    ]);
-                    $section->addText(strip_tags($journal->activity));
-                }
+                Html::addHtml($section, $journal->activity);
                 
                 $section->addText('Catatan:', ['bold' => true]);
                 $section->addText($journal->notes);
