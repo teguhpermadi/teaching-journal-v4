@@ -54,7 +54,7 @@ class JournalDownloadController extends Controller
             // 2. Generate Word Document
             $phpWord = new PhpWord();
             $section = $phpWord->addSection();
-            
+
             // Header
             $section->addText(
                 'Laporan Jurnal Mengajar',
@@ -109,7 +109,7 @@ class JournalDownloadController extends Controller
                 $section->addText('Main Target:', ['bold' => true]);
                 $section->addText($journal->mainTarget->main_target);
                 $section->addText('Target:', ['bold' => true]);
-                
+
                 // Add list target
                 foreach ($journal->target_id as $target_id) {
                     $target = Target::find($target_id);
@@ -121,12 +121,19 @@ class JournalDownloadController extends Controller
                 $section->addText('Chapter:', ['bold' => true]);
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
-                
+
                 // Sanitize HTML before adding to Word to prevent corruption
-                $allowed_tags = '<p><strong><b><em><i><ul><ol><li>';
-                $clean_activity_html = strip_tags($journal->activity, $allowed_tags);
-                Html::addHtml($section, $clean_activity_html);
-                
+                // Define your HTML content
+                $htmlContent = '<h1>This is a Heading</h1>
+                    <p>This is a paragraph with <strong>bold text</strong> and <em>italic text</em>.</p>
+                    <ul>
+                        <li>Item 1</li>
+                        <li>Item 2</li>
+                    </ul>';
+
+                // Add the HTML content to the section
+                Html::addHtml($section, $htmlContent);
+
                 $section->addText('Catatan:', ['bold' => true]);
                 $section->addText($journal->notes);
 
@@ -150,10 +157,10 @@ class JournalDownloadController extends Controller
                             $maxFileSize = 2 * 1024 * 1024; // 2MB limit
 
                             if (!file_exists($imagePath) || filesize($imagePath) > $maxFileSize) {
-                                $errorMessage = !file_exists($imagePath) 
-                                    ? 'File gambar tidak ditemukan.' 
+                                $errorMessage = !file_exists($imagePath)
+                                    ? 'File gambar tidak ditemukan.'
                                     : 'Ukuran gambar melebihi batas (maks 2MB).';
-                                
+
                                 Log::warning('Skipping image in journal download.', [
                                     'journal_id' => $journal->id,
                                     'media_id' => $image->id,
@@ -200,19 +207,28 @@ class JournalDownloadController extends Controller
 
             // Generate filename
             $monthNames = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember'
             ];
-            
+
             $monthName = $monthNames[$request->month];
-            
+
             // Clean subject name and academic year for filename
             $subjectName = $this->cleanFilename($firstJournal->subject->code ?? 'Subject');
             $subjectName = str_replace(' ', '_', $subjectName);
-            
+
             $academicYear = $this->cleanFilename($firstJournal->academicYear->year ?? date('Y'));
-            
+
             $filename = "Jurnal_{$subjectName}_{$monthName}_{$academicYear}.docx";
 
             // Alternative Download Method: Save to temp file first
@@ -237,7 +253,6 @@ class JournalDownloadController extends Controller
 
             // Download the file and delete it after sending
             return response()->download($tempFilePath, $filename)->deleteFileAfterSend(true);
-
         } catch (\Exception $e) {
             Log::error("Error generating journal download", [
                 'error' => $e->getMessage(),
