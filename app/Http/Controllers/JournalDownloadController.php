@@ -143,7 +143,7 @@ class JournalDownloadController extends Controller
 
                 $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
-                /*
+                
                 $images = $journal->getMedia('activity_photos');
 
                 if ($images->isEmpty()) {
@@ -165,7 +165,7 @@ class JournalDownloadController extends Controller
                                 $imageInfo = getimagesize($imagePath);
                                 if ($imageInfo !== false) {
                                     $section->addImage($imagePath, [
-                                        'width' => $displayWidth,
+                                        'width' => 100,
                                         'wrappingStyle' => 'inline'
                                     ]);
                                     $section->addTextBreak(1);
@@ -199,7 +199,7 @@ class JournalDownloadController extends Controller
                         }
                     }
                 }
-                */
+                
 
                 // Signature table
                 $this->addSignatureTable($section, $journal);
@@ -226,7 +226,7 @@ class JournalDownloadController extends Controller
             $monthName = $monthNames[$request->month];
             
             // Clean subject name and academic year for filename
-            $subjectName = $this->cleanFilename($firstJournal->subject->name ?? 'Subject');
+            $subjectName = $this->cleanFilename($firstJournal->subject->code ?? 'Subject');
             $subjectName = str_replace(' ', '_', $subjectName);
             
             $academicYear = $this->cleanFilename($firstJournal->academicYear->year ?? date('Y'));
