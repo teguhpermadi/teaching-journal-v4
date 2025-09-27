@@ -122,9 +122,10 @@ class JournalDownloadController extends Controller
                 $section->addText($journal->chapter);
                 $section->addText('Aktivitas:', ['bold' => true]);
                 
-                // --- DISABLED FOR DEBUGGING ---
-                // Html::addHtml($section, $journal->activity);
-                $section->addText('[Pemrosesan HTML aktivitas dinonaktifkan untuk debugging]');
+                // Sanitize HTML before adding to Word to prevent corruption
+                $allowed_tags = '<p><strong><b><em><i><ul><ol><li>';
+                $clean_activity_html = strip_tags($journal->activity, $allowed_tags);
+                Html::addHtml($section, $clean_activity_html);
                 
                 $section->addText('Catatan:', ['bold' => true]);
                 $section->addText($journal->notes);
