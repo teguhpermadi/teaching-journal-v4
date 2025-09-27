@@ -67,6 +67,7 @@ class JournalForm
                             )->pluck('label', 'value');
                         }
                     )
+                    ->searchable()
                     ->preload()
                     ->required(),
                 Select::make('target_id')
