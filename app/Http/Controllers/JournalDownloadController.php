@@ -138,9 +138,6 @@ class JournalDownloadController extends Controller
 
                 $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
-                // --- DISABLED FOR DEBUGGING ---
-                $section->addText('[Pemrosesan gambar dinonaktifkan untuk debugging]');
-                /*
                 $images = $journal->getMedia('activity_photos');
 
                 if ($images->isEmpty()) {
@@ -184,7 +181,6 @@ class JournalDownloadController extends Controller
                         }
                     }
                 }
-                */
 
                 // Signature table
                 $this->addSignatureTable($section, $journal);
