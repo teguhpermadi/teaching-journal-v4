@@ -104,6 +104,9 @@ class TargetsRelationManager extends RelationManager
                     // DissociateBulkAction::make(),
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->modifyQueryUsing(function($query){
+                $query->myTargetsInSubject($this->getOwnerRecord()->id);
+            });
     }
 }

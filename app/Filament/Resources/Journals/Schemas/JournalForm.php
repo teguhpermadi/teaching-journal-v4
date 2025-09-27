@@ -67,6 +67,7 @@ class JournalForm
                             )->pluck('label', 'value');
                         }
                     )
+                    ->multiple()
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -74,7 +75,7 @@ class JournalForm
                     ->options(
                         function ($get){
                             $targets = Target::myTargetsInSubject($get('subject_id'))
-                            ->where('main_target_id', $get('main_target_id'))
+                            ->whereIn('main_target_id', $get('main_target_id'))
                             ->get();
 
                             if($targets->isEmpty()){
@@ -91,9 +92,9 @@ class JournalForm
                     )
                     ->multiple()
                     ->createOptionForm([
-                        // Hidden::make('subject_id')
-                        //     ->reactive()
-                        //     ->default(fn ($get) => $get('subject_id')),
+                        Hidden::make('subject_id')
+                            ->reactive()
+                            ->default(fn ($get) => $get('subject_id')),
                         // Hidden::make('grade_id')
                         //     ->reactive()
                         //     ->default(fn ($get) => $get('grade_id')),
@@ -103,6 +104,27 @@ class JournalForm
                         // Hidden::make('user_id')
                         //     ->reactive()
                         //     ->default(fn ($get) => $get('user_id')),
+                        Select::make('main_target_id')
+                            ->options(
+                                function ($get) {
+                                    $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
+                                        ->get();
+
+                                    if ($mainTargets->isEmpty()) {
+                                        return [];
+                                    }
+
+                                    return $mainTargets->map(
+                                        fn($mainTarget) => [
+                                            'label' => $mainTarget->main_target,
+                                            'value' => $mainTarget->id
+                                        ]
+                                    )->pluck('label', 'value');
+                                }
+                            )
+                            ->searchable()
+                            ->preload()
+                            ->required(),
                         TextInput::make('target')
                             ->required(),
                     ])

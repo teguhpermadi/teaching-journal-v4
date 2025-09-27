@@ -36,6 +36,7 @@ class Journal extends Model implements HasMedia, Eventable
 
     protected $casts = [
         'date' => 'date',
+        'main_target_id' => 'array',
         'target_id' => 'array',
     ];
 
@@ -77,14 +78,24 @@ class Journal extends Model implements HasMedia, Eventable
         return $this->hasMany(Transcript::class);
     }
 
-    public function targets()
+    /**
+     * Get the targets associated with the journal.
+     * This is an accessor because target_id stores an array of IDs.
+     */
+    public function getTargetsAttribute()
     {
-        return $this->belongsTo(Target::class, 'target_id', 'id');
+        return Target::whereIn('id', $this->target_id ?? [])->get();
     }
 
-    public function mainTarget()
+    /**
+     * Get the main targets associated with the journal.
+     * This is an accessor because main_target_id stores an array of IDs.
+     */
+    public function getMainTargetAttribute()
     {
-        return $this->belongsTo(MainTarget::class);
+        // The 'main_target_id' from the database is automatically cast to an array.
+        // We use that array to fetch all the corresponding MainTarget models.
+        return MainTarget::whereIn('id', $this->main_target_id ?? [])->get();
     }
 
     public function scopeMyJournals($query)

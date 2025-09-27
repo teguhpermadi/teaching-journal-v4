@@ -15,7 +15,7 @@ return new class extends Migration
             $table->dropForeign(['target_id']);
             $table->dropColumn('target_id');
             $table->text('target_id')->nullable();
-            $table->foreignUlid('main_target_id')->constrained()->cascadeOnDelete();
+            $table->text('main_target_id')->nullable();
         });
     }
 

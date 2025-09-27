@@ -18,7 +18,7 @@ class StudentFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'gender' => fake()->randomElement(['male', 'female']),
+            'gender' => fake()->randomElement(['laki-laki', 'perempuan']),
             'nisn' => fake()->unique()->numberBetween(100000000000, 999999999999),
             'nis' => fake()->unique()->numberBetween(100000000000, 999999999999),
             'photo' => fake()->image(storage_path('app/public/photos'), 640, 480, 'people', false),

@@ -8,6 +8,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -24,26 +25,31 @@ class JournalsTable
                     ->label('Date')
                     ->date('d, M Y')
                     ->sortable(),
-                TextColumn::make('mainTarget.main_target')
-                    ->label('Main Target')
-                    ->limit(100)
-                    ->wrap()
-                    ->searchable(),
+                SpatieMediaLibraryImageColumn::make('activity_photos')
+                    ->label('Photos')
+                    ->collection('activity_photos')
+                    ->stacked()
+                    ->circular(),
+                // TextColumn::make('mainTarget.main_target')
+                //     ->label('Main Target')
+                //     ->limit(100)
+                //     ->wrap()
+                //     ->searchable(),
                 TextColumn::make('chapter')
                     ->label('Chapter')
                     ->wrap()
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('target_id')
-                    ->label('Target')
-                    ->getStateUsing(function ($record) {
-                        return collect($record->target_id)->map(function ($target_id) {
-                            return Target::find($target_id)->target;
-                        });
-                    })
-                    ->wrap()
-                    ->bulleted()
-                    ->searchable(),
+                // TextColumn::make('target_id')
+                //     ->label('Target')
+                //     ->getStateUsing(function ($record) {
+                //         return collect($record->target_id)->map(function ($target_id) {
+                //             return Target::find($target_id)->target;
+                //         });
+                //     })
+                //     ->wrap()
+                //     ->bulleted()
+                //     ->searchable(),
                 TextColumn::make('attendance_count')
                     ->counts('attendance')
                     ->label('Attendance Count'),
