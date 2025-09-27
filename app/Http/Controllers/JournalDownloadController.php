@@ -223,32 +223,28 @@ class JournalDownloadController extends Controller
                 'final_filename' => $filename
             ]);
 
-            // Clean output buffer before streaming
-            if (ob_get_level() > 0) {
-                ob_end_clean();
+            // Alternative Download Method: Save to temp file first
+            $tempDir = storage_path('app/temp_journals');
+            if (!is_dir($tempDir)) {
+                mkdir($tempDir, 0775, true);
+            }
+            $tempFilePath = $tempDir . '/' . uniqid() . '_' . $filename;
+
+            try {
+                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                $writer->save($tempFilePath);
+            } catch (\Exception $e) {
+                Log::error('Failed to save temporary journal file.', [
+                    'path' => $tempFilePath,
+                    'error' => $e->getMessage()
+                ]);
+                return response()->json(['error' => 'Gagal menyimpan file jurnal sementara.'], 500);
             }
 
-            // Create streamed response for direct download
-            return new StreamedResponse(function() use ($phpWord) {
-                // Ensure no further output buffering is happening here
-                if (ob_get_level() > 0) {
-                    ob_end_clean();
-                }
-                
-                try {
-                    $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-                    $writer->save('php://output');
-                } catch (\Exception $e) {
-                    Log::error('Error during PhpWord save to output.', ['error' => $e->getMessage()]);
-                    // We can't send a JSON response here as headers are already sent.
-                    // We can just stop the execution.
-                }
-            }, 200, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Cache-Control' => 'max-age=0',
-                'Pragma' => 'public',
-            ]);
+            Log::info('Journal saved to temporary file, preparing download.', ['path' => $tempFilePath]);
+
+            // Download the file and delete it after sending
+            return response()->download($tempFilePath, $filename)->deleteFileAfterSend(true);
 
         } catch (\Exception $e) {
             Log::error("Error generating journal download", [
