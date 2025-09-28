@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Journal;
+use App\Models\MainTarget;
 use App\Models\Target;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,7 +109,14 @@ class JournalDownloadController extends Controller
                 );
 
                 $section->addText('Capaian Pembelajaran:', ['bold' => true]);
-                $section->addText($journal->mainTarget->main_target);
+                
+                // add list main target
+                foreach ($journal->main_target_id as $main_target_id) {
+                    $main_target = MainTarget::find($main_target_id);
+                    if ($main_target) {
+                        $section->addListItem($main_target->main_target);
+                    }
+                }
 
                 $section->addText('Tujuan Pembelajaran:', ['bold' => true]);
 
@@ -133,8 +141,12 @@ class JournalDownloadController extends Controller
                 // Attendance
                 $section->addText('Ketidakhadiran:', ['bold' => true]);
                 $attendance = $journal->attendance;
-                foreach ($attendance as $item) {
-                    $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
+                if ($attendance->isEmpty()) {
+                    $section->addText('Pada tanggal ini semua siswa masuk semua.');
+                } else {
+                    foreach ($attendance as $item) {
+                        $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
+                    }
                 }
 
                 $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
@@ -144,15 +156,14 @@ class JournalDownloadController extends Controller
                 if ($images->isEmpty()) {
                     $section->addText('Pada tanggal ini tidak ada dokumentasi kegiatan.');
                 } else {
+                    // Create a single centered paragraph (TextRun) to hold all images
+                    $textRun = $section->addTextRun(['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
                     foreach ($images as $image) {
                         try {
                             $imagePath = $image->getPath();
-                            $section->addImage($imagePath, [
-                                'width'         => 100, // Set a fixed width
-                                'wrappingStyle' => 'inline',
-                                'align'         => 'center'
-                            ]);
-                            $section->addTextBreak(1);
+                            // Add the image to the TextRun, followed by spaces for separation
+                            $textRun->addImage($imagePath, ['width' => 100]);
+                            $textRun->addText('    '); // Add some space between images
 
                         } catch (\Exception $e) {
                             Log::error("File corrupt - error saat memproses gambar", [
@@ -161,6 +172,7 @@ class JournalDownloadController extends Controller
                                 'error' => $e->getMessage(),
                                 'trace' => $e->getTraceAsString()
                             ]);
+                            // If an image fails, add an error message on a new line in the main section
                             $section->addText('[Error memproses gambar: ' . $e->getMessage() . ']');
                             continue;
                         }
@@ -260,15 +272,15 @@ class JournalDownloadController extends Controller
         $cell1 = $table->addCell(4500, $cellStyle);
         $cell1->addText('Mengetahui,', ['alignment' => 'center']);
         $cell1->addText('Kepala Sekolah', ['alignment' => 'center']);
-        $cell1->addTextBreak(4);
+        $cell1->addTextBreak(3);
         $cell1->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
         $cell1->addText('NIP: ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
         // Kolom kedua - Tanda tangan Guru
         $cell2 = $table->addCell(4500, $cellStyle);
-        $cell2->addText('Mengetahui,', ['alignment' => 'center']);
+        $cell2->addTextBreak(1);
         $cell2->addText('Guru Pengajar', ['alignment' => 'center']);
-        $cell2->addTextBreak(4);
+        $cell2->addTextBreak(3);
         $cell2->addText('Nama: ' . $journal->user->name, ['bold' => true, 'alignment' => 'center']);
         $cell2->addText('NIP: ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
