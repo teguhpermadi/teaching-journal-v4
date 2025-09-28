@@ -36,9 +36,7 @@ class AttendancesTable
                 TextColumn::make('status')
                     ->badge()
                     ->label('Status')
-                    ->sortable(),
-                TextColumn::make('student_id')
-                    ->label('Student Count')
+                    ->sortable()
                     ->summarize(Sum::make()
                         ->label('Total Ketidakhadiran')
                         ->suffix(' hari')),
