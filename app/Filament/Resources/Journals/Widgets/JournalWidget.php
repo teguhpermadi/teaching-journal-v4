@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Journals\Widgets;
 
+use App\Filament\Resources\Journals\JournalResource;
 use App\Models\AcademicYear;
 use App\Models\Journal;
 use App\Models\MainTarget;
@@ -32,15 +33,15 @@ use Illuminate\Support\Facades\Auth;
 class JournalWidget extends CalendarWidget
 {
     protected ?string $locale = 'id';
-    
+
     protected bool $dateClickEnabled = true;
-    
+
     protected bool $eventClickEnabled = true;
-    
+
     protected bool $eventDragEnabled = true;
-    
+
     protected ?string $defaultEventClickAction = null; // Disable default action untuk menggunakan context menu
-    
+
     // Property untuk menyimpan tanggal yang diklik
     public ?string $selectedDate = null;
 
@@ -54,21 +55,19 @@ class JournalWidget extends CalendarWidget
         $this->refreshRecords();
     }
 
-
-
     protected function onDateClick(DateClickInfo $info): void
     {
         // Simpan tanggal yang diklik dengan reflection
         $selectedDate = null;
-        
+
         try {
             $reflection = new \ReflectionClass($info);
             $properties = $reflection->getProperties();
-            
+
             foreach ($properties as $property) {
                 $property->setAccessible(true);
                 $value = $property->getValue($info);
-                
+
                 if (in_array($property->getName(), ['date', 'dateStr', 'start', 'startStr']) && $value) {
                     $selectedDate = $value;
                     break;
@@ -77,12 +76,12 @@ class JournalWidget extends CalendarWidget
         } catch (\Exception $e) {
             // Silent fail
         }
-        
+
         // Fallback
         if (!$selectedDate) {
             $selectedDate = $info->date ?? $info->dateStr ?? now()->format('Y-m-d');
         }
-        
+
         $this->selectedDate = $selectedDate;
         $this->mountAction('createJournalAction');
     }
@@ -104,10 +103,10 @@ class JournalWidget extends CalendarWidget
                 $startProperty = $reflection->getProperty('start');
                 $startProperty->setAccessible(true);
                 $newDate = $startProperty->getValue($info->event);
-                
+
                 // Format tanggal untuk database
                 $formattedDate = $newDate->format('Y-m-d');
-                
+
                 // Update journal dengan tanggal baru
                 $event->update(['date' => $formattedDate]);
                 $this->refreshRecords();
@@ -133,8 +132,6 @@ class JournalWidget extends CalendarWidget
         return false;
     }
 
-
-
     public function createJournalAction(): CreateAction
     {
         return $this->createAction(Journal::class)
@@ -143,7 +140,7 @@ class JournalWidget extends CalendarWidget
             ->fillForm(function (array $arguments): array {
                 // Gunakan tanggal yang disimpan dari onDateClick
                 $dateToUse = $this->selectedDate ?? now()->format('Y-m-d');
-                
+
                 // Pastikan format tanggal benar
                 if ($dateToUse && !is_string($dateToUse)) {
                     if ($dateToUse instanceof \Carbon\Carbon) {
@@ -154,10 +151,10 @@ class JournalWidget extends CalendarWidget
                         $dateToUse = (string) $dateToUse;
                     }
                 }
-                
+
                 // Reset selectedDate setelah digunakan
                 $this->selectedDate = null;
-                
+
                 return [
                     'date' => $dateToUse,
                 ];
@@ -165,19 +162,19 @@ class JournalWidget extends CalendarWidget
             ->mutateFormDataUsing(function (array $data): array {
                 $data['academic_year_id'] = AcademicYear::active()->first()->id;
                 $data['user_id'] = Auth::id();
-                
+
                 if (isset($data['subject_id'])) {
                     $subject = Subject::find($data['subject_id']);
                     if ($subject) {
                         $data['grade_id'] = $subject->grade_id;
                     }
                 }
-                
+
                 return $data;
             })
             ->after(function () {
                 $this->refreshRecords();
-                
+
                 // Notification::make()
                 //     ->title('Journal berhasil dibuat')
                 //     ->success()
@@ -197,12 +194,12 @@ class JournalWidget extends CalendarWidget
                         $data['grade_id'] = $subject->grade_id;
                     }
                 }
-                
+
                 return $data;
             })
             ->after(function () {
                 $this->refreshRecords();
-                
+
                 Notification::make()
                     ->title('Journal berhasil diupdate')
                     ->success()
@@ -219,14 +216,13 @@ class JournalWidget extends CalendarWidget
             ->modalSubmitActionLabel('Ya, Hapus')
             ->after(function () {
                 $this->refreshRecords();
-                
+
                 Notification::make()
                     ->title('Journal berhasil dihapus')
                     ->success()
                     ->send();
             });
     }
-
 
     protected function getJournalForm(): array
     {
@@ -235,55 +231,60 @@ class JournalWidget extends CalendarWidget
                 ->label('Tanggal')
                 ->default(now())
                 ->required(),
-                
+
             Select::make('subject_id')
                 ->label('Mata Pelajaran')
                 ->options(
-                    fn () => Subject::mySubjects()
-                    ->get()
-                    ->map(
-                        fn ($subject) => [
-                            'label' => $subject->code . ' - ' . $subject->grade->name,
-                            'value' => $subject->id
-                        ]
-                    )->pluck('label', 'value')
+                    fn() => Subject::mySubjects()
+                        ->get()
+                        ->map(
+                            fn($subject) => [
+                                'label' => $subject->code . ' - ' . $subject->grade->name,
+                                'value' => $subject->id
+                            ]
+                        )->pluck('label', 'value')
                 )
                 ->searchable()
                 ->preload()
+                ->reactive()
                 ->required(),
-
-                Select::make('main_target_id')
+            Select::make('main_target_id')
                 ->options(
-                    function ($get){
+                    function ($get) {
                         $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
-                        ->get();
+                            ->get();
 
-                        if($mainTargets->isEmpty()){
+                        if ($mainTargets->isEmpty()) {
                             return [];
                         }
 
                         return $mainTargets->map(
-                            fn ($mainTarget) => [
+                            fn($mainTarget) => [
                                 'label' => $mainTarget->main_target,
                                 'value' => $mainTarget->id
                             ]
                         )->pluck('label', 'value');
                     }
                 )
+                ->reactive()
+                ->searchable()
+                ->multiple()
+                ->preload()
                 ->required(),
+
             Select::make('target_id')
                 ->options(
-                    function ($get){
+                    function ($get) {
                         $targets = Target::myTargetsInSubject($get('subject_id'))
-                        ->where('main_target_id', $get('main_target_id'))
-                        ->get();
+                            ->whereIn('main_target_id', $get('main_target_id'))
+                            ->get();
 
-                        if($targets->isEmpty()){
+                        if ($targets->isEmpty()) {
                             return [];
                         }
 
                         return $targets->map(
-                            fn ($target) => [
+                            fn($target) => [
                                 'label' => $target->target,
                                 'value' => $target->id
                             ]
@@ -307,7 +308,7 @@ class JournalWidget extends CalendarWidget
                     TextInput::make('target')
                         ->required(),
                 ])
-                ->createOptionUsing(function($data, $get){
+                ->createOptionUsing(function ($data, $get) {
                     // dd($get('subject_id'));
                     Target::create([
                         'subject_id' => $get('subject_id'),
@@ -322,12 +323,12 @@ class JournalWidget extends CalendarWidget
                 ->searchable()
                 ->preload()
                 ->required(),
-                
+
             TextInput::make('chapter')
                 ->label('Bab/Materi')
                 ->required()
                 ->columnSpanFull(),
-                
+
             RichEditor::make('activity')
                 ->label('Kegiatan Pembelajaran')
                 ->toolbarButtons([
@@ -339,11 +340,11 @@ class JournalWidget extends CalendarWidget
                 ])
                 ->required()
                 ->columnSpanFull(),
-                
+
             Textarea::make('notes')
                 ->label('Catatan')
                 ->columnSpanFull(),
-                
+
             SpatieMediaLibraryFileUpload::make('activity_photos')
                 ->label('Foto Kegiatan')
                 ->hint('Upload foto kegiatan pembelajaran')
