@@ -23,7 +23,7 @@ class JournalsTable
             ->columns([
                 TextColumn::make('date')
                     ->label('Date')
-                    ->date('d, M Y')
+                    ->date('D, d M Y')
                     ->sortable(),
                 SpatieMediaLibraryImageColumn::make('activity_photos')
                     ->label('Photos')
