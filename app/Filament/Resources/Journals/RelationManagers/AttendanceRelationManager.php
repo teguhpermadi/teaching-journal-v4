@@ -20,6 +20,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -58,12 +59,14 @@ class AttendanceRelationManager extends RelationManager
             ->recordTitleAttribute('student.name')
             ->columns([
                 TextColumn::make('student.name')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('student.nis')
+                    ->sortable()
                     ->searchable(),
-                TextColumn::make('status')
-                    ->searchable()
-                    ->badge(),
+                SelectColumn::make('status')
+                    ->options(StatusAttendanceEnum::class)
+                    ->sortable(),
             ])
             ->filters([
                 //
@@ -76,11 +79,11 @@ class AttendanceRelationManager extends RelationManager
                     ->modalWidth('md'),
             ])
             ->recordActions([
-                EditAction::make()
-                    ->slideOver()
-                    ->modalHeading('Edit Attendance')
-                    ->modalDescription('Edit attendance for this journal')
-                    ->modalWidth('md'),
+                // EditAction::make()
+                //     ->slideOver()
+                //     ->modalHeading('Edit Attendance')
+                //     ->modalDescription('Edit attendance for this journal')
+                //     ->modalWidth('md'),
                 DeleteAction::make(),
             ])
             ->toolbarActions([
