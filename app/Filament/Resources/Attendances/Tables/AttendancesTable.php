@@ -58,6 +58,7 @@ class AttendancesTable
                 // ]),
             ])
             ->defaultGroup('student.name', 'date')
+            ->orderBy('date', 'desc')
             ->modifyQueryUsing(function (Builder $query) {
                 // check user role teacher
                 if (auth()->user()->hasRole('teacher')) {
