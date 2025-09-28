@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\AcademicYearScope;
+use App\TeachingStatusEnum;
 use Guava\Calendar\Contracts\Eventable;
 use Guava\Calendar\ValueObjects\CalendarEvent;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -32,12 +33,14 @@ class Journal extends Model implements HasMedia, Eventable
         'chapter',
         'activity',
         'notes',
+        'status',
     ];
 
     protected $casts = [
         'date' => 'date',
         'main_target_id' => 'array',
         'target_id' => 'array',
+        'status' => TeachingStatusEnum::class,
     ];
 
     protected static function booted(): void

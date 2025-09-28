@@ -8,11 +8,13 @@ use App\Models\Journal;
 use App\Models\MainTarget;
 use App\Models\Subject;
 use App\Models\Target;
+use App\TeachingStatusEnum;
 use Filament\Actions\Action;
 use Guava\Calendar\Filament\Actions\CreateAction;
 use Guava\Calendar\Filament\Actions\EditAction;
 use Guava\Calendar\Filament\Actions\DeleteAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -248,7 +250,19 @@ class JournalWidget extends CalendarWidget
                 ->preload()
                 ->reactive()
                 ->required(),
+            Radio::make('status')
+                ->options(TeachingStatusEnum::class)
+                ->default(TeachingStatusEnum::PEMBELAJARAN)
+                ->columnSpanFull()
+                ->afterStateUpdated(function ($state, callable $set) {
+                    $set('main_target_id', []);
+                    $set('target_id', []);
+                })
+                ->inline()
+                ->reactive()
+                ->required(),
             Select::make('main_target_id')
+                ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                 ->options(
                     function ($get) {
                         $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
@@ -273,6 +287,7 @@ class JournalWidget extends CalendarWidget
                 ->required(),
 
             Select::make('target_id')
+                ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                 ->options(
                     function ($get) {
                         $targets = Target::myTargetsInSubject($get('subject_id'))

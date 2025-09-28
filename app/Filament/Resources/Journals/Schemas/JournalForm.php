@@ -6,13 +6,16 @@ use App\Models\AcademicYear;
 use App\Models\MainTarget;
 use App\Models\Subject;
 use App\Models\Target;
+use App\TeachingStatusEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 
@@ -49,7 +52,19 @@ class JournalForm
                     ->searchable()
                     ->preload()
                     ->required(),
+                Radio::make('status')
+                    ->options(TeachingStatusEnum::class)
+                    ->default(TeachingStatusEnum::PEMBELAJARAN)
+                    ->columnSpanFull()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $set('main_target_id', []);
+                        $set('target_id', []);
+                    })
+                    ->inline()
+                    ->reactive()
+                    ->required(),
                 Select::make('main_target_id')
+                    ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                     ->options(
                         function ($get){
                             $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
@@ -69,9 +84,9 @@ class JournalForm
                     )
                     ->multiple()
                     ->searchable()
-                    ->preload()
-                    ->required(),
+                    ->preload(),
                 Select::make('target_id')
+                    ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                     ->options(
                         function ($get){
                             $targets = Target::myTargetsInSubject($get('subject_id'))
@@ -141,8 +156,7 @@ class JournalForm
                     })
                     ->reactive()
                     ->searchable()
-                    ->preload()
-                    ->required(),
+                    ->preload(),
                 TextInput::make('chapter')
                     ->columnSpan('full')
                     ->required(),
