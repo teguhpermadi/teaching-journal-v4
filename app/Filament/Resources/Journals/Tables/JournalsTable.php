@@ -29,6 +29,7 @@ class JournalsTable
                     ->label('Photos')
                     ->collection('activity_photos')
                     ->stacked()
+                    ->limit(3)
                     ->circular(),
                 // TextColumn::make('mainTarget.main_target')
                 //     ->label('Main Target')
