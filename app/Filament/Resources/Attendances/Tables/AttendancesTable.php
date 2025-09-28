@@ -25,7 +25,10 @@ class AttendancesTable
                 TextColumn::make('student.name')
                     ->label('Student')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->summarize(Sum::make()
+                        ->label('Total Ketidakhadiran')
+                        ->suffix(' hari')),
                 TextColumn::make('student.grades.name')
                     ->label('Grade')
                     ->sortable(),
@@ -36,10 +39,7 @@ class AttendancesTable
                 TextColumn::make('status')
                     ->badge()
                     ->label('Status')
-                    ->sortable()
-                    ->summarize(Sum::make()
-                        ->label('Total Ketidakhadiran')
-                        ->suffix(' hari')),
+                    ->sortable(),
             ])
             ->filters([
                 TrashedFilter::make(),
