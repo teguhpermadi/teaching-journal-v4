@@ -56,8 +56,11 @@ class JournalDownloadController extends Controller
             $phpWord = new PhpWord();
             \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
             $section = $phpWord->addSection();
+            $header = $section->addHeader();
+            $footer = $section->addFooter();
+            
 
-            // Header
+            // Title
             $section->addText(
                 'Laporan Jurnal Mengajar',
                 [
@@ -194,6 +197,12 @@ class JournalDownloadController extends Controller
             // Final signature table
             $this->addSignatureTable($section, $firstJournal);
 
+            // Header
+            $header->addText('Jurnal mengajar ' . $firstJournal->subject->code . ' | Periode ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'));
+
+            // footer
+            $footer->addPreserveText('Halaman {PAGE} dari {NUMPAGES}.', null, array('alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER));
+
             // Generate filename
             $monthNames = [
                 1 => 'Januari',
@@ -306,7 +315,7 @@ class JournalDownloadController extends Controller
             )
         );
 
-        $section->addText('Rekap Ketidakhadiran Bulan' . $journals->first()->date->format('F Y'), ['bold' => true, 'size' => 14]);
+        $section->addText('Rekap Ketidakhadiran Bulan ' . $journals->first()->date->format('F Y'), ['bold' => true, 'size' => 14]);
         $attendance = Attendance::query()
             ->whereIn('journal_id', $journals->pluck('id'))
             ->get();
