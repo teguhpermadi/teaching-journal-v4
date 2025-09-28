@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -24,10 +25,7 @@ class AttendancesTable
                 TextColumn::make('student.name')
                     ->label('Student')
                     ->sortable()
-                    ->searchable()
-                    ->summarize(Sum::make()
-                        ->label('Total Ketidakhadiran')
-                        ->suffix(' hari')),
+                    ->searchable(),
                 TextColumn::make('student.grades.name')
                     ->label('Grade')
                     ->sortable(),
@@ -39,6 +37,11 @@ class AttendancesTable
                     ->badge()
                     ->label('Status')
                     ->sortable(),
+                TextColumn::make('student_id')
+                    ->label('Student Count')
+                    ->summarize(Sum::make()
+                        ->label('Total Ketidakhadiran')
+                        ->suffix(' hari')),
             ])
             ->filters([
                 TrashedFilter::make(),
