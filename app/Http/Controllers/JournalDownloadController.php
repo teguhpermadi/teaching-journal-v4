@@ -17,7 +17,7 @@ class JournalDownloadController extends Controller
 {
     public function downloadJournal(Request $request)
     {
-        try {
+        // try {
             Log::info('Journal download started', [
                 'request_data' => $request->all(),
                 'user_id' => Auth::id()
@@ -42,7 +42,7 @@ class JournalDownloadController extends Controller
                 ->orderBy('date', 'asc')
                 ->get();
 
-            dd($journals);
+            // dd($journals);
 
             // Check if journals exist
             if ($journals->isEmpty()) {
@@ -115,22 +115,14 @@ class JournalDownloadController extends Controller
 
                 $section->addText('Capaian Pembelajaran:', ['bold' => true]);
                 
-                // add list main target
-                foreach ($journal->main_target_id as $main_target_id) {
-                    $main_target = MainTarget::find($main_target_id);
-                    if ($main_target) {
-                        $section->addListItem($main_target->main_target);
-                    }
+                foreach ($journal->mainTargets as $main_target) {
+                    $section->addListItem($main_target->main_target);
                 }
-
+                
                 $section->addText('Tujuan Pembelajaran:', ['bold' => true]);
-
-                // Add list target
-                foreach ($journal->target_id as $target_id) {
-                    $target = Target::find($target_id);
-                    if ($target) {
-                        $section->addListItem($target->target);
-                    }
+                
+                foreach ($journal->targets as $target) {
+                    $section->addListItem($target->target);
                 }
 
                 $section->addText('Bab:', ['bold' => true]);
@@ -250,17 +242,17 @@ class JournalDownloadController extends Controller
                 'Cache-Control' => 'max-age=0',
                 'Pragma' => 'public',
             ]);
-        } catch (\Exception $e) {
-            Log::error("Error generating journal download", [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
+        // } catch (\Exception $e) {
+        //     Log::error("Error generating journal download", [
+        //         'error' => $e->getMessage(),
+        //         'trace' => $e->getTraceAsString(),
+        //         'request_data' => $request->all()
+        //     ]);
 
-            return response()->json([
-                'error' => 'Terjadi kesalahan saat membuat file jurnal: ' . $e->getMessage()
-            ], 500);
-        }
+        //     return response()->json([
+        //         'error' => 'Terjadi kesalahan saat membuat file jurnal: ' . $e->getMessage()
+        //     ], 500);
+        // }
     }
 
     private function addSignatureTable($section, $journal)

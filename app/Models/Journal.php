@@ -15,12 +15,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
 
 #[ScopedBy(AcademicYearScope::class)]
 class Journal extends Model implements HasMedia, Eventable
 {
     /** @use HasFactory<\Database\Factories\JournalFactory> */
-    use HasFactory, HasUlids, SoftDeletes, InteractsWithMedia;
+    use HasFactory, HasUlids, SoftDeletes, InteractsWithMedia, HasJsonRelationships;
 
     protected $fillable = [
         'academic_year_id',
@@ -88,6 +89,16 @@ class Journal extends Model implements HasMedia, Eventable
     public function getTargetsAttribute()
     {
         return Target::whereIn('id', $this->target_id ?? [])->get();
+    }
+
+    public function mainTargets()
+    {
+        return $this->belongsToJson(MainTarget::class, 'main_target_id');
+    }
+
+    public function targets()
+    {
+        return $this->belongsToJson(Target::class, 'target_id');
     }
 
     /**

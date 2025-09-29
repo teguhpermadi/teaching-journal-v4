@@ -24,6 +24,7 @@
         "phpoffice/phpword": "^1.4",
         "spatie/laravel-medialibrary": "^11.14",
         "spatie/laravel-permission": "^6.21",
+        "staudenmeir/eloquent-json-relations": "^1.14",
         "stechstudio/filament-impersonate": "^4.0"
     },
     "require-dev": {
