@@ -102,9 +102,12 @@ class JournalDownloadController extends Controller
                 ]
             );
 
+            // add page break
+            $section->addPageBreak();
+
             // Journal entries
             foreach ($journals as $journal) {
-                $section->addText('--------------------------------****--------------------------------');
+                // $section->addText('--------------------------------****--------------------------------');
                 $section->addText(
                     $journal->date->format('d F Y'),
                     [
