@@ -42,6 +42,8 @@ class JournalDownloadController extends Controller
                 ->orderBy('date', 'asc')
                 ->get();
 
+            dd($journals);
+
             // Check if journals exist
             if ($journals->isEmpty()) {
                 Log::warning('No journals found for criteria', $request->all());
