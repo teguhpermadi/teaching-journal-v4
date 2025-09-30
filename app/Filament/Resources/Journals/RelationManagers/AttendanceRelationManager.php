@@ -39,7 +39,7 @@ class AttendanceRelationManager extends RelationManager
                 Select::make('student_id')
                     ->options(
                         fn () => Grade::find($this->getOwnerRecord()->subject->grade_id)
-                            ->studentWithoutAttendance($this->getOwnerRecord()->date)
+                            ->studentWithoutAttendance($this->getOwnerRecord()->date, $this->getOwnerRecord()->id)
                             ->pluck('name', 'id')
                             ->toArray())
                     ->searchable()

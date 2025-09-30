@@ -42,10 +42,11 @@ class Grade extends Model
         });
     }
 
-    public function studentWithoutAttendance($date)
+    public function studentWithoutAttendance($date, $journal_id)
     {
-        return $this->students()->whereDoesntHave('attendances', function ($query) use ($date) {
-            $query->where('date', $date);
+        return $this->students()->whereDoesntHave('attendances', function ($query) use ($date, $journal_id) {
+            $query->where('date', $date)
+                ->where('journal_id', $journal_id);
         });
     }
 }
