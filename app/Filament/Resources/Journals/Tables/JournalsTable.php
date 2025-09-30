@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Journals\Tables;
 
+use App\Filament\Resources\Journals\RelationManagers\AttendanceRelationManager;
 use App\Models\Target;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -12,6 +13,7 @@ use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Guava\FilamentModalRelationManagers\Actions\RelationManagerAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -60,6 +62,13 @@ class JournalsTable
             ])
             ->recordActions([
                 EditAction::make(),
+                RelationManagerAction::make('attendance-relation-manager')
+                    ->label('View Attendance')
+                    ->slideOver()
+                    ->modalWidth('md')
+                    ->modalHeading('Attendance')
+                    ->modalDescription('Attendance for this journal')
+                    ->relationManager(AttendanceRelationManager::make()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
