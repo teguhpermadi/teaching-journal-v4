@@ -65,7 +65,7 @@ class JournalsTable
                 RelationManagerAction::make('attendance-relation-manager')
                     ->label('View Attendance')
                     ->slideOver()
-                    ->modalWidth('md')
+                    ->modalWidth('lg')
                     ->modalHeading('Attendance')
                     ->modalDescription('Attendance for this journal')
                     ->relationManager(AttendanceRelationManager::make()),
