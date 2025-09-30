@@ -62,13 +62,14 @@ class JournalsTable
             ])
             ->recordActions([
                 EditAction::make(),
-                RelationManagerAction::make('attendance-relation-manager')
-                    ->label('View Attendance')
-                    ->slideOver()
-                    ->modalWidth('lg')
-                    ->modalHeading('Attendance')
-                    ->modalDescription('Attendance for this journal')
-                    ->relationManager(AttendanceRelationManager::make()),
+                // RelationManagerAction::make('attendance-relation-manager')
+                //     ->label('View Attendance')
+                //     // ->slideOver()
+                //     // ->modalWidth('lg')
+                //     ->modalHeading('Attendance')
+                //     ->modalDescription('Attendance for this journal')
+                //     ->relationManager(AttendanceRelationManager::make())
+                //     ->compact(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
