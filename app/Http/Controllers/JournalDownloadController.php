@@ -94,6 +94,14 @@ class JournalDownloadController extends Controller
                     'size' => 14,
                 ]
             );
+            // bulan
+            $section->addText(
+                'Bulan: ' . $request->first()->date->format('F Y'),
+                [
+                    'bold' => true,
+                    'size' => 14,
+                ]
+            );
             $section->addText(
                 'Periode: ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'),
                 [
@@ -135,8 +143,10 @@ class JournalDownloadController extends Controller
                 $htmlContent = $journal->activity;
                 Html::addHtml($section, $htmlContent);
 
-                $section->addText('Catatan:', ['bold' => true]);
-                $section->addText($journal->notes);
+                if($journal->notes){
+                    $section->addText('Catatan:', ['bold' => true]);
+                    $section->addText($journal->notes);
+                }
 
                 // Attendance
                 $section->addText('Ketidakhadiran:', ['bold' => true]);
@@ -278,17 +288,17 @@ class JournalDownloadController extends Controller
         $cell1 = $table->addCell(4500, $cellStyle);
         $cell1->addText('Mengetahui,', ['alignment' => 'center']);
         $cell1->addText('Kepala Sekolah', ['alignment' => 'center']);
-        $cell1->addTextBreak(3);
-        $cell1->addText('Nama: ' . $journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
-        $cell1->addText('NIP: ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
+        $cell1->addTextBreak(2);
+        $cell1->addText($journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
+        $cell1->addText('NIP. ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
         // Kolom kedua - Tanda tangan Guru
         $cell2 = $table->addCell(4500, $cellStyle);
         $cell2->addTextBreak(1);
         $cell2->addText('Guru Pengajar', ['alignment' => 'center']);
-        $cell2->addTextBreak(3);
-        $cell2->addText('Nama: ' . $journal->user->name, ['bold' => true, 'alignment' => 'center']);
-        $cell2->addText('NIP: ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
+        $cell2->addTextBreak(2);
+        $cell2->addText($journal->user->name, ['bold' => true, 'alignment' => 'center']);
+        $cell2->addText('NIP. ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
         $section->addTextBreak(2);
         $section->addText('Catatan Kepala Sekolah: ');
@@ -312,7 +322,7 @@ class JournalDownloadController extends Controller
             )
         );
 
-        $section->addText('Rekap Ketidakhadiran Bulan ' . $journals->first()->date->format('F Y'), ['bold' => true, 'size' => 14]);
+        $section->addText('Rekap Ketidakhadiran Siswa Pada Mata Pelajaran ' . $journals->first()->subject->name . ' Pada Bulan ' . $journals->first()->date->format('F Y'), ['bold' => true, 'size' => 14]);
         $attendance = Attendance::query()
             ->whereIn('journal_id', $journals->pluck('id'))
             ->get();
