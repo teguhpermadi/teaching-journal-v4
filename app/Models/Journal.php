@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
 
 #[ScopedBy(AcademicYearScope::class)]
@@ -126,5 +127,16 @@ class Journal extends Model implements HasMedia, Eventable
             ->end($this->date)
             ->backgroundColor($this->subject->color)
             ->allDay(true);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        // Konversi ini akan dijalankan SETELAH file disimpan (jika > 1MB)
+        $this->addMediaConversion('activity_photos_compressed')
+            // ->nonQueued() // Untuk debugging, bisa dihapus di production
+            ->performOnCollections('activity_photos') // Sesuaikan dengan nama koleksi di Filament
+            ->width(1200) // Opsional: Batasi lebar maksimum
+            ->quality(50) // Set kualitas (untuk JPG/WebP)
+            ->optimize();
     }
 }

@@ -94,14 +94,6 @@ class JournalDownloadController extends Controller
                     'size' => 14,
                 ]
             );
-            // bulan
-            $section->addText(
-                'Bulan: ' . $request->first()->date->format('F Y'),
-                [
-                    'bold' => true,
-                    'size' => 14,
-                ]
-            );
             $section->addText(
                 'Periode: ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'),
                 [
@@ -170,10 +162,16 @@ class JournalDownloadController extends Controller
                     $textRun = $section->addTextRun(['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
                     foreach ($images as $image) {
                         try {
-                            $imagePath = $image->getPath();
-                            // Add the image to the TextRun, followed by spaces for separation
-                            $textRun->addImage($imagePath, ['width' => 100]);
-                            $textRun->addText('    '); // Add some space between images
+                            $compressedImage = $image->getPath('activity_photos_compressed');
+                            $originalImage = $image->getPath();
+                            
+                            // cek jika file exist
+                            if(file_exists($compressedImage)){
+                                $textRun->addImage($compressedImage, ['width' => 100]);
+                            }else{
+                                $textRun->addImage($originalImage, ['width' => 100]);
+                            }
+                            $textRun->addText(' '); // Add some space between images
 
                         } catch (\Exception $e) {
                             Log::error("File corrupt - error saat memproses gambar", [
