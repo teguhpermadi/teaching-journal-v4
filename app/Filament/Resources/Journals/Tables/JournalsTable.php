@@ -81,9 +81,9 @@ class JournalsTable
             ->defaultSort('date', 'desc')
             ->modifyQueryUsing(function (Builder $query) {
                 // check if user role teacher
-                if (Auth::user()->hasRole('teacher')) {
-                    $query->myJournals();
-                }
+                // if (Auth::user()->hasRole('teacher')) {
+                // }
+                $query->myJournals();
             })
             ->poll('10s');
     }
