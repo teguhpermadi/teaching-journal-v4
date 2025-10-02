@@ -110,6 +110,15 @@ class JournalDownloadController extends Controller
                 ]
             );
 
+            // add user name
+            $section->addText(
+                'Oleh: ' . ($firstJournal->user->name ?? 'N/A'),
+                [
+                    'bold' => true,
+                    'size' => 14,
+                ]
+            );
+
             // add page break
             $section->addPageBreak();
 
@@ -216,11 +225,8 @@ class JournalDownloadController extends Controller
             // footer
             $footer->addPreserveText('Halaman {PAGE} dari {NUMPAGES}.', null, array('alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER));
             // footer subject and grade
-            $footer->addText('Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A'), [
+            $footer->addText('Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A') . ' | Kelas: ' . ($firstJournal->grade->name ?? 'N/A') . ' | Oleh: ' . ($firstJournal->user->name ?? 'N/A'), [
                 'size' => 9
-            ]);
-            $footer->addText('Kelas: ' . ($firstJournal->grade->name ?? 'N/A'), [
-                'size' => 9,
             ]);
 
             // Generate filename
