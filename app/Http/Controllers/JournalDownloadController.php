@@ -94,6 +94,14 @@ class JournalDownloadController extends Controller
                     'size' => 14,
                 ]
             );
+            // grade
+            $section->addText(
+                'Kelas: ' . ($firstJournal->grade->name ?? 'N/A'),
+                [
+                    'bold' => true,
+                    'size' => 14,
+                ]
+            );
             $section->addText(
                 'Periode: ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'),
                 [
@@ -207,6 +215,13 @@ class JournalDownloadController extends Controller
 
             // footer
             $footer->addPreserveText('Halaman {PAGE} dari {NUMPAGES}.', null, array('alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER));
+            // footer subject and grade
+            $footer->addText('Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A'), [
+                'size' => 9
+            ]);
+            $footer->addText('Kelas: ' . ($firstJournal->grade->name ?? 'N/A'), [
+                'size' => 9,
+            ]);
 
             // Generate filename
             $monthNames = [
@@ -320,7 +335,25 @@ class JournalDownloadController extends Controller
             )
         );
 
-        $section->addText('Rekap Ketidakhadiran Siswa Pada Mata Pelajaran ' . $journals->first()->subject->name . ' Pada Bulan ' . $journals->first()->date->format('F Y'), ['bold' => true, 'size' => 14]);
+        $section->addText('Rekap Ketidakhadiran Siswa Pada Mata Pelajaran ' . $journals->first()->subject->name , ['bold' => true, 'size' => 14]);
+        // month
+        $section->addText(
+            'Bulan: ' . ($journals->first()->date->format('F Y') ?? 'N/A'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+
+        // grade
+        $section->addText(
+            'Kelas: ' . ($journals->first()->grade->name ?? 'N/A'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+
         $attendance = Attendance::query()
             ->whereIn('journal_id', $journals->pluck('id'))
             ->get();
