@@ -95,7 +95,7 @@ class ListJournals extends ListRecords
         $tabs = [];
 
         foreach ($mySubjects as $subject) {
-            $tabs[$subject->code] = Tab::make()
+            $tabs[$subject->id] = Tab::make()
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('subject_id', $subject->id))
                 ->badge(fn() => Journal::where('subject_id', $subject->id)->count());
         }
