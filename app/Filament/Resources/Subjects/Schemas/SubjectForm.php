@@ -36,7 +36,6 @@ class SubjectForm
                 ColorPicker::make('color')
                     ->default(RandomColor::one())
                     ->label('Color')
-                    ->rgb()
                     ->required(),
             ]);
     }
