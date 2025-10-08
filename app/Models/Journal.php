@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Helpers\ColorHelper;
 use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -120,27 +121,7 @@ class Journal extends Model implements HasMedia, Eventable
 
     public function toCalendarEvent(): CalendarEvent
     {
-        $color = $this->subject->color;
-        
-        // Handle RGB color format (e.g., "rgb(255, 99, 132)")
-        if (preg_match('/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i', $color, $matches)) {
-            // Convert RGB to hex
-            $hex = sprintf("#%02x%02x%02x", 
-                $matches[1], 
-                $matches[2], 
-                $matches[3]
-            );
-            $color = $hex;
-        } 
-        // Handle hex color (ensure it starts with # and has 3 or 6 hex digits)
-        elseif (preg_match('/^#?([a-f0-9]{3}|[a-f0-9]{6})$/i', $color)) {
-            // Ensure the color has # prefix
-            $color = '#' . ltrim($color, '#');
-        }
-        // If color format is invalid, use a default color
-        else {
-            $color = '#3b82f6'; // Default blue color
-        }
+        $color = ColorHelper::normalizeColor($this->subject->color);
 
         // For eloquent models, make sure to pass the model to the constructor
         return CalendarEvent::make($this)
