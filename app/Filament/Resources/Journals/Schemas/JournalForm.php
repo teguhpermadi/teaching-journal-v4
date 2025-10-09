@@ -170,7 +170,14 @@ class JournalForm
                     ])
                     ->columnSpan('full')
                     ->required(),
-                Textarea::make('notes')
+                RichEditor::make('notes')
+                    ->toolbarButtons([
+                        ['bold', 'italic', 'underline'],
+                        ['h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd'],
+                        ['bulletList', 'orderedList'],
+                        ['table'],
+                        ['undo', 'redo'],
+                    ])
                     ->columnSpan('full'),
                 SpatieMediaLibraryFileUpload::make('activity_photos')
                     ->hint('Upload photos of the activity')

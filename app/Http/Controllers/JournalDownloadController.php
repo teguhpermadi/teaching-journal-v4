@@ -154,7 +154,7 @@ class JournalDownloadController extends Controller
 
                 if($journal->notes){
                     $section->addText('Catatan:', ['bold' => true]);
-                    $section->addText($journal->notes);
+                    Html::addHtml($section, $journal->notes);
                 }
 
                 // Attendance
