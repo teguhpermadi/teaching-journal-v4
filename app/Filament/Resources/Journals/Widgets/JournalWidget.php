@@ -356,8 +356,15 @@ class JournalWidget extends CalendarWidget
                 ->required()
                 ->columnSpanFull(),
 
-            Textarea::make('notes')
+            RichEditor::make('notes')
                 ->label('Catatan')
+                ->toolbarButtons([
+                    ['bold', 'italic', 'underline'],
+                    ['h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd'],
+                    ['bulletList', 'orderedList'],
+                    ['table'],
+                    ['undo', 'redo'],
+                ])
                 ->columnSpanFull(),
 
             SpatieMediaLibraryFileUpload::make('activity_photos')
