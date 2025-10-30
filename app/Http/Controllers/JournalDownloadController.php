@@ -250,10 +250,12 @@ class JournalDownloadController extends Controller
             // Clean subject name and academic year for filename
             $subjectName = $this->cleanFilename($firstJournal->subject->code ?? 'Subject');
             $subjectName = str_replace(' ', '_', $subjectName);
+            $className = $this->cleanFilename($firstJournal->grade->name ?? 'Kelas');
+            $className = str_replace(' ', '_', $className);
 
             $academicYear = $this->cleanFilename($firstJournal->academicYear->year ?? date('Y'));
 
-            $filename = "Jurnal_{$subjectName}_{$monthName}_{$academicYear}.docx";
+            $filename = "Jurnal_{$subjectName}_{$className}_{$monthName}_{$academicYear}.docx";
 
             // Clean any existing output buffer
             if (ob_get_level() > 0) {
