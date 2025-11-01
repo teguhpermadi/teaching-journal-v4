@@ -158,9 +158,11 @@ class JournalForm
                     ->searchable()
                     ->preload(),
                 TextInput::make('chapter')
+                    ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                     ->columnSpan('full')
                     ->required(),
                 RichEditor::make('activity')
+                    ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                     ->toolbarButtons([
                         ['bold', 'italic', 'underline'],
                         ['h2', 'h3', 'alignStart', 'alignCenter', 'alignEnd'],
@@ -186,6 +188,7 @@ class JournalForm
                     ->multiple()
                     ->openable()
                     ->collection('activity_photos')
+                    ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                     ->image(),
             ]);
         }

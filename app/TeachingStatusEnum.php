@@ -8,12 +8,14 @@ enum TeachingStatusEnum: string implements HasLabel
 {
     case PEMBELAJARAN = 'Pembelajaran';
     case PENILAIAN = 'Penilaian';
+    case DITIADAKAN = 'Ditiadakan';
 
     public function getLabel(): ?string
     {
         return match ($this) {
             self::PEMBELAJARAN => 'Pembelajaran',
             self::PENILAIAN => 'Penilaian',
+            self::DITIADAKAN => 'Pembelajaran Ditiadakan',
         };
     }
 
@@ -22,6 +24,7 @@ enum TeachingStatusEnum: string implements HasLabel
         return match ($this) {
             self::PEMBELAJARAN => 'success',
             self::PENILAIAN => 'warning',
+            self::DITIADAKAN => 'danger',
         };
     }
 }

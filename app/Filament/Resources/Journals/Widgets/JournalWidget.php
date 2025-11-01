@@ -172,6 +172,11 @@ class JournalWidget extends CalendarWidget
                     }
                 }
 
+                if ($data['status'] == TeachingStatusEnum::DITIADAKAN) {
+                    $data['chapter'] = '-';
+                    $data['activity'] = '-';
+                }
+
                 return $data;
             })
             ->after(function () {
@@ -342,6 +347,7 @@ class JournalWidget extends CalendarWidget
             TextInput::make('chapter')
                 ->label('Bab/Materi')
                 ->required()
+                ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
 
             RichEditor::make('activity')
@@ -354,6 +360,7 @@ class JournalWidget extends CalendarWidget
                     ['undo', 'redo'],
                 ])
                 ->required()
+                ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
 
             RichEditor::make('notes')
@@ -375,6 +382,7 @@ class JournalWidget extends CalendarWidget
                 ->openable()
                 ->collection('activity_photos')
                 ->image()
+                ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
         ];
     }
