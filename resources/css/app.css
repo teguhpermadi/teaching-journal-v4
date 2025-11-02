@@ -14,3 +14,4 @@
 @import '../../../../vendor/guava/calendar/resources/css/theme.css';
 @source '../../../../vendor/jeffgreco13/filament-breezy/resources/**/*';
 @source '../../../../vendor/guava/filament-modal-relation-managers/resources/**/*';
+@source '../../../../vendor/saade/filament-autograph/resources/views/**/*.blade.php';
