@@ -18,6 +18,7 @@ use Filament\Widgets\FilamentInfoWidget;
 use App\Filament\Widgets\UserLastLoginWidget;
 use App\Filament\Widgets\RecentLoginsWidget;
 use App\Filament\Widgets\WelcomeWidget;
+use App\Livewire\MyPersonalInfo;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -67,6 +68,9 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
                 BreezyCore::make()
+                    ->myProfileComponents([
+                        'personal_info' => MyPersonalInfo::class,
+                    ])
                     ->myProfile(
                         shouldRegisterUserMenu: true, // Sets the 'account' link in the panel User Menu (default = true)
                         userMenuLabel: 'My Profile', // Customizes the 'account' link label in the panel User Menu (default = null)
