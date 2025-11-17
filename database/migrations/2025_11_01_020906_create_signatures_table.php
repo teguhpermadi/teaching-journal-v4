@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('signatures', function (Blueprint $table) {
-            $table->ulid()->primary();
+            $table->ulid('id')->primary();
             $table->foreignUlid('journal_id')->constrained('journals')->cascadeOnDelete();
             $table->foreignUlid('signer_id')->constrained('users')->cascadeOnDelete();
             $table->string('signer_role');

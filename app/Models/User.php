@@ -26,6 +26,8 @@ class User extends Authenticatable
         'password',
         'last_login_at',
         'last_logout_at',
+        'signature_path',
+        'signature_base64',
     ];
 
     /**

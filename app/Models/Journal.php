@@ -45,6 +45,151 @@ class Journal extends Model implements HasMedia, Eventable
         'target_id' => 'array',
         'status' => TeachingStatusEnum::class,
     ];
+    
+    /**
+     * Get all signatures for the journal.
+     */
+    public function signatures()
+    {
+        return $this->hasMany(Signature::class);
+    }
+    
+    /**
+     * Get a specific signer's signature.
+     */
+    public function signature($role)
+    {
+        return $this->hasOne(Signature::class)->where('signer_role', $role)->latest();
+    }
+    
+    /**
+     * Check if the journal is signed by a specific role.
+     */
+    public function isSignedBy($role): bool
+    {
+        return $this->signatures()->where('signer_role', $role)->exists();
+    }
+
+    /**
+     * Check if a user can sign this journal.
+     * User can sign if:
+     * 1. They are the owner of the journal (user_id), OR
+     * 2. They have the 'headmaster' role
+     */
+    public function canSign(?User $user = null): bool
+    {
+        $user = $user ?? Auth::user();
+        
+        if (!$user) {
+            return false;
+        }
+
+        // Check if user is the owner
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        // Check if user has headmaster role
+        return $user->hasRole('headmaster');
+    }
+
+    /**
+     * Sign the journal as the owner (teacher).
+     * 
+     * @param string $signatureData Base64 encoded signature image or file path
+     * @param User|null $user The user signing (defaults to authenticated user)
+     * @return Signature|null
+     */
+    public function signAsOwner(string $signatureData, ?User $user = null): ?Signature
+    {
+        $user = $user ?? Auth::user();
+        
+        if (!$user || $this->user_id !== $user->id) {
+            throw new \Exception('Only the journal owner can sign as owner.');
+        }
+
+        // Check if already signed by owner
+        $existingSignature = $this->signatures()
+            ->where('signer_role', 'owner')
+            ->where('signer_id', $user->id)
+            ->first();
+
+        if ($existingSignature) {
+            // Update existing signature
+            $existingSignature->saveSignature($signatureData);
+            return $existingSignature;
+        }
+
+        // Create new signature
+        $signature = $this->signatures()->create([
+            'signer_id' => $user->id,
+            'signer_role' => 'owner',
+        ]);
+
+        $signature->saveSignature($signatureData);
+        return $signature;
+    }
+
+    /**
+     * Sign the journal as headmaster.
+     * 
+     * @param string $signatureData Base64 encoded signature image or file path
+     * @param User|null $user The user signing (defaults to authenticated user)
+     * @return Signature|null
+     */
+    public function signAsHeadmaster(string $signatureData, ?User $user = null): ?Signature
+    {
+        $user = $user ?? Auth::user();
+        
+        if (!$user || !$user->hasRole('headmaster')) {
+            throw new \Exception('Only users with headmaster role can sign as headmaster.');
+        }
+
+        // Check if already signed by headmaster
+        $existingSignature = $this->signatures()
+            ->where('signer_role', 'headmaster')
+            ->where('signer_id', $user->id)
+            ->first();
+
+        if ($existingSignature) {
+            // Update existing signature
+            $existingSignature->saveSignature($signatureData);
+            return $existingSignature;
+        }
+
+        // Create new signature
+        $signature = $this->signatures()->create([
+            'signer_id' => $user->id,
+            'signer_role' => 'headmaster',
+        ]);
+
+        $signature->saveSignature($signatureData);
+        return $signature;
+    }
+
+    /**
+     * Check if the journal is fully signed by both owner and headmaster.
+     */
+    public function isFullySigned(): bool
+    {
+        return $this->isSignedBy('owner') && $this->isSignedBy('headmaster');
+    }
+
+    /**
+     * Get the owner's signature.
+     */
+    public function getOwnerSignature()
+    {
+        return $this->signatures()->where('signer_role', 'owner')->first();
+    }
+
+    /**
+     * Get the headmaster's signature.
+     */
+    public function getHeadmasterSignature()
+    {
+        return $this->signatures()->where('signer_role', 'headmaster')->first();
+    }
 
     protected static function booted(): void
     {
