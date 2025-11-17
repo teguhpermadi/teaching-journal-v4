@@ -8,6 +8,7 @@ use App\Models\Target;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Notifications\Notification;
@@ -102,6 +103,7 @@ class JournalsTable
             ])
             ->recordActions([
                 EditAction::make(),
+                ViewAction::make(),
                 // RelationManagerAction::make('attendance-relation-manager')
                 //     ->label('View Attendance')
                 //     // ->slideOver()

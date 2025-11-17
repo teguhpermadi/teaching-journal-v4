@@ -187,7 +187,9 @@ class JournalForm
                     ->disk('public')
                     ->multiple()
                     ->openable()
+                    ->columnSpanFull()
                     ->collection('activity_photos')
+                    ->panelLayout('grid')
                     ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                     ->image(),
             ]);
