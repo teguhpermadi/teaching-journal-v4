@@ -42,10 +42,28 @@ class SignaturePolicy
 
     /**
      * Determine whether the user can delete the model.
+     * User can delete signature if:
+     * 1. They have the 'Delete:Signature' permission, AND
+     * 2. They are the signer of the signature (signer_id matches user id), OR
+     * 3. They are a headmaster and the signature is a headmaster signature
      */
     public function delete(User $user, Signature $signature): bool
     {
-        return $user->can('Delete:Signature');
+        if (!$user->can('Delete:Signature')) {
+            return false;
+        }
+
+        // User can delete their own signature
+        if ($signature->signer_id === $user->id) {
+            return true;
+        }
+
+        // Headmaster can delete headmaster signatures (even if signed by another headmaster)
+        if ($user->hasRole('headmaster') && $signature->signer_role === 'headmaster') {
+            return true;
+        }
+
+        return false;
     }
 
     /**

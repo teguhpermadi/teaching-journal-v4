@@ -242,6 +242,84 @@ class SignatureTable
                                 ->send();
                         }
                     }),
+                Action::make('deleteOwnerSignature')
+                    ->label('Hapus Tanda Tangan Guru')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(function (Journal $record) {
+                        $user = Auth::user();
+                        return $user && 
+                               $record->isSignedBy('owner') && 
+                               $record->user_id === $user->id;
+                    })
+                    ->modalHeading('Hapus Tanda Tangan Guru')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus tanda tangan guru? Journal akan tetap ada, hanya tanda tangannya yang dihapus.')
+                    ->requiresConfirmation()
+                    ->action(function (Journal $record) {
+                        try {
+                            $user = Auth::user();
+                            $signature = $record->signatures()
+                                ->where('signer_role', 'owner')
+                                ->where('signer_id', $user->id)
+                                ->first();
+                            
+                            if ($signature) {
+                                $signature->delete();
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Berhasil')
+                                    ->success()
+                                    ->body('Tanda tangan guru berhasil dihapus.')
+                                    ->send();
+                            } else {
+                                throw new \Exception('Tanda tangan tidak ditemukan.');
+                            }
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->danger()
+                                ->body($e->getMessage())
+                                ->send();
+                        }
+                    }),
+                Action::make('deleteHeadmasterSignature')
+                    ->label('Hapus Tanda Tangan Kepala Sekolah')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(function (Journal $record) {
+                        $user = Auth::user();
+                        return $user && 
+                               $record->isSignedBy('headmaster') && 
+                               $user->hasRole('headmaster');
+                    })
+                    ->modalHeading('Hapus Tanda Tangan Kepala Sekolah')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus tanda tangan kepala sekolah? Journal akan tetap ada, hanya tanda tangannya yang dihapus.')
+                    ->requiresConfirmation()
+                    ->action(function (Journal $record) {
+                        try {
+                            $user = Auth::user();
+                            $signature = $record->signatures()
+                                ->where('signer_role', 'headmaster')
+                                ->where('signer_id', $user->id)
+                                ->first();
+                            
+                            if ($signature) {
+                                $signature->delete();
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Berhasil')
+                                    ->success()
+                                    ->body('Tanda tangan kepala sekolah berhasil dihapus.')
+                                    ->send();
+                            } else {
+                                throw new \Exception('Tanda tangan tidak ditemukan.');
+                            }
+                        } catch (\Exception $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error')
+                                ->danger()
+                                ->body($e->getMessage())
+                                ->send();
+                        }
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -306,6 +384,161 @@ class SignatureTable
                         })
                         ->deselectRecordsAfterCompletion()
                         ->requiresConfirmation(),
+                    BulkAction::make('bulkDeleteOwnerSignature')
+                        ->label('Hapus Tanda Tangan Guru (Bulk)')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->modalHeading('Hapus Tanda Tangan Guru')
+                        ->modalDescription(
+                            fn($records) =>
+                            'Anda akan menghapus tanda tangan guru dari ' . $records->count() . ' journal. Journal akan tetap ada, hanya tanda tangannya yang dihapus.'
+                        )
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $user = Auth::user();
+                            $successCount = 0;
+                            $failedCount = 0;
+                            $errors = [];
+
+                            foreach ($records as $journal) {
+                                // Only allow deletion if user is the journal owner
+                                if ($journal->user_id !== $user->id) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}': Anda bukan pemilik journal ini.";
+                                    continue;
+                                }
+
+                                if (!$journal->isSignedBy('owner')) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}': Belum ditandatangani oleh guru.";
+                                    continue;
+                                }
+
+                                try {
+                                    $signature = $journal->signatures()
+                                        ->where('signer_role', 'owner')
+                                        ->where('signer_id', $user->id)
+                                        ->first();
+                                    
+                                    if ($signature) {
+                                        $signature->delete();
+                                        $successCount++;
+                                    } else {
+                                        $failedCount++;
+                                        $errors[] = "Journal '{$journal->chapter}': Tanda tangan tidak ditemukan.";
+                                    }
+                                } catch (\Exception $e) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}': " . $e->getMessage();
+                                }
+                            }
+
+                            if ($successCount > 0) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Berhasil')
+                                    ->success()
+                                    ->body("{$successCount} tanda tangan guru berhasil dihapus.")
+                                    ->send();
+                            }
+
+                            if ($failedCount > 0) {
+                                $errorMessage = "{$failedCount} tanda tangan gagal dihapus:\n" . implode("\n", array_slice($errors, 0, 5));
+                                if (count($errors) > 5) {
+                                    $errorMessage .= "\n... dan " . (count($errors) - 5) . " lainnya.";
+                                }
+
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Peringatan')
+                                    ->warning()
+                                    ->body($errorMessage)
+                                    ->send();
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('bulkDeleteHeadmasterSignature')
+                        ->label('Hapus Tanda Tangan Kepala Sekolah (Bulk)')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->modalHeading('Hapus Tanda Tangan Kepala Sekolah')
+                        ->modalDescription(
+                            fn($records) =>
+                            'Anda akan menghapus tanda tangan kepala sekolah dari ' . $records->count() . ' journal. Journal akan tetap ada, hanya tanda tangannya yang dihapus.'
+                        )
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $user = Auth::user();
+                            
+                            if (!$user->hasRole('headmaster')) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error')
+                                    ->danger()
+                                    ->body('Hanya kepala sekolah yang dapat menghapus tanda tangan kepala sekolah.')
+                                    ->send();
+                                return;
+                            }
+
+                            $successCount = 0;
+                            $failedCount = 0;
+                            $errors = [];
+
+                            foreach ($records as $journal) {
+                                if (!$journal->isSignedBy('headmaster')) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}': Belum ditandatangani oleh kepala sekolah.";
+                                    continue;
+                                }
+
+                                try {
+                                    $signature = $journal->signatures()
+                                        ->where('signer_role', 'headmaster')
+                                        ->where('signer_id', $user->id)
+                                        ->first();
+                                    
+                                    if ($signature) {
+                                        $signature->delete();
+                                        $successCount++;
+                                    } else {
+                                        // Try to delete any headmaster signature if current user is headmaster
+                                        $signature = $journal->signatures()
+                                            ->where('signer_role', 'headmaster')
+                                            ->first();
+                                        
+                                        if ($signature) {
+                                            $signature->delete();
+                                            $successCount++;
+                                        } else {
+                                            $failedCount++;
+                                            $errors[] = "Journal '{$journal->chapter}': Tanda tangan tidak ditemukan.";
+                                        }
+                                    }
+                                } catch (\Exception $e) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}': " . $e->getMessage();
+                                }
+                            }
+
+                            if ($successCount > 0) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Berhasil')
+                                    ->success()
+                                    ->body("{$successCount} tanda tangan kepala sekolah berhasil dihapus.")
+                                    ->send();
+                            }
+
+                            if ($failedCount > 0) {
+                                $errorMessage = "{$failedCount} tanda tangan gagal dihapus:\n" . implode("\n", array_slice($errors, 0, 5));
+                                if (count($errors) > 5) {
+                                    $errorMessage .= "\n... dan " . (count($errors) - 5) . " lainnya.";
+                                }
+
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Peringatan')
+                                    ->warning()
+                                    ->body($errorMessage)
+                                    ->send();
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ])
             ->defaultSort('date', 'desc');
