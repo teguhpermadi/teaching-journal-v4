@@ -14,9 +14,9 @@ class ListSignatures extends ListRecords
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('Semua Jurnal')
-                ->badge(fn () => \App\Models\Journal::count())
-                ->modifyQueryUsing(fn (Builder $query) => $query),
+            // 'all' => Tab::make('Semua Jurnal')
+            //     ->badge(fn () => \App\Models\Journal::count())
+            //     ->modifyQueryUsing(fn (Builder $query) => $query),
             
             'unsigned' => Tab::make('Belum Ditandatangani')
                 ->badge(function () {
