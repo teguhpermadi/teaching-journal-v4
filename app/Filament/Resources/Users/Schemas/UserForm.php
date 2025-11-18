@@ -62,7 +62,7 @@ class UserForm
                                     ->gridDirection('row')
                                     ->columns(3)
                                     ->options(fn() => Permission::query()->orderBy('name')->get()->pluck('name', 'ulid'))
-                                    ->helperText('Pilih permission yang akan diberikan kepada user'),
+                                    ->helperText('Menampilkan semua permissions (direct + via roles). Permissions dari roles tidak bisa diubah langsung, ubah melalui roles.'),
                             ])
                             ->columns(1)
                             ->collapsible(),

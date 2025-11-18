@@ -1,10 +1,4 @@
-
-Journal::get()
-
-Journal::get()->getMedia("*");
-
-Journal::get();
-
-Journal::find('01k69d5gk82x26fr3m9jx1qe3q');
-
-Journal::find('01k69d5gk82x26fr3m9jx1qe3q')->getMedia('*');
+Role::get();
+Role::find('01k5xkykd57m6rnrgvapf33qcv');
+Role::find('01k5xkykd57m6rnrgvapf33qcv')->permissions;
+Role::find('01k5xkykd57m6rnrgvapf33qcv')->permissions->pluck('name');
