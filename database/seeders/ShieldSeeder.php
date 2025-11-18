@@ -83,6 +83,17 @@ class ShieldSeeder extends Seeder
                     'RestoreAny:Student',
                     'Replicate:Student',
                     'Reorder:Student',
+                    'ViewAny:Signature',
+                    'View:Signature',
+                    'Create:Signature',
+                    'Update:Signature',
+                    'Delete:Signature',
+                    'Restore:Signature',
+                    'ForceDelete:Signature',
+                    'ForceDeleteAny:Signature',
+                    'RestoreAny:Signature',
+                    'Replicate:Signature',
+                    'Reorder:Signature',
                 ]
             ],
             [
@@ -149,7 +160,11 @@ class ShieldSeeder extends Seeder
                     'ForceDeleteAny:Role',
                     'RestoreAny:Role',
                     'Replicate:Role',
-                    'Reorder:Role'
+                    'Reorder:Role',
+                    'ViewAny:Signature',
+                    'View:Signature',
+                    'Create:Signature',
+                    'Update:Signature',
                 ]
             ]
             // [

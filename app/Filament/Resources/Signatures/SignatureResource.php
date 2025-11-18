@@ -27,12 +27,19 @@ class SignatureResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    // public static function canAccess(): bool
-    // {
-    //     /** @var \App\Models\User|null $user */
-    //     $user = Auth::user();
-    //     return $user && $user->hasRole('headmaster');
-    // }
+    public static function canAccess(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        return $user && $user->can('ViewAny:Signature');
+    }
+
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        return $user && $user->can('ViewAny:Signature');
+    }
 
     public static function table(Table $table): Table
     {
