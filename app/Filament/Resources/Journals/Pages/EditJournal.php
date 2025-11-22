@@ -97,4 +97,9 @@ class EditJournal extends EditRecord
 
         return $actions;
     }
+    protected function afterSave(): void
+    {
+        // Sync attendance dates
+        $this->record->attendance()->update(['date' => $this->record->date]);
+    }
 }

@@ -41,7 +41,7 @@ class JournalResource extends Resource
     public static function getRelations(): array
     {
         return [
-            AttendanceRelationManager::class,
+            // AttendanceRelationManager::class,
             // TranscriptsRelationManager::class,
         ];
     }

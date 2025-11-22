@@ -17,6 +17,10 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Repeater;
+use Filament\Schemas\Components\Section;
+use App\Models\Student;
+use App\StatusAttendanceEnum;
 use Illuminate\Support\Facades\Auth;
 
 class JournalForm
@@ -36,14 +40,14 @@ class JournalForm
                     ->required(),
                 Select::make('subject_id')
                     ->options(
-                        fn () => Subject::mySubjects()
-                        ->get()
-                        ->map(
-                            fn ($subject) => [
-                                'label' => $subject->code . ' - ' . $subject->grade->name,
-                                'value' => $subject->id
-                            ]
-                        )->pluck('label', 'value')
+                        fn() => Subject::mySubjects()
+                            ->get()
+                            ->map(
+                                fn($subject) => [
+                                    'label' => $subject->code . ' - ' . $subject->grade->name,
+                                    'value' => $subject->id
+                                ]
+                            )->pluck('label', 'value')
                     )
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
@@ -64,18 +68,18 @@ class JournalForm
                     ->reactive()
                     ->required(),
                 Select::make('main_target_id')
-                    ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
+                    ->visible(fn($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                     ->options(
-                        function ($get){
+                        function ($get) {
                             $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
-                            ->get();
+                                ->get();
 
-                            if($mainTargets->isEmpty()){
+                            if ($mainTargets->isEmpty()) {
                                 return [];
                             }
 
                             return $mainTargets->map(
-                                fn ($mainTarget) => [
+                                fn($mainTarget) => [
                                     'label' => $mainTarget->main_target,
                                     'value' => $mainTarget->id
                                 ]
@@ -86,19 +90,19 @@ class JournalForm
                     ->searchable()
                     ->preload(),
                 Select::make('target_id')
-                    ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
+                    ->visible(fn($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                     ->options(
-                        function ($get){
+                        function ($get) {
                             $targets = Target::myTargetsInSubject($get('subject_id'))
-                            ->whereIn('main_target_id', $get('main_target_id'))
-                            ->get();
+                                ->whereIn('main_target_id', $get('main_target_id'))
+                                ->get();
 
-                            if($targets->isEmpty()){
+                            if ($targets->isEmpty()) {
                                 return [];
                             }
 
                             return $targets->map(
-                                fn ($target) => [
+                                fn($target) => [
                                     'label' => $target->target,
                                     'value' => $target->id
                                 ]
@@ -109,7 +113,7 @@ class JournalForm
                     ->createOptionForm([
                         Hidden::make('subject_id')
                             ->reactive()
-                            ->default(fn ($get) => $get('subject_id')),
+                            ->default(fn($get) => $get('subject_id')),
                         // Hidden::make('grade_id')
                         //     ->reactive()
                         //     ->default(fn ($get) => $get('grade_id')),
@@ -143,7 +147,7 @@ class JournalForm
                         TextInput::make('target')
                             ->required(),
                     ])
-                    ->createOptionUsing(function($data, $get){
+                    ->createOptionUsing(function ($data, $get) {
                         // dd($get('subject_id'));
                         Target::create([
                             'subject_id' => $get('subject_id'),
@@ -192,6 +196,48 @@ class JournalForm
                     ->panelLayout('grid')
                     ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                     ->image(),
+                Section::make('Ketidakhadiran')
+                    ->schema([
+                        Repeater::make('attendance')
+                            ->relationship()
+                            ->schema([
+                                Select::make('student_id')
+                                    ->label('Siswa')
+                                    ->options(function ($get) {
+                                        $subjectId = $get('../../subject_id');
+                                        if (!$subjectId) {
+                                            return [];
+                                        }
+
+                                        $subject = Subject::find($subjectId);
+                                        if (!$subject) {
+                                            return [];
+                                        }
+
+                                        return Student::whereHas('grades', function ($query) use ($subject) {
+                                            $query->where('grades.id', $subject->grade_id);
+                                        })->pluck('name', 'id');
+                                    })
+                                    ->searchable()
+                                    ->required()
+                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                                Radio::make('status')
+                                    ->options(StatusAttendanceEnum::class)
+                                    ->inline()
+                                    ->required(),
+
+                                Hidden::make('date')
+                                    ->default(fn($get) => $get('../../date')),
+                            ])
+                            ->addActionLabel('Tambah Siswa')
+                            ->deletable()
+                            ->defaultItems(0)
+                            ->grid(1)
+                            ->columnSpanFull(),
+                    ])
+                    ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
+                    ->columnSpanFull(),
             ]);
-        }
+    }
 }

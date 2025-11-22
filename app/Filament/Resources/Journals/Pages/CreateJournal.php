@@ -21,4 +21,10 @@ class CreateJournal extends CreateRecord
 
         return static::getModel()::create($data);
     }
+
+    protected function afterCreate(): void
+    {
+        // Sync attendance dates
+        $this->record->attendance()->update(['date' => $this->record->date]);
+    }
 }
