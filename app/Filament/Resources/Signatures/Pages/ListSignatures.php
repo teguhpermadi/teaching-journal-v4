@@ -43,5 +43,15 @@ class ListSignatures extends ListRecords
                 }),
         ];
     }
+    protected function getHeaderActions(): array
+    {
+        return [
+            \Filament\Actions\Action::make('recap_journal')
+                ->label('Recap Journal')
+                ->url(route('recap-journal.index'))
+                ->icon('heroicon-o-chart-bar')
+                ->openUrlInNewTab(),
+        ];
+    }
 }
 

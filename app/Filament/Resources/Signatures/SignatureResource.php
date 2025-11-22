@@ -61,4 +61,3 @@ class SignatureResource extends Resource
             ]);
     }
 }
-
