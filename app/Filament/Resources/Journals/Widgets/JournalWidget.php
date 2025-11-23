@@ -297,11 +297,45 @@ class JournalWidget extends CalendarWidget
 
     protected function getJournalForm(): array
     {
+        $fillAttendance = function (callable $get, callable $set) {
+            $date = $get('date');
+            $subjectId = $get('subject_id');
+
+            if (!$date || !$subjectId) {
+                return;
+            }
+
+            $subject = Subject::find($subjectId);
+            if (!$subject) {
+                return;
+            }
+
+            $studentIds = Student::whereHas('grades', function ($q) use ($subject) {
+                $q->where('grades.id', $subject->grade_id);
+            })->pluck('id');
+
+            $attendances = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                ->where('date', $date)
+                ->get();
+
+            $items = $attendances->unique('student_id')->map(function ($attendance) use ($date) {
+                return [
+                    'student_id' => $attendance->student_id,
+                    'status' => $attendance->status->value,
+                    'date' => $date,
+                ];
+            })->values()->toArray();
+
+            $set('attendance', $items);
+        };
+
         return [
             DatePicker::make('date')
                 ->label('Tanggal')
                 ->default(now())
-                ->required(),
+                ->required()
+                ->live()
+                ->afterStateUpdated(fn(callable $get, callable $set) => $fillAttendance($get, $set)),
 
             Select::make('subject_id')
                 ->label('Mata Pelajaran')
@@ -318,6 +352,7 @@ class JournalWidget extends CalendarWidget
                 ->searchable()
                 ->preload()
                 ->reactive()
+                ->afterStateUpdated(fn(callable $get, callable $set) => $fillAttendance($get, $set))
                 ->required(),
             Radio::make('status')
                 ->options(TeachingStatusEnum::class)
@@ -457,16 +492,6 @@ class JournalWidget extends CalendarWidget
                             Select::make('student_id')
                                 ->label('Siswa')
                                 ->options(function ($get) {
-                                    // Ambil subject_id dari parent form
-                                    // Karena ini di dalam repeater, kita perlu naik ke parent
-                                    // Tapi relationship repeater biasanya terisolasi context-nya
-                                    // Kita coba akses state form utama
-
-                                    // Hack: Repeater item doesn't easily access parent state in all contexts
-                                    // But we can try to rely on the fact that subject_id is set.
-                                    // Let's try to get the subject_id from the livewire component state or similar if possible.
-                                    // Or better, use $get('../../subject_id')
-
                                     $subjectId = $get('../../subject_id');
                                     if (!$subjectId) {
                                         return [];
@@ -477,13 +502,28 @@ class JournalWidget extends CalendarWidget
                                         return [];
                                     }
 
+                                    // Get all selected student IDs from the repeater
+                                    $selectedStudentIds = collect($get('../../attendance') ?? [])
+                                        ->pluck('student_id')
+                                        ->filter()
+                                        ->toArray();
+
+                                    // Get the current row's student ID (if any) so we don't filter it out
+                                    $currentStudentId = $get('student_id');
+
                                     return Student::whereHas('grades', function ($query) use ($subject) {
                                         $query->where('grades.id', $subject->grade_id);
-                                    })->pluck('name', 'id');
+                                    })
+                                        ->where(function ($query) use ($selectedStudentIds, $currentStudentId) {
+                                            $query->whereNotIn('id', $selectedStudentIds);
+                                            if ($currentStudentId) {
+                                                $query->orWhere('id', $currentStudentId);
+                                            }
+                                        })
+                                        ->pluck('name', 'id');
                                 })
                                 ->searchable()
-                                ->required()
-                                ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                ->required(),
 
                             Radio::make('status')
                                 ->options(StatusAttendanceEnum::class)

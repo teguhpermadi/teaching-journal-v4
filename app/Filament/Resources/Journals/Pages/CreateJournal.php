@@ -11,6 +11,17 @@ class CreateJournal extends CreateRecord
 {
     protected static string $resource = JournalResource::class;
 
+    public array $attendanceData = [];
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        // Simpan data attendance ke property sementara dan hapus dari data utama
+        $this->attendanceData = $data['attendance'] ?? [];
+        unset($data['attendance']);
+
+        return $data;
+    }
+
     protected function handleRecordCreation(array $data): Model
     {
         // jika status ditiadakan maka setting chapter menjadi '-'
@@ -24,7 +35,16 @@ class CreateJournal extends CreateRecord
 
     protected function afterCreate(): void
     {
-        // Sync attendance dates
-        $this->record->attendance()->update(['date' => $this->record->date]);
+        // Simpan data attendance
+        foreach ($this->attendanceData as $attendance) {
+            if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
+                \App\Models\Attendance::create([
+                    'journal_id' => $this->record->id,
+                    'student_id' => $attendance['student_id'],
+                    'status' => $attendance['status'],
+                    'date' => $this->record->date,
+                ]);
+            }
+        }
     }
 }

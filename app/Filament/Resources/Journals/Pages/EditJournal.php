@@ -15,6 +15,7 @@ use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 class EditJournal extends EditRecord
 {
     protected static string $resource = JournalResource::class;
+    public array $attendanceData = [];
 
     protected function getHeaderActions(): array
     {
@@ -97,9 +98,44 @@ class EditJournal extends EditRecord
 
         return $actions;
     }
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['attendance'] = $this->record->attendance->map(fn($item) => [
+            'student_id' => $item->student_id,
+            'status' => $item->status,
+            'date' => $item->date,
+        ])->toArray();
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Simpan data attendance ke property sementara dan hapus dari data utama
+        $this->attendanceData = $data['attendance'] ?? [];
+        unset($data['attendance']);
+
+        return $data;
+    }
+
     protected function afterSave(): void
     {
         // Sync attendance dates
         $this->record->attendance()->update(['date' => $this->record->date]);
+
+        // Hapus attendance lama
+        $this->record->attendance()->forceDelete();
+
+        // Simpan data attendance baru
+        foreach ($this->attendanceData as $attendance) {
+            if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
+                \App\Models\Attendance::create([
+                    'journal_id' => $this->record->id,
+                    'student_id' => $attendance['student_id'],
+                    'status' => $attendance['status'],
+                    'date' => $this->record->date,
+                ]);
+            }
+        }
     }
 }

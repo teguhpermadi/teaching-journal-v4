@@ -22,6 +22,7 @@ use Filament\Schemas\Components\Section;
 use App\Models\Student;
 use App\StatusAttendanceEnum;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Attendance;
 
 class JournalForm
 {
@@ -29,6 +30,37 @@ class JournalForm
     {
         return $schema
             ->components([
+                $fillAttendance = function (callable $get, callable $set) {
+                    $date = $get('date');
+                    $subjectId = $get('subject_id');
+
+                    if (!$date || !$subjectId) {
+                        return;
+                    }
+
+                    $subject = Subject::find($subjectId);
+                    if (!$subject) {
+                        return;
+                    }
+
+                    $studentIds = Student::whereHas('grades', function ($q) use ($subject) {
+                        $q->where('grades.id', $subject->grade_id);
+                    })->pluck('id');
+
+                    $attendances = Attendance::whereIn('student_id', $studentIds)
+                        ->where('date', $date)
+                        ->get();
+
+                    $items = $attendances->unique('student_id')->map(function ($attendance) use ($date) {
+                        return [
+                            'student_id' => $attendance->student_id,
+                            'status' => $attendance->status->value,
+                            'date' => $date,
+                        ];
+                    })->values()->toArray();
+
+                    $set('attendance', $items);
+                },
                 Hidden::make('academic_year_id')
                     ->default(AcademicYear::active()->first()->id),
                 Hidden::make('user_id')
@@ -37,7 +69,9 @@ class JournalForm
                     ->reactive(),
                 DatePicker::make('date')
                     ->default(now())
-                    ->required(),
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(fn(callable $get, callable $set) => $fillAttendance($get, $set)),
                 Select::make('subject_id')
                     ->options(
                         fn() => Subject::mySubjects()
@@ -50,8 +84,11 @@ class JournalForm
                             )->pluck('label', 'value')
                     )
                     ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set) {
-                        $set('grade_id', Subject::find($state)->grade_id);
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) use ($fillAttendance) {
+                        if ($state) {
+                            $set('grade_id', Subject::find($state)->grade_id);
+                            $fillAttendance($get, $set);
+                        }
                     })
                     ->searchable()
                     ->preload()
@@ -199,7 +236,7 @@ class JournalForm
                 Section::make('Ketidakhadiran')
                     ->schema([
                         Repeater::make('attendance')
-                            ->relationship()
+                            // ->relationship()
                             ->schema([
                                 Select::make('student_id')
                                     ->label('Siswa')
@@ -214,13 +251,28 @@ class JournalForm
                                             return [];
                                         }
 
+                                        // Get all selected student IDs from the repeater
+                                        $selectedStudentIds = collect($get('../../attendance') ?? [])
+                                            ->pluck('student_id')
+                                            ->filter()
+                                            ->toArray();
+
+                                        // Get the current row's student ID (if any) so we don't filter it out
+                                        $currentStudentId = $get('student_id');
+
                                         return Student::whereHas('grades', function ($query) use ($subject) {
                                             $query->where('grades.id', $subject->grade_id);
-                                        })->pluck('name', 'id');
+                                        })
+                                            ->where(function ($query) use ($selectedStudentIds, $currentStudentId) {
+                                                $query->whereNotIn('id', $selectedStudentIds);
+                                                if ($currentStudentId) {
+                                                    $query->orWhere('id', $currentStudentId);
+                                                }
+                                            })
+                                            ->pluck('name', 'id');
                                     })
                                     ->searchable()
-                                    ->required()
-                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                    ->required(),
 
                                 Radio::make('status')
                                     ->options(StatusAttendanceEnum::class)
