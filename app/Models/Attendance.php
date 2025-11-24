@@ -16,7 +16,6 @@ class Attendance extends Model
 
     protected $fillable = [
         'student_id',
-        'journal_id',
         'date',
         'status',
     ];
@@ -26,7 +25,7 @@ class Attendance extends Model
         'status' => StatusAttendanceEnum::class,
     ];
 
-    protected static function booted() : void
+    protected static function booted(): void
     {
         // add global scope to filter attendance by academic year active
         static::addGlobalScope('academicYearActive', function (Builder $builder) {
@@ -41,11 +40,6 @@ class Attendance extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function journal()
-    {
-        return $this->belongsTo(Journal::class);
-    }
-
     public function scopeMyStudents(Builder $builder)
     {
         // get my subjects
@@ -54,9 +48,6 @@ class Attendance extends Model
         $journals = Journal::myJournals()->get();
         $builder->whereHas('student', function ($query) use ($students) {
             $query->whereIn('students.id', $students->pluck('id'));
-        });
-        $builder->whereHas('journal', function ($query) use ($journals) {
-            $query->whereIn('journals.id', $journals->pluck('id'));
         });
         return $builder;
     }

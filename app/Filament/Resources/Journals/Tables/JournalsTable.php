@@ -61,8 +61,18 @@ class JournalsTable
                 //     ->bulleted()
                 //     ->searchable(),
                 TextColumn::make('attendance_count')
-                    ->counts('attendance')
-                    ->label('Attendance Count'),
+                    ->label('Attendance Count')
+                    ->getStateUsing(function (Journal $record) {
+                        // Get students in this grade
+                        $studentIds = \App\Models\Student::whereHas('grades', function ($q) use ($record) {
+                            $q->where('grades.id', $record->grade_id);
+                        })->pluck('id');
+
+                        // Count attendance for these students on this date
+                        return \App\Models\Attendance::whereIn('student_id', $studentIds)
+                            ->where('date', $record->date)
+                            ->count();
+                    }),
                 TextColumn::make('owner_signature_status')
                     ->label('Tanda Tangan Guru')
                     ->badge()
@@ -128,7 +138,8 @@ class JournalsTable
                         ->icon('heroicon-o-pencil-square')
                         ->color('success')
                         ->modalHeading('Tandatangani Journal sebagai Pemilik')
-                        ->modalDescription(fn (Collection $records) => 
+                        ->modalDescription(
+                            fn(Collection $records) =>
                             'Anda akan menandatangani ' . $records->count() . ' journal sebagai pemilik. Pastikan semua journal yang dipilih adalah milik Anda.'
                         )
                         ->modalWidth('lg')
@@ -182,7 +193,7 @@ class JournalsTable
                                 if (count($errors) > 5) {
                                     $errorMessage .= "\n... dan " . (count($errors) - 5) . " lainnya.";
                                 }
-                                
+
                                 Notification::make()
                                     ->title('Peringatan')
                                     ->warning()
@@ -199,7 +210,8 @@ class JournalsTable
                         ->icon('heroicon-o-check-circle')
                         ->color('primary')
                         ->modalHeading('Tandatangani Journal sebagai Kepala Sekolah')
-                        ->modalDescription(fn (Collection $records) => 
+                        ->modalDescription(
+                            fn(Collection $records) =>
                             'Anda akan menandatangani ' . $records->count() . ' journal sebagai kepala sekolah.'
                         )
                         ->modalWidth('lg')
@@ -212,7 +224,7 @@ class JournalsTable
                         ->action(function (Collection $records, array $data) {
                             /** @var \App\Models\User $user */
                             $user = Auth::user();
-                            
+
                             // Check if user has headmaster role
                             if (!$user || !$user->hasRole('headmaster')) {
                                 Notification::make()
@@ -258,7 +270,7 @@ class JournalsTable
                                 if (count($errors) > 5) {
                                     $errorMessage .= "\n... dan " . (count($errors) - 5) . " lainnya.";
                                 }
-                                
+
                                 Notification::make()
                                     ->title('Peringatan')
                                     ->warning()

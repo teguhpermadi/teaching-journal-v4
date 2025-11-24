@@ -119,11 +119,50 @@ class JournalWidget extends CalendarWidget
                 // Format tanggal untuk database
                 $formattedDate = $newDate->format('Y-m-d');
 
+                // Capture old date before update
+                $oldDate = $event->date;
+
                 // Update journal dengan tanggal baru
                 $event->update(['date' => $formattedDate]);
 
-                // Sync attendance dates
-                $event->attendance()->update(['date' => $formattedDate]);
+                // Update attendance dates
+                $subject = $event->subject;
+                if ($subject) {
+                    $studentIds = \App\Models\Student::whereHas('grades', function ($q) use ($subject) {
+                        $q->where('grades.id', $subject->grade_id);
+                    })->pluck('id');
+
+                    // Update attendance for these students on the old date to the new date
+                    // We use updateOrIgnore to avoid unique constraint violations if attendance already exists on new date
+                    // But Laravel doesn't have updateOrIgnore easily for mass update.
+                    // We can iterate or just try update and catch.
+                    // Or better: check if attendance exists on new date for each student.
+                    // If it exists, we might want to keep it (or overwrite?).
+                    // Let's assume we keep existing attendance on new date, and only move if no attendance on new date.
+
+                    $attendances = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                        ->where('date', $oldDate)
+                        ->get();
+
+                    foreach ($attendances as $attendance) {
+                        // Check if attendance exists on new date
+                        $exists = \App\Models\Attendance::where('student_id', $attendance->student_id)
+                            ->where('date', $formattedDate)
+                            ->exists();
+
+                        if (!$exists) {
+                            $attendance->update(['date' => $formattedDate]);
+                        } else {
+                            // If exists, we delete the old one? Or keep it as is (duplicate/conflict)?
+                            // If we move the journal, the old attendance is likely invalid for the old date.
+                            // So we should probably delete it if we can't move it.
+                            // But maybe the student was absent on both days?
+                            // Safest is to leave it if target exists, or delete if we assume it's the SAME record.
+                            // Let's delete the old one if target exists, assuming the target one is the correct one for the new date.
+                            $attendance->delete();
+                        }
+                    }
+                }
 
                 $this->refreshRecords();
 
@@ -228,11 +267,28 @@ class JournalWidget extends CalendarWidget
             ->form($this->getJournalForm())
             ->fillForm(function (Journal $record): array {
                 $data = $record->attributesToArray();
-                $data['attendance'] = $record->attendance->map(fn($item) => [
-                    'student_id' => $item->student_id,
-                    'status' => $item->status,
-                    'date' => $item->date,
-                ])->toArray();
+
+                $date = $record->date;
+                $subject = $record->subject;
+
+                if ($subject) {
+                    $studentIds = \App\Models\Student::whereHas('grades', function ($q) use ($subject) {
+                        $q->where('grades.id', $subject->grade_id);
+                    })->pluck('id');
+
+                    $attendances = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                        ->where('date', $date)
+                        ->get();
+
+                    $data['attendance'] = $attendances->map(fn($item) => [
+                        'student_id' => $item->student_id,
+                        'status' => $item->status,
+                        'date' => $item->date,
+                    ])->toArray();
+                } else {
+                    $data['attendance'] = [];
+                }
+
                 return $data;
             })
             ->slideOver()
@@ -251,18 +307,18 @@ class JournalWidget extends CalendarWidget
                 return $data;
             })
             ->after(function (Journal $record) {
-                // Hapus attendance lama
-                $record->attendance()->forceDelete();
-
                 // Simpan data attendance baru
                 foreach ($this->attendanceData as $attendance) {
                     if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
-                        \App\Models\Attendance::create([
-                            'journal_id' => $record->id,
-                            'student_id' => $attendance['student_id'],
-                            'status' => $attendance['status'],
-                            'date' => $record->date,
-                        ]);
+                        \App\Models\Attendance::updateOrCreate(
+                            [
+                                'student_id' => $attendance['student_id'],
+                                'date' => $record->date,
+                            ],
+                            [
+                                'status' => $attendance['status'],
+                            ]
+                        );
                     }
                 }
 

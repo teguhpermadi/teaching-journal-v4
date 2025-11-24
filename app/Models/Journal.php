@@ -45,7 +45,7 @@ class Journal extends Model implements HasMedia, Eventable
         'target_id' => 'array',
         'status' => TeachingStatusEnum::class,
     ];
-    
+
     /**
      * Get all signatures for the journal.
      */
@@ -53,7 +53,7 @@ class Journal extends Model implements HasMedia, Eventable
     {
         return $this->hasMany(Signature::class);
     }
-    
+
     /**
      * Get a specific signer's signature.
      */
@@ -61,7 +61,7 @@ class Journal extends Model implements HasMedia, Eventable
     {
         return $this->hasOne(Signature::class)->where('signer_role', $role)->latest();
     }
-    
+
     /**
      * Check if the journal is signed by a specific role.
      */
@@ -79,7 +79,7 @@ class Journal extends Model implements HasMedia, Eventable
     public function canSign(?User $user = null): bool
     {
         $user = $user ?? Auth::user();
-        
+
         if (!$user) {
             return false;
         }
@@ -103,7 +103,7 @@ class Journal extends Model implements HasMedia, Eventable
     public function signAsOwner(string $signatureData, ?User $user = null): ?Signature
     {
         $user = $user ?? Auth::user();
-        
+
         if (!$user || $this->user_id !== $user->id) {
             throw new \Exception('Only the journal owner can sign as owner.');
         }
@@ -140,7 +140,7 @@ class Journal extends Model implements HasMedia, Eventable
     public function signAsHeadmaster(string $signatureData, ?User $user = null): ?Signature
     {
         $user = $user ?? Auth::user();
-        
+
         if (!$user || !$user->hasRole('headmaster')) {
             throw new \Exception('Only users with headmaster role can sign as headmaster.');
         }
@@ -219,10 +219,7 @@ class Journal extends Model implements HasMedia, Eventable
         return $this->belongsTo(User::class);
     }
 
-    public function attendance()
-    {
-        return $this->hasMany(Attendance::class);
-    }
+
 
     public function transcripts()
     {

@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -36,10 +37,8 @@ class AttendancesTable
                 TextColumn::make('status')
                     ->badge()
                     ->label('Status')
-                    ->sortable(),
-                TextColumn::make('student_id')
-                    ->label('Student Count')
-                    ->summarize(Sum::make()
+                    ->sortable()
+                    ->summarize(Count::make()
                         ->label('Total Ketidakhadiran')
                         ->suffix(' hari')),
             ])

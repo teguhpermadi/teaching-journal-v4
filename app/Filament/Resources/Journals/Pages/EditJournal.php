@@ -100,11 +100,26 @@ class EditJournal extends EditRecord
     }
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['attendance'] = $this->record->attendance->map(fn($item) => [
-            'student_id' => $item->student_id,
-            'status' => $item->status,
-            'date' => $item->date,
-        ])->toArray();
+        $date = $this->record->date;
+        $subject = $this->record->subject;
+
+        if ($subject) {
+            $studentIds = \App\Models\Student::whereHas('grades', function ($q) use ($subject) {
+                $q->where('grades.id', $subject->grade_id);
+            })->pluck('id');
+
+            $attendances = \App\Models\Attendance::whereIn('student_id', $studentIds)
+                ->where('date', $date)
+                ->get();
+
+            $data['attendance'] = $attendances->map(fn($item) => [
+                'student_id' => $item->student_id,
+                'status' => $item->status,
+                'date' => $item->date,
+            ])->toArray();
+        } else {
+            $data['attendance'] = [];
+        }
 
         return $data;
     }
@@ -120,21 +135,18 @@ class EditJournal extends EditRecord
 
     protected function afterSave(): void
     {
-        // Sync attendance dates
-        $this->record->attendance()->update(['date' => $this->record->date]);
-
-        // Hapus attendance lama
-        $this->record->attendance()->forceDelete();
-
         // Simpan data attendance baru
         foreach ($this->attendanceData as $attendance) {
             if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
-                \App\Models\Attendance::create([
-                    'journal_id' => $this->record->id,
-                    'student_id' => $attendance['student_id'],
-                    'status' => $attendance['status'],
-                    'date' => $this->record->date,
-                ]);
+                \App\Models\Attendance::updateOrCreate(
+                    [
+                        'student_id' => $attendance['student_id'],
+                        'date' => $this->record->date,
+                    ],
+                    [
+                        'status' => $attendance['status'],
+                    ]
+                );
             }
         }
     }

@@ -50,8 +50,8 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 WelcomeWidget::class,
                 AccountWidget::class,
-                UserLastLoginWidget::class,
-                RecentLoginsWidget::class,
+                // UserLastLoginWidget::class,
+                // RecentLoginsWidget::class,
                 // FilamentInfoWidget::class,
             ])
             ->middleware([

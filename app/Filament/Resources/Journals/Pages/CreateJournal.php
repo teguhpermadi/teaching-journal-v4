@@ -39,7 +39,6 @@ class CreateJournal extends CreateRecord
         foreach ($this->attendanceData as $attendance) {
             if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
                 \App\Models\Attendance::create([
-                    'journal_id' => $this->record->id,
                     'student_id' => $attendance['student_id'],
                     'status' => $attendance['status'],
                     'date' => $this->record->date,

@@ -22,9 +22,18 @@ class AttendanceTableWidget extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(
-                Student::query()
-            )
+            ->query(function () {
+                $dateStr = $this->tableFilters['month']['value'] ?? now()->startOfMonth()->format('Y-m-d');
+                $date = Carbon::parse($dateStr);
+                $start = $date->copy()->startOfMonth();
+                $end = $date->copy()->endOfMonth();
+
+                return Student::query()
+                    ->withCount(['attendances as period_attendances_count' => function (Builder $query) use ($start, $end) {
+                        $query->whereBetween('date', [$start, $end]);
+                    }])
+                    ->having('period_attendances_count', '>', 0);
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('grades.name')
                     ->label('Kelas')
@@ -34,46 +43,35 @@ class AttendanceTableWidget extends BaseWidget
                     ->label('Nama Siswa')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('attendances_count')
-                    ->counts('attendances')
+                Tables\Columns\TextColumn::make('period_attendances_count')
                     ->label('Jumlah Ketidakhadiran')
                     ->sortable(),
             ])
-            ->defaultSort('attendances_count', 'desc')
-            // ->filters([
-            //     Filter::make('month')
-            //         ->schema([
-            //             Select::make('value')
-            //                 ->label('Bulan')
-            //                 ->options(function () {
-            //                     $options = [];
-            //                     $date = now()->startOfMonth();
-            //                     for ($i = 0; $i < 12; $i++) {
-            //                         $options[$date->format('Y-m-d')] = $date->translatedFormat('F Y');
-            //                         $date->subMonth();
-            //                     }
-            //                     return $options;
-            //                 })
-            //                 ->default(now()->startOfMonth()->format('Y-m-d')),
-            //         ])
-            //         ->query(function (Builder $query, array $data) {
-            //             $dateStr = $data['value'] ?? now()->startOfMonth()->format('Y-m-d');
-            //             $date = Carbon::parse($dateStr);
-            //             $start = $date->copy()->startOfMonth();
-            //             $end = $date->copy()->endOfMonth();
-
-            //             $query->withCount(['attendances' => function (Builder $query) use ($start, $end) {
-            //                 $query->whereBetween('date', [$start, $end]);
-            //             }])
-            //                 ->having('attendances_count', '>', 0);
-            //         })
-            //         ->indicateUsing(function (array $data): ?string {
-            //             if (! $data['value']) {
-            //                 return null;
-            //             }
-            //             return 'Bulan: ' . Carbon::parse($data['value'])->translatedFormat('F Y');
-            //         }),
-            // ])
+            ->defaultSort('period_attendances_count', 'desc')
+            ->filters([
+                Filter::make('month')
+                    ->schema([
+                        Select::make('value')
+                            ->label('Bulan')
+                            ->options(function () {
+                                $options = [];
+                                $date = now()->startOfMonth();
+                                for ($i = 0; $i < 12; $i++) {
+                                    $options[$date->format('Y-m-d')] = $date->translatedFormat('F Y');
+                                    $date->subMonth();
+                                }
+                                return $options;
+                            })
+                            ->default(now()->startOfMonth()->format('Y-m-d'))
+                            ->selectablePlaceholder(false),
+                    ])
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['value']) {
+                            return null;
+                        }
+                        return 'Bulan: ' . Carbon::parse($data['value'])->translatedFormat('F Y');
+                    }),
+            ])
             ->paginated([5, 10, 25]);
     }
 }
