@@ -33,46 +33,20 @@ class AttendanceObserver
         $date = $sourceAttendance->date;
         $status = $sourceAttendance->status;
 
-        Attendance::withoutEvents(function () use ($sourceAttendance, $studentId, $date, $status) {
-            // 1. Update existing other attendance records
-            Attendance::where('student_id', $studentId)
-                ->where('date', $date)
-                ->where('id', '!=', $sourceAttendance->id)
-                ->update(['status' => $status]);
+        // Since we now have unique constraint on (student_id, date),
+        // there should only be one attendance record per student per day.
+        // No need to sync across multiple journals anymore.
 
-            // 2. Create missing attendance records for other journals
-            // Find journals on this date that don't have attendance for this student
-            $journals = Journal::where('date', $date)
-                ->where('id', '!=', $sourceAttendance->journal_id)
-                ->whereDoesntHave('attendance', function ($query) use ($studentId) {
-                    $query->where('student_id', $studentId);
-                })
-                ->get();
-
-            foreach ($journals as $journal) {
-                // Check if student is in this grade
-                if ($journal->grade->students()->where('students.id', $studentId)->exists()) {
-                    Attendance::create([
-                        'journal_id' => $journal->id,
-                        'student_id' => $studentId,
-                        'date' => $date,
-                        'status' => $status,
-                    ]);
-                }
-            }
-        });
+        // This method is kept for potential future use but does nothing now
+        // as the unique constraint ensures only one record exists.
     }
 
     protected function syncDeletion(Attendance $sourceAttendance)
     {
-        $studentId = $sourceAttendance->student_id;
-        $date = $sourceAttendance->date;
+        // Since we now have unique constraint on (student_id, date),
+        // there's only one attendance record per student per day.
+        // No need to delete other records as they don't exist.
 
-        // Delete other attendance records for the same student and date
-        // Using builder delete() to avoid firing events recursively
-        Attendance::where('student_id', $studentId)
-            ->where('date', $date)
-            ->where('id', '!=', $sourceAttendance->id)
-            ->delete();
+        // This method is kept for potential future use but does nothing now.
     }
 }

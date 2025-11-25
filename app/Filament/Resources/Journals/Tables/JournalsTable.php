@@ -13,6 +13,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Notifications\Notification;
 use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -114,6 +115,7 @@ class JournalsTable
             ->recordActions([
                 EditAction::make(),
                 ViewAction::make(),
+                DeleteAction::make(),
                 // RelationManagerAction::make('attendance-relation-manager')
                 //     ->label('View Attendance')
                 //     // ->slideOver()
