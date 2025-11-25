@@ -12,20 +12,35 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('attendances', function (Blueprint $table) {
-            // Check if foreign key exists before dropping
-            $sm = Schema::getConnection()->getDoctrineSchemaManager();
-            $foreignKeys = $sm->listTableForeignKeys('attendances');
+            $connection = Schema::getConnection();
+            $databaseName = $connection->getDatabaseName();
 
-            foreach ($foreignKeys as $foreignKey) {
-                if ($foreignKey->getName() === 'attendances_journal_id_foreign') {
-                    $table->dropForeign(['journal_id']);
-                    break;
-                }
+            // Check if foreign key exists before dropping
+            $foreignKeyExists = $connection->select(
+                "SELECT CONSTRAINT_NAME 
+                 FROM information_schema.TABLE_CONSTRAINTS 
+                 WHERE TABLE_SCHEMA = ? 
+                 AND TABLE_NAME = 'attendances' 
+                 AND CONSTRAINT_NAME = 'attendances_journal_id_foreign'
+                 AND CONSTRAINT_TYPE = 'FOREIGN KEY'",
+                [$databaseName]
+            );
+
+            if (!empty($foreignKeyExists)) {
+                $table->dropForeign(['journal_id']);
             }
 
             // Check if unique index exists before dropping
-            $indexes = $sm->listTableIndexes('attendances');
-            if (isset($indexes['unique_journal_student_date'])) {
+            $uniqueIndexExists = $connection->select(
+                "SELECT INDEX_NAME 
+                 FROM information_schema.STATISTICS 
+                 WHERE TABLE_SCHEMA = ? 
+                 AND TABLE_NAME = 'attendances' 
+                 AND INDEX_NAME = 'unique_journal_student_date'",
+                [$databaseName]
+            );
+
+            if (!empty($uniqueIndexExists)) {
                 $table->dropUnique('unique_journal_student_date');
             }
 
@@ -34,8 +49,18 @@ return new class extends Migration
                 $table->dropColumn('journal_id');
             }
 
+            // Check if unique constraint already exists
+            $uniqueStudentDateExists = $connection->select(
+                "SELECT INDEX_NAME 
+                 FROM information_schema.STATISTICS 
+                 WHERE TABLE_SCHEMA = ? 
+                 AND TABLE_NAME = 'attendances' 
+                 AND INDEX_NAME = 'unique_student_date'",
+                [$databaseName]
+            );
+
             // Add unique constraint if it doesn't exist
-            if (!isset($indexes['unique_student_date'])) {
+            if (empty($uniqueStudentDateExists)) {
                 $table->unique(['student_id', 'date'], 'unique_student_date');
             }
         });
