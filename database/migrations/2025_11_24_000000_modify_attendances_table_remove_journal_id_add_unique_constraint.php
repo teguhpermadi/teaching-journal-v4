@@ -12,17 +12,32 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('attendances', function (Blueprint $table) {
-            // Drop foreign key first
-            $table->dropForeign(['journal_id']);
+            // Check if foreign key exists before dropping
+            $sm = Schema::getConnection()->getDoctrineSchemaManager();
+            $foreignKeys = $sm->listTableForeignKeys('attendances');
 
-            // Drop old unique index explicitly
-            $table->dropUnique('unique_journal_student_date');
+            foreach ($foreignKeys as $foreignKey) {
+                if ($foreignKey->getName() === 'attendances_journal_id_foreign') {
+                    $table->dropForeign(['journal_id']);
+                    break;
+                }
+            }
 
-            // Drop column
-            $table->dropColumn('journal_id');
+            // Check if unique index exists before dropping
+            $indexes = $sm->listTableIndexes('attendances');
+            if (isset($indexes['unique_journal_student_date'])) {
+                $table->dropUnique('unique_journal_student_date');
+            }
 
-            // Add unique constraint
-            $table->unique(['student_id', 'date'], 'unique_student_date');
+            // Drop column if it exists
+            if (Schema::hasColumn('attendances', 'journal_id')) {
+                $table->dropColumn('journal_id');
+            }
+
+            // Add unique constraint if it doesn't exist
+            if (!isset($indexes['unique_student_date'])) {
+                $table->unique(['student_id', 'date'], 'unique_student_date');
+            }
         });
     }
 
