@@ -25,7 +25,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use Saade\FilamentAutograph\Forms\Components\SignaturePad;
+use Filament\Forms\Components\FileUpload;
 
 class SignatureTable
 {
@@ -190,8 +190,13 @@ class SignatureTable
                             ->modalDescription('Silakan tanda tangani journal ini sebagai kepala sekolah.')
                             ->modalWidth('lg')
                             ->schema([
-                                SignaturePad::make('signature')
-                                    ->label('Tanda Tangan')
+                                FileUpload::make('signature')
+                                    ->label('Upload Tanda Tangan')
+                                    ->image()
+                                    ->disk('public')
+                                    ->directory('signatures')
+                                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                                    ->maxSize(2048)
                                     ->required()
                                     ->columnSpanFull(),
                             ])
@@ -221,8 +226,13 @@ class SignatureTable
                     ->modalDescription('Silakan tanda tangani journal ini sebagai kepala sekolah.')
                     ->modalWidth('lg')
                     ->schema([
-                        SignaturePad::make('signature')
-                            ->label('Tanda Tangan')
+                        FileUpload::make('signature')
+                            ->label('Upload Tanda Tangan')
+                            ->image()
+                            ->disk('public')
+                            ->directory('signatures')
+                            ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                            ->maxSize(2048)
                             ->required()
                             ->columnSpanFull(),
                     ])
@@ -248,9 +258,9 @@ class SignatureTable
                     ->color('danger')
                     ->visible(function (Journal $record) {
                         $user = Auth::user();
-                        return $user && 
-                               $record->isSignedBy('owner') && 
-                               $record->user_id === $user->id;
+                        return $user &&
+                            $record->isSignedBy('owner') &&
+                            $record->user_id === $user->id;
                     })
                     ->modalHeading('Hapus Tanda Tangan Guru')
                     ->modalDescription('Apakah Anda yakin ingin menghapus tanda tangan guru? Journal akan tetap ada, hanya tanda tangannya yang dihapus.')
@@ -262,7 +272,7 @@ class SignatureTable
                                 ->where('signer_role', 'owner')
                                 ->where('signer_id', $user->id)
                                 ->first();
-                            
+
                             if ($signature) {
                                 $signature->delete();
                                 \Filament\Notifications\Notification::make()
@@ -287,9 +297,9 @@ class SignatureTable
                     ->color('danger')
                     ->visible(function (Journal $record) {
                         $user = Auth::user();
-                        return $user && 
-                               $record->isSignedBy('headmaster') && 
-                               $user->hasRole('headmaster');
+                        return $user &&
+                            $record->isSignedBy('headmaster') &&
+                            $user->hasRole('headmaster');
                     })
                     ->modalHeading('Hapus Tanda Tangan Kepala Sekolah')
                     ->modalDescription('Apakah Anda yakin ingin menghapus tanda tangan kepala sekolah? Journal akan tetap ada, hanya tanda tangannya yang dihapus.')
@@ -301,7 +311,7 @@ class SignatureTable
                                 ->where('signer_role', 'headmaster')
                                 ->where('signer_id', $user->id)
                                 ->first();
-                            
+
                             if ($signature) {
                                 $signature->delete();
                                 \Filament\Notifications\Notification::make()
@@ -334,8 +344,13 @@ class SignatureTable
                         )
                         ->modalWidth('lg')
                         ->form([
-                            SignaturePad::make('signature')
-                                ->label('Tanda Tangan')
+                            FileUpload::make('signature')
+                                ->label('Upload Tanda Tangan')
+                                ->image()
+                                ->disk('public')
+                                ->directory('signatures')
+                                ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                                ->maxSize(2048)
                                 ->required()
                                 ->columnSpanFull(),
                         ])
@@ -419,7 +434,7 @@ class SignatureTable
                                         ->where('signer_role', 'owner')
                                         ->where('signer_id', $user->id)
                                         ->first();
-                                    
+
                                     if ($signature) {
                                         $signature->delete();
                                         $successCount++;
@@ -467,7 +482,7 @@ class SignatureTable
                         ->requiresConfirmation()
                         ->action(function ($records) {
                             $user = Auth::user();
-                            
+
                             if (!$user->hasRole('headmaster')) {
                                 \Filament\Notifications\Notification::make()
                                     ->title('Error')
@@ -493,7 +508,7 @@ class SignatureTable
                                         ->where('signer_role', 'headmaster')
                                         ->where('signer_id', $user->id)
                                         ->first();
-                                    
+
                                     if ($signature) {
                                         $signature->delete();
                                         $successCount++;
@@ -502,7 +517,7 @@ class SignatureTable
                                         $signature = $journal->signatures()
                                             ->where('signer_role', 'headmaster')
                                             ->first();
-                                        
+
                                         if ($signature) {
                                             $signature->delete();
                                             $successCount++;

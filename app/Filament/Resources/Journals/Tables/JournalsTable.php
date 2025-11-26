@@ -23,7 +23,7 @@ use Guava\FilamentModalRelationManagers\Actions\RelationManagerAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Saade\FilamentAutograph\Forms\Components\SignaturePad;
+use Filament\Forms\Components\FileUpload;
 
 class JournalsTable
 {
@@ -146,8 +146,13 @@ class JournalsTable
                         )
                         ->modalWidth('lg')
                         ->form([
-                            SignaturePad::make('signature')
-                                ->label('Tanda Tangan')
+                            FileUpload::make('signature')
+                                ->label('Upload Tanda Tangan')
+                                ->image()
+                                ->disk('public')
+                                ->directory('signatures')
+                                ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                                ->maxSize(2048)
                                 ->required()
                                 ->columnSpanFull(),
                         ])
@@ -218,8 +223,13 @@ class JournalsTable
                         )
                         ->modalWidth('lg')
                         ->form([
-                            SignaturePad::make('signature')
-                                ->label('Tanda Tangan')
+                            FileUpload::make('signature')
+                                ->label('Upload Tanda Tangan')
+                                ->image()
+                                ->disk('public')
+                                ->directory('signatures')
+                                ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                                ->maxSize(2048)
                                 ->required()
                                 ->columnSpanFull(),
                         ])
@@ -287,6 +297,81 @@ class JournalsTable
                             $user = Auth::user();
                             return $user && $user->hasRole('headmaster');
                         }),
+
+                    // Bulk delete owner signature (for journal owners)
+                    BulkAction::make('bulkDeleteOwnerSignature')
+                        ->label('Hapus Tanda Tangan Guru (Bulk)')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->modalHeading('Hapus Tanda Tangan Guru (Bulk)')
+                        ->modalDescription(
+                            fn(Collection $records) =>
+                            'Anda akan menghapus tanda tangan guru dari ' . $records->count() . ' journal. Pastikan semua journal yang dipilih adalah milik Anda.'
+                        )
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records) {
+                            $user = Auth::user();
+                            $successCount = 0;
+                            $failedCount = 0;
+                            $errors = [];
+
+                            foreach ($records as $journal) {
+                                // Check if user is the owner
+                                if ($journal->user_id !== $user->id) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}' bukan milik Anda.";
+                                    continue;
+                                }
+
+                                // Check if signed
+                                if (!$journal->isSignedBy('owner')) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}' belum ditandatangani.";
+                                    continue;
+                                }
+
+                                try {
+                                    $signature = $journal->signatures()
+                                        ->where('signer_role', 'owner')
+                                        ->where('signer_id', $user->id)
+                                        ->first();
+
+                                    if ($signature) {
+                                        $signature->delete();
+                                        $successCount++;
+                                    } else {
+                                        $failedCount++;
+                                        $errors[] = "Journal '{$journal->chapter}': Tanda tangan tidak ditemukan.";
+                                    }
+                                } catch (\Exception $e) {
+                                    $failedCount++;
+                                    $errors[] = "Journal '{$journal->chapter}': " . $e->getMessage();
+                                }
+                            }
+
+                            // Show notification
+                            if ($successCount > 0) {
+                                Notification::make()
+                                    ->title('Berhasil')
+                                    ->success()
+                                    ->body("{$successCount} tanda tangan guru berhasil dihapus.")
+                                    ->send();
+                            }
+
+                            if ($failedCount > 0) {
+                                $errorMessage = "{$failedCount} tanda tangan gagal dihapus:\n" . implode("\n", array_slice($errors, 0, 5));
+                                if (count($errors) > 5) {
+                                    $errorMessage .= "\n... dan " . (count($errors) - 5) . " lainnya.";
+                                }
+
+                                Notification::make()
+                                    ->title('Peringatan')
+                                    ->warning()
+                                    ->body($errorMessage)
+                                    ->send();
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ])
             ->defaultSort('date', 'desc')

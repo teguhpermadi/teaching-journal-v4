@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class Signature extends Model
 {
@@ -26,6 +27,19 @@ class Signature extends Model
     ];
 
     protected $appends = ['signature_url', 'is_signed'];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Delete signature file when signature record is deleted
+        static::deleting(function ($signature) {
+            if ($signature->signature_path && Storage::disk('public')->exists($signature->signature_path)) {
+                Storage::disk('public')->delete($signature->signature_path);
+            }
+        });
+    }
+
 
     public function journal()
     {
@@ -82,56 +96,83 @@ class Signature extends Model
                 return 'data:' . $mime . ';base64,' . base64_encode($data);
             }
         } catch (\Exception $e) {
-            \Log::error('Error getting signature data URL: ' . $e->getMessage());
+            Log::error('Error getting signature data URL: ' . $e->getMessage());
         }
 
         return null;
     }
 
+
+
     /**
      * Save the signature (hybrid approach)
+     * Supports: UploadedFile, TemporaryUploadedFile, base64 string, or file path
      */
     public function saveSignature($signatureData, $filename = null): bool
     {
         try {
+            // Delete old signature file if exists
+            if ($this->signature_path && Storage::disk('public')->exists($this->signature_path)) {
+                Storage::disk('public')->delete($this->signature_path);
+            }
+
+            // If it's an uploaded file from Filament FileUpload
+            if (
+                $signatureData instanceof \Illuminate\Http\UploadedFile ||
+                $signatureData instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile
+            ) {
+
+                // Store the file
+                $path = $signatureData->store('signatures', 'public');
+                $this->signature_path = $path;
+
+                // Convert to base64 for the database
+                $filePath = storage_path('app/public/' . $path);
+                if (file_exists($filePath)) {
+                    $mime = mime_content_type($filePath);
+                    $data = file_get_contents($filePath);
+                    $this->signature_base64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+                }
+            }
             // If it's a base64 string
-            if (str_starts_with($signatureData, 'data:image')) {
+            elseif (is_string($signatureData) && str_starts_with($signatureData, 'data:image')) {
                 $this->signature_base64 = $signatureData;
-                
+
                 // Extract and save as file if filename is provided
                 if ($filename) {
                     $path = 'signatures/' . uniqid() . '.png';
                     $filePath = storage_path('app/public/' . $path);
-                    
+
                     // Ensure directory exists
                     if (!file_exists(dirname($filePath))) {
                         mkdir(dirname($filePath), 0755, true);
                     }
-                    
+
                     // Save the file
                     $image = str_replace('data:image/png;base64,', '', $signatureData);
                     $image = str_replace(' ', '+', $image);
                     file_put_contents($filePath, base64_decode($image));
-                    
+
                     $this->signature_path = $path;
                 }
-            } 
-            // If it's a file path
-            else {
+            }
+            // If it's a file path string
+            elseif (is_string($signatureData)) {
                 $this->signature_path = $signatureData;
-                
+
                 // Convert to base64 for the database
                 $filePath = storage_path('app/public/' . $signatureData);
                 if (file_exists($filePath)) {
-                    $this->signature_base64 = 'data:image/png;base64,' . base64_encode(file_get_contents($filePath));
+                    $mime = mime_content_type($filePath);
+                    $data = file_get_contents($filePath);
+                    $this->signature_base64 = 'data:' . $mime . ';base64,' . base64_encode($data);
                 }
             }
-            
+
             $this->signed_at = now();
             return $this->save();
-            
         } catch (\Exception $e) {
-            \Log::error('Error saving signature: ' . $e->getMessage());
+            Log::error('Error saving signature: ' . $e->getMessage());
             return false;
         }
     }

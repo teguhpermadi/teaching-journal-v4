@@ -108,7 +108,7 @@ class ListJournals extends ListRecords
     {
         return [
             JournalWidget::class,
-            \App\Filament\Resources\Journals\Widgets\JournalSignatureStatsWidget::class,
+            // \App\Filament\Resources\Journals\Widgets\JournalSignatureStatsWidget::class,
         ];
     }
 }

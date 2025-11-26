@@ -10,7 +10,7 @@ use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Auth;
-use Saade\FilamentAutograph\Forms\Components\SignaturePad;
+use Filament\Forms\Components\FileUpload;
 
 class EditJournal extends EditRecord
 {
@@ -38,8 +38,13 @@ class EditJournal extends EditRecord
                 ->modalDescription('Silakan tanda tangani journal ini sebagai pemilik.')
                 ->modalWidth('lg')
                 ->form([
-                    SignaturePad::make('signature')
-                        ->label('Tanda Tangan')
+                    FileUpload::make('signature')
+                        ->label('Upload Tanda Tangan')
+                        ->image()
+                        ->disk('public')
+                        ->directory('signatures')
+                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                        ->maxSize(2048)
                         ->required()
                         ->columnSpanFull(),
                 ])
@@ -72,8 +77,13 @@ class EditJournal extends EditRecord
                 ->modalDescription('Silakan tanda tangani journal ini sebagai kepala sekolah.')
                 ->modalWidth('lg')
                 ->form([
-                    SignaturePad::make('signature')
-                        ->label('Tanda Tangan')
+                    FileUpload::make('signature')
+                        ->label('Upload Tanda Tangan')
+                        ->image()
+                        ->disk('public')
+                        ->directory('signatures')
+                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
+                        ->maxSize(2048)
                         ->required()
                         ->columnSpanFull(),
                 ])
@@ -86,6 +96,44 @@ class EditJournal extends EditRecord
                             ->body('Journal berhasil ditandatangani sebagai kepala sekolah.')
                             ->send();
                         $this->refreshFormData(['signatures']);
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('Error')
+                            ->danger()
+                            ->body($e->getMessage())
+                            ->send();
+                    }
+                });
+        }
+
+        // Add delete owner signature action if user is the owner and journal is signed
+        if ($journal && $user && $journal->user_id === $user->id && $journal->isSignedBy('owner')) {
+            $actions[] = Action::make('deleteOwnerSignature')
+                ->label('Hapus Tanda Tangan Guru')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->modalHeading('Hapus Tanda Tangan Guru')
+                ->modalDescription('Apakah Anda yakin ingin menghapus tanda tangan guru? Journal akan tetap ada, hanya tanda tangannya yang dihapus.')
+                ->requiresConfirmation()
+                ->action(function () {
+                    try {
+                        $user = Auth::user();
+                        $signature = $this->record->signatures()
+                            ->where('signer_role', 'owner')
+                            ->where('signer_id', $user->id)
+                            ->first();
+
+                        if ($signature) {
+                            $signature->delete();
+                            Notification::make()
+                                ->title('Berhasil')
+                                ->success()
+                                ->body('Tanda tangan guru berhasil dihapus.')
+                                ->send();
+                            $this->refreshFormData(['signatures']);
+                        } else {
+                            throw new \Exception('Tanda tangan tidak ditemukan.');
+                        }
                     } catch (\Exception $e) {
                         Notification::make()
                             ->title('Error')
