@@ -18,264 +18,274 @@ class JournalDownloadController extends Controller
     public function downloadJournal(Request $request)
     {
         // try {
-            Log::info('Journal download started', [
-                'request_data' => $request->all(),
-                'user_id' => Auth::id()
-            ]);
+        Log::info('Journal download started', [
+            'request_data' => $request->all(),
+            'user_id' => Auth::id()
+        ]);
 
-            // Validasi input
-            $request->validate([
-                'user_id' => 'required',
-                'academic_year_id' => 'required',
-                'grade_id' => 'required',
-                'subject_id' => 'required',
-                'month' => 'required|integer|min:1|max:12'
-            ]);
+        // Validasi input
+        $request->validate([
+            'user_id' => 'required',
+            'academic_year_id' => 'required',
+            'grade_id' => 'required',
+            'subject_id' => 'required',
+            'month' => 'required|integer|min:1|max:12'
+        ]);
 
-            // 1. Ambil data dari model Journal
-            $journals = Journal::query()
-                ->where('user_id', $request->user_id)
-                ->where('academic_year_id', $request->academic_year_id)
-                ->where('grade_id', $request->grade_id)
-                ->where('subject_id', $request->subject_id)
-                ->whereMonth('date', $request->month)
-                ->orderBy('date', 'asc')
-                ->get();
+        // 1. Ambil data dari model Journal
+        $journals = Journal::query()
+            ->where('user_id', $request->user_id)
+            ->where('academic_year_id', $request->academic_year_id)
+            ->where('grade_id', $request->grade_id)
+            ->where('subject_id', $request->subject_id)
+            ->whereMonth('date', $request->month)
+            ->orderBy('date', 'asc')
+            ->get();
 
-            // dd($journals);
+        // dd($journals);
 
-            // Check if journals exist
-            if ($journals->isEmpty()) {
-                Log::warning('No journals found for criteria', $request->all());
-                return response()->json([
-                    'error' => 'Tidak ada jurnal ditemukan untuk kriteria yang diberikan'
-                ], 404);
-            }
+        // Check if journals exist
+        if ($journals->isEmpty()) {
+            Log::warning('No journals found for criteria', $request->all());
+            return response()->json([
+                'error' => 'Tidak ada jurnal ditemukan untuk kriteria yang diberikan'
+            ], 404);
+        }
 
-            Log::info('Found journals', ['count' => $journals->count()]);
+        Log::info('Found journals', ['count' => $journals->count()]);
 
-            // 2. Generate Word Document
-            $phpWord = new PhpWord();
-            \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
-            $section = $phpWord->addSection();
-            $header = $section->addHeader();
-            $footer = $section->addFooter();
-            
+        // 2. Generate Word Document
+        $phpWord = new PhpWord();
+        \PhpOffice\PhpWord\Settings::setOutputEscapingEnabled(true);
+        $section = $phpWord->addSection();
+        $header = $section->addHeader();
+        $footer = $section->addFooter();
 
-            // Title
+
+        // Title
+        $section->addText(
+            'Laporan Jurnal Mengajar',
+            [
+                'alignment' => 'center',
+                'size' => 24,
+                'bold' => true,
+            ]
+        );
+
+        $firstJournal = $journals->first();
+        $section->addText(
+            'Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+        $section->addText(
+            'Tahun Ajaran: ' . ($firstJournal->academicYear->year ?? 'N/A'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+        $section->addText(
+            'Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+        // grade
+        $section->addText(
+            'Kelas: ' . ($firstJournal->grade->name ?? 'N/A'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+        $section->addText(
+            'Periode: ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+
+        // add user name
+        $section->addText(
+            'Oleh: ' . ($firstJournal->user->name ?? 'N/A'),
+            [
+                'bold' => true,
+                'size' => 14,
+            ]
+        );
+
+        // add page break
+        $section->addPageBreak();
+
+        // Journal entries
+        foreach ($journals as $journal) {
+            // $section->addText('--------------------------------****--------------------------------');
             $section->addText(
-                'Laporan Jurnal Mengajar',
+                $journal->date->format('d F Y'),
                 [
                     'alignment' => 'center',
-                    'size' => 24,
-                    'bold' => true,
-                ]
-            );
-
-            $firstJournal = $journals->first();
-            $section->addText(
-                'Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A'),
-                [
-                    'bold' => true,
-                    'size' => 14,
-                ]
-            );
-            $section->addText(
-                'Tahun Ajaran: ' . ($firstJournal->academicYear->year ?? 'N/A'),
-                [
-                    'bold' => true,
-                    'size' => 14,
-                ]
-            );
-            $section->addText(
-                'Semester: ' . ($firstJournal->academicYear->semester?->getLabel() ?? 'N/A'),
-                [
-                    'bold' => true,
-                    'size' => 14,
-                ]
-            );
-            // grade
-            $section->addText(
-                'Kelas: ' . ($firstJournal->grade->name ?? 'N/A'),
-                [
-                    'bold' => true,
-                    'size' => 14,
-                ]
-            );
-            $section->addText(
-                'Periode: ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'),
-                [
-                    'bold' => true,
                     'size' => 14,
                 ]
             );
 
-            // add user name
-            $section->addText(
-                'Oleh: ' . ($firstJournal->user->name ?? 'N/A'),
-                [
-                    'bold' => true,
-                    'size' => 14,
-                ]
-            );
+            $section->addText('Capaian Pembelajaran:', ['bold' => true]);
 
-            // add page break
-            $section->addPageBreak();
+            foreach ($journal->mainTargets as $main_target) {
+                $section->addListItem($main_target->main_target);
+            }
 
-            // Journal entries
-            foreach ($journals as $journal) {
-                // $section->addText('--------------------------------****--------------------------------');
-                $section->addText(
-                    $journal->date->format('d F Y'),
-                    [
-                        'alignment' => 'center',
-                        'size' => 14,
-                    ]
-                );
+            $section->addText('Tujuan Pembelajaran:', ['bold' => true]);
 
-                $section->addText('Capaian Pembelajaran:', ['bold' => true]);
-                
-                foreach ($journal->mainTargets as $main_target) {
-                    $section->addListItem($main_target->main_target);
+            foreach ($journal->targets as $target) {
+                $section->addListItem($target->target);
+            }
+
+            $section->addText('Bab:', ['bold' => true]);
+            $section->addText($journal->chapter);
+            $section->addText('Aktivitas:', ['bold' => true]);
+
+            $htmlContent = $journal->activity;
+            Html::addHtml($section, $htmlContent);
+
+            if ($journal->notes) {
+                $section->addText('Catatan:', ['bold' => true]);
+                Html::addHtml($section, $journal->notes);
+            }
+
+            // Attendance
+            $section->addText('Ketidakhadiran:', ['bold' => true]);
+
+            // Get students in this grade
+            $studentIds = \App\Models\Student::whereHas('grades', function ($q) use ($journal) {
+                $q->where('grades.id', $journal->grade_id);
+            })->pluck('id');
+
+            // Get attendance for these students on this date
+            $attendance = Attendance::whereIn('student_id', $studentIds)
+                ->where('date', $journal->date)
+                ->get();
+
+            if ($attendance->isEmpty()) {
+                $section->addText('Pada tanggal ini semua siswa masuk semua.');
+            } else {
+                foreach ($attendance as $item) {
+                    $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
                 }
-                
-                $section->addText('Tujuan Pembelajaran:', ['bold' => true]);
-                
-                foreach ($journal->targets as $target) {
-                    $section->addListItem($target->target);
-                }
+            }
 
-                $section->addText('Bab:', ['bold' => true]);
-                $section->addText($journal->chapter);
-                $section->addText('Aktivitas:', ['bold' => true]);
-                
-                $htmlContent = $journal->activity;
-                Html::addHtml($section, $htmlContent);
+            $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
 
-                if($journal->notes){
-                    $section->addText('Catatan:', ['bold' => true]);
-                    Html::addHtml($section, $journal->notes);
-                }
+            $images = $journal->getMedia('activity_photos');
 
-                // Attendance
-                $section->addText('Ketidakhadiran:', ['bold' => true]);
-                $attendance = $journal->attendance;
-                if ($attendance->isEmpty()) {
-                    $section->addText('Pada tanggal ini semua siswa masuk semua.');
-                } else {
-                    foreach ($attendance as $item) {
-                        $section->addListItem($item->student->name . ' - ' . $item->status->getLabel());
-                    }
-                }
+            if ($images->isEmpty()) {
+                $section->addText('Pada tanggal ini tidak ada dokumentasi kegiatan.');
+            } else {
+                // Create a single centered paragraph (TextRun) to hold all images
+                $textRun = $section->addTextRun(['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
+                foreach ($images as $image) {
+                    try {
+                        $compressedImage = $image->getPath('activity_photos_compressed');
+                        $originalImage = $image->getPath();
 
-                $section->addText('Dokumentasi Kegiatan:', ['bold' => true]);
-
-                $images = $journal->getMedia('activity_photos');
-
-                if ($images->isEmpty()) {
-                    $section->addText('Pada tanggal ini tidak ada dokumentasi kegiatan.');
-                } else {
-                    // Create a single centered paragraph (TextRun) to hold all images
-                    $textRun = $section->addTextRun(['alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER]);
-                    foreach ($images as $image) {
-                        try {
-                            $compressedImage = $image->getPath('activity_photos_compressed');
-                            $originalImage = $image->getPath();
-                            
-                            // cek jika file exist
-                            if(file_exists($compressedImage)){
-                                $textRun->addImage($compressedImage, ['width' => 100]);
-                            }else{
-                                $textRun->addImage($originalImage, ['width' => 100]);
-                            }
-                            $textRun->addText(' '); // Add some space between images
-
-                        } catch (\Exception $e) {
-                            Log::error("File corrupt - error saat memproses gambar", [
-                                'journal_id' => $journal->id,
-                                'image_id' => $image->id,
-                                'error' => $e->getMessage(),
-                                'trace' => $e->getTraceAsString()
-                            ]);
-                            // If an image fails, add an error message on a new line in the main section
-                            $section->addText('[Error memproses gambar: ' . $e->getMessage() . ']');
-                            continue;
+                        // cek jika file exist
+                        if (file_exists($compressedImage)) {
+                            $textRun->addImage($compressedImage, ['width' => 100]);
+                        } else {
+                            $textRun->addImage($originalImage, ['width' => 100]);
                         }
+                        $textRun->addText(' '); // Add some space between images
+
+                    } catch (\Exception $e) {
+                        Log::error("File corrupt - error saat memproses gambar", [
+                            'journal_id' => $journal->id,
+                            'image_id' => $image->id,
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        // If an image fails, add an error message on a new line in the main section
+                        $section->addText('[Error memproses gambar: ' . $e->getMessage() . ']');
+                        continue;
                     }
                 }
-
-                // Signature table
-                $this->addSignatureTable($section, $journal);
-
-                // Add page break except for last journal
-                if (!$journal->is($journals->last())) {
-                    $section->addPageBreak();
-                }
             }
 
-            // Add attendance summary
-            $this->addAttendanceSummary($section, $journals);
+            // Signature table
+            $this->addSignatureTable($section, $journal);
 
-            // Final signature table
-            $this->addSignatureTable($section, $firstJournal);
-
-            // Header
-            $header->addText('Jurnal mengajar ' . $firstJournal->subject->code . ' | Periode ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'));
-
-            // footer
-            $footer->addPreserveText('Halaman {PAGE} dari {NUMPAGES}.', null, array('alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER));
-            // footer subject and grade
-            $footer->addText('Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A') . ' | Kelas: ' . ($firstJournal->grade->name ?? 'N/A') . ' | Oleh: ' . ($firstJournal->user->name ?? 'N/A'), [
-                'size' => 9
-            ]);
-
-            // Generate filename
-            $monthNames = [
-                1 => 'Januari',
-                2 => 'Februari',
-                3 => 'Maret',
-                4 => 'April',
-                5 => 'Mei',
-                6 => 'Juni',
-                7 => 'Juli',
-                8 => 'Agustus',
-                9 => 'September',
-                10 => 'Oktober',
-                11 => 'November',
-                12 => 'Desember'
-            ];
-
-            $monthName = $monthNames[$request->month];
-
-            // Clean subject name and academic year for filename
-            $subjectName = $this->cleanFilename($firstJournal->subject->code ?? 'Subject');
-            $subjectName = str_replace(' ', '_', $subjectName);
-            $className = $this->cleanFilename($firstJournal->grade->name ?? 'Kelas');
-            $className = str_replace(' ', '_', $className);
-
-            $academicYear = $this->cleanFilename($firstJournal->academicYear->year ?? date('Y'));
-
-            $filename = "Jurnal_{$subjectName}_{$className}_{$monthName}_{$academicYear}.docx";
-
-            // Clean any existing output buffer
-            if (ob_get_level() > 0) {
-                ob_end_clean();
+            // Add page break except for last journal
+            if (!$journal->is($journals->last())) {
+                $section->addPageBreak();
             }
+        }
 
-            // Create streamed response for direct download
-            return new StreamedResponse(function () use ($phpWord) {
-                try {
-                    $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-                    $writer->save('php://output');
-                } catch (\Exception $e) {
-                    Log::error('Error during PhpWord save to output.', ['error' => $e->getMessage()]);
-                }
-            }, 200, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Cache-Control' => 'max-age=0',
-                'Pragma' => 'public',
-            ]);
+        // Add attendance summary
+        $this->addAttendanceSummary($section, $journals);
+
+        // Final signature table
+        $this->addSignatureTable($section, $firstJournal);
+
+        // Header
+        $header->addText('Jurnal mengajar ' . $firstJournal->subject->code . ' | Periode ' . $journals->first()->date->format('d F Y') . ' - ' . $journals->last()->date->format('d F Y'));
+
+        // footer
+        $footer->addPreserveText('Halaman {PAGE} dari {NUMPAGES}.', null, array('alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER));
+        // footer subject and grade
+        $footer->addText('Mata Pelajaran: ' . ($firstJournal->subject->name ?? 'N/A') . ' | Kelas: ' . ($firstJournal->grade->name ?? 'N/A') . ' | Oleh: ' . ($firstJournal->user->name ?? 'N/A'), [
+            'size' => 9
+        ]);
+
+        // Generate filename
+        $monthNames = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+
+        $monthName = $monthNames[$request->month];
+
+        // Clean subject name and academic year for filename
+        $subjectName = $this->cleanFilename($firstJournal->subject->code ?? 'Subject');
+        $subjectName = str_replace(' ', '_', $subjectName);
+        $className = $this->cleanFilename($firstJournal->grade->name ?? 'Kelas');
+        $className = str_replace(' ', '_', $className);
+
+        $academicYear = $this->cleanFilename($firstJournal->academicYear->year ?? date('Y'));
+
+        $filename = "Jurnal_{$subjectName}_{$className}_{$monthName}_{$academicYear}.docx";
+
+        // Clean any existing output buffer
+        if (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        // Create streamed response for direct download
+        return new StreamedResponse(function () use ($phpWord) {
+            try {
+                $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                $writer->save('php://output');
+            } catch (\Exception $e) {
+                Log::error('Error during PhpWord save to output.', ['error' => $e->getMessage()]);
+            }
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+            'Pragma' => 'public',
+        ]);
         // } catch (\Exception $e) {
         //     Log::error("Error generating journal download", [
         //         'error' => $e->getMessage(),
@@ -305,11 +315,38 @@ class JournalDownloadController extends Controller
         $table = $section->addTable($tableStyle);
         $table->addRow();
 
+        // Get signatures
+        $headmasterSignature = $journal->getHeadmasterSignature();
+        $ownerSignature = $journal->getOwnerSignature();
+
         // Kolom pertama - Tanda tangan Kepala Sekolah
         $cell1 = $table->addCell(4500, $cellStyle);
         $cell1->addText('Mengetahui,', ['alignment' => 'center']);
         $cell1->addText('Kepala Sekolah', ['alignment' => 'center']);
-        $cell1->addTextBreak(2);
+
+        // Add signature image if exists
+        if ($headmasterSignature && $headmasterSignature->signature_path) {
+            $signaturePath = storage_path('app/public/' . $headmasterSignature->signature_path);
+            if (file_exists($signaturePath)) {
+                try {
+                    $cell1->addImage($signaturePath, [
+                        'width' => 100,
+                        'height' => 50,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error adding headmaster signature image', [
+                        'error' => $e->getMessage(),
+                        'path' => $signaturePath
+                    ]);
+                    $cell1->addTextBreak(2);
+                }
+            } else {
+                $cell1->addTextBreak(2);
+            }
+        } else {
+            $cell1->addTextBreak(2);
+        }
+
         $cell1->addText($journal->academicYear->headmaster_name, ['bold' => true, 'alignment' => 'center']);
         $cell1->addText('NIP. ' . ($journal->academicYear->headmaster_nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
@@ -317,7 +354,30 @@ class JournalDownloadController extends Controller
         $cell2 = $table->addCell(4500, $cellStyle);
         $cell2->addTextBreak(1);
         $cell2->addText('Guru Pengajar', ['alignment' => 'center']);
-        $cell2->addTextBreak(2);
+
+        // Add signature image if exists
+        if ($ownerSignature && $ownerSignature->signature_path) {
+            $signaturePath = storage_path('app/public/' . $ownerSignature->signature_path);
+            if (file_exists($signaturePath)) {
+                try {
+                    $cell2->addImage($signaturePath, [
+                        'width' => 100,
+                        'height' => 50,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error adding owner signature image', [
+                        'error' => $e->getMessage(),
+                        'path' => $signaturePath
+                    ]);
+                    $cell2->addTextBreak(2);
+                }
+            } else {
+                $cell2->addTextBreak(2);
+            }
+        } else {
+            $cell2->addTextBreak(2);
+        }
+
         $cell2->addText($journal->user->name, ['bold' => true, 'alignment' => 'center']);
         $cell2->addText('NIP. ' . ($journal->user->nip ?? '-'), ['bold' => true, 'alignment' => 'center']);
 
@@ -343,7 +403,7 @@ class JournalDownloadController extends Controller
             )
         );
 
-        $section->addText('Rekap Ketidakhadiran Siswa Pada Mata Pelajaran ' . $journals->first()->subject->name , ['bold' => true, 'size' => 14]);
+        $section->addText('Rekap Ketidakhadiran Siswa Pada Mata Pelajaran ' . $journals->first()->subject->name, ['bold' => true, 'size' => 14]);
         // month
         $section->addText(
             'Bulan: ' . ($journals->first()->date->format('F Y') ?? 'N/A'),
@@ -362,8 +422,19 @@ class JournalDownloadController extends Controller
             ]
         );
 
+        // Get all dates from journals
+        $dates = $journals->pluck('date')->unique();
+        $gradeId = $journals->first()->grade_id;
+
+        // Get students in this grade
+        $studentIds = \App\Models\Student::whereHas('grades', function ($q) use ($gradeId) {
+            $q->where('grades.id', $gradeId);
+        })->pluck('id');
+
+        // Get attendance for these students on these dates
         $attendance = Attendance::query()
-            ->whereIn('journal_id', $journals->pluck('id'))
+            ->whereIn('student_id', $studentIds)
+            ->whereIn('date', $dates)
             ->get();
 
         $attendanceByStudent = $attendance->groupBy('student_id');
