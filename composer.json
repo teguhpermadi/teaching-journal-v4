@@ -10,6 +10,7 @@
         "bezhansalleh/filament-shield": "^4.0",
         "doctrine/dbal": "^4.3",
         "dutchcodingcompany/filament-socialite": "^3.0",
+        "eightynine/filament-advanced-widgets": "*",
         "eightynine/filament-excel-import": "^4.0",
         "filament/filament": "4.0",
         "filament/spatie-laravel-media-library-plugin": "4.0",

@@ -18,11 +18,6 @@ class AttendanceForm
                     ->searchable()
                     ->relationship('student', 'name')
                     ->required(),
-                Select::make('journal_id')
-                    ->label('Journal')
-                    ->searchable()
-                    ->relationship('journal', 'chapter')
-                    ->required(),
                 Select::make('status')
                     ->label('Status')
                     ->options(StatusAttendanceEnum::class)

@@ -135,18 +135,44 @@ class EditJournal extends EditRecord
 
     protected function afterSave(): void
     {
-        // Simpan data attendance baru
-        foreach ($this->attendanceData as $attendance) {
-            if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
-                \App\Models\Attendance::updateOrCreate(
-                    [
-                        'student_id' => $attendance['student_id'],
-                        'date' => $this->record->date,
-                    ],
-                    [
-                        'status' => $attendance['status'],
-                    ]
-                );
+        $date = $this->record->date;
+        $subject = $this->record->subject;
+
+        if ($subject) {
+            // Get all students in this grade
+            $allStudentIds = \App\Models\Student::whereHas('grades', function ($q) use ($subject) {
+                $q->where('grades.id', $subject->grade_id);
+            })->pluck('id')->toArray();
+
+            // Get student IDs from the form
+            $formStudentIds = collect($this->attendanceData)
+                ->pluck('student_id')
+                ->filter()
+                ->toArray();
+
+            // Delete attendance for students that were removed from the form
+            // (students in grade but not in form)
+            $studentsToDelete = array_diff($allStudentIds, $formStudentIds);
+
+            if (!empty($studentsToDelete)) {
+                \App\Models\Attendance::whereIn('student_id', $studentsToDelete)
+                    ->where('date', $date)
+                    ->delete();
+            }
+
+            // Update or create attendance for students in the form
+            foreach ($this->attendanceData as $attendance) {
+                if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
+                    \App\Models\Attendance::updateOrCreate(
+                        [
+                            'student_id' => $attendance['student_id'],
+                            'date' => $date,
+                        ],
+                        [
+                            'status' => $attendance['status'],
+                        ]
+                    );
+                }
             }
         }
     }

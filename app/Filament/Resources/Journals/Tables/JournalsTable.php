@@ -35,12 +35,12 @@ class JournalsTable
                     ->label('Date')
                     ->date('D, d M Y')
                     ->sortable(),
-                SpatieMediaLibraryImageColumn::make('activity_photos')
-                    ->label('Photos')
-                    ->collection('activity_photos')
-                    ->stacked()
-                    ->limit(3)
-                    ->circular(),
+                // SpatieMediaLibraryImageColumn::make('activity_photos')
+                //     ->label('Photos')
+                //     ->collection('activity_photos')
+                //     ->stacked()
+                //     ->limit(3)
+                //     ->circular(),
                 // TextColumn::make('mainTarget.main_target')
                 //     ->label('Main Target')
                 //     ->limit(100)

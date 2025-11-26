@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Attendances\Tables;
 use App\Models\Grade;
 use App\StatusAttendanceEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -53,7 +54,8 @@ class AttendancesTable
                     ->label('Grade'),
             ])
             ->recordActions([
-                // EditAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 // BulkActionGroup::make([
