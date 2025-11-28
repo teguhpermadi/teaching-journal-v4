@@ -16,7 +16,7 @@ enum TeachingStatusEnum: string implements HasLabel
         return match ($this) {
             self::PEMBELAJARAN => 'Pembelajaran',
             self::PENILAIAN => 'Penilaian',
-            // self::SUMATIF => 'Sumatif',
+            self::SUMATIF => 'Sumatif',
             self::DITIADAKAN => 'Pembelajaran Ditiadakan',
         };
     }
@@ -26,7 +26,7 @@ enum TeachingStatusEnum: string implements HasLabel
         return match ($this) {
             self::PEMBELAJARAN => 'success',
             self::PENILAIAN => 'warning',
-            // self::SUMATIF => 'secondary',
+            self::SUMATIF => 'secondary',
             self::DITIADAKAN => 'danger',
         };
     }
