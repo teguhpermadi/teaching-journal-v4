@@ -562,6 +562,7 @@ class JournalWidget extends CalendarWidget
                 ->openable()
                 ->collection('activity_photos')
                 ->image()
+                ->panelLayout('grid')
                 ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
 

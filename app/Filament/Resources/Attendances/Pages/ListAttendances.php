@@ -16,7 +16,7 @@ class ListAttendances extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // CreateAction::make(),
+            CreateAction::make(),
             Action::make('download')
                 ->label('Download Laporan Kehadiran')
                 ->icon('heroicon-o-document-arrow-down')
