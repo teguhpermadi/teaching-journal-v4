@@ -271,6 +271,7 @@ class Journal extends Model implements HasMedia, Eventable
             ->start($this->date)
             ->end($this->date)
             ->backgroundColor($color)
+            ->textColor(ColorHelper::getContrastColor($color))
             ->allDay(true);
     }
 

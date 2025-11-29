@@ -20,7 +20,7 @@ class ColorHelper
                 $matches[3]
             );
         }
-        
+
         return $rgb; // Return as is if not in RGB format
     }
 
@@ -41,13 +41,35 @@ class ColorHelper
             }
             return '#' . $hex;
         }
-        
+
         // If it's in RGB format, convert to HEX
         if (str_starts_with(strtolower($color), 'rgb')) {
             return self::rgbToHex($color);
         }
-        
+
         // Default color if format is not recognized
         return '#3b82f6';
+    }
+    /**
+     * Get contrasting text color (black or white) based on background color
+     * 
+     * @param string $hexColor Background color in HEX format
+     * @return string Contrasting color (#000000 or #ffffff)
+     */
+    public static function getContrastColor(string $hexColor): string
+    {
+        $hex = self::normalizeColor($hexColor);
+        $hex = ltrim($hex, '#');
+
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        // Calculate relative luminance
+        // Formula from W3C: https://www.w3.org/TR/WCAG20/#relativeluminancedef
+        $luminance = (0.299 * $r + 0.587 * $g + 0.114 * $b) / 255;
+
+        // Return black for light backgrounds, white for dark backgrounds
+        return $luminance > 0.5 ? '#000000' : '#ffffff';
     }
 }
