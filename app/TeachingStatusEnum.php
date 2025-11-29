@@ -7,7 +7,7 @@ use Filament\Support\Contracts\HasLabel;
 enum TeachingStatusEnum: string implements HasLabel
 {
     case PEMBELAJARAN = 'Pembelajaran';
-    case PENILAIAN = 'Formatif';
+    case PENILAIAN = 'Penilaian';
     case SUMATIF = 'Sumatif';
     case DITIADAKAN = 'Ditiadakan';
 
