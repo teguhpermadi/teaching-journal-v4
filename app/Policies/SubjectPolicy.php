@@ -1,66 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Subject;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SubjectPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('ViewAny:Subject');
+        return $authUser->can('ViewAny:Subject');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Subject $subject): bool
+    public function view(AuthUser $authUser, Subject $subject): bool
     {
-        return $user->can('View:Subject');
+        return $authUser->can('View:Subject');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('Create:Subject');
+        return $authUser->can('Create:Subject');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Subject $subject): bool
+    public function update(AuthUser $authUser, Subject $subject): bool
     {
-        return $user->can('Update:Subject');
+        return $authUser->can('Update:Subject');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Subject $subject): bool
+    public function delete(AuthUser $authUser, Subject $subject): bool
     {
-        return $user->can('Delete:Subject');
+        return $authUser->can('Delete:Subject');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Subject $subject): bool
+    public function restore(AuthUser $authUser, Subject $subject): bool
     {
-        return $user->can('Restore:Subject');
+        return $authUser->can('Restore:Subject');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Subject $subject): bool
+    public function forceDelete(AuthUser $authUser, Subject $subject): bool
     {
-        return $user->can('ForceDelete:Subject');
+        return $authUser->can('ForceDelete:Subject');
     }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Subject');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Subject');
+    }
+
+    public function replicate(AuthUser $authUser, Subject $subject): bool
+    {
+        return $authUser->can('Replicate:Subject');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Subject');
+    }
+
 }

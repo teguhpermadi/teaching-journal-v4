@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
+use App\SemesterEnum;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Grade;
-use App\SemesterEnum;
 
 class AcademicYear extends Model
 {
@@ -22,12 +21,14 @@ class AcademicYear extends Model
         'date_start',
         'date_end',
         'active',
+        'saturday_is_active',
     ];
 
     protected $casts = [
         'date_start' => 'date',
         'date_end' => 'date',
         'active' => 'boolean',
+        'saturday_is_active' => 'boolean',
         'semester' => SemesterEnum::class,
     ];
 
@@ -39,6 +40,11 @@ class AcademicYear extends Model
     public function subjects()
     {
         return $this->hasMany(Subject::class);
+    }
+
+    public function academicEvents()
+    {
+        return $this->hasMany(AcademicEvent::class);
     }
 
     public function scopeActive($query)

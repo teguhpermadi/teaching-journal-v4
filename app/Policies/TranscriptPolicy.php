@@ -1,66 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Transcript;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TranscriptPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('ViewAny:Transcript');
+        return $authUser->can('ViewAny:Transcript');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Transcript $transcript): bool
+    public function view(AuthUser $authUser, Transcript $transcript): bool
     {
-        return $user->can('View:Transcript');
+        return $authUser->can('View:Transcript');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('Create:Transcript');
+        return $authUser->can('Create:Transcript');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Transcript $transcript): bool
+    public function update(AuthUser $authUser, Transcript $transcript): bool
     {
-        return $user->can('Update:Transcript');
+        return $authUser->can('Update:Transcript');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Transcript $transcript): bool
+    public function delete(AuthUser $authUser, Transcript $transcript): bool
     {
-        return $user->can('Delete:Transcript');
+        return $authUser->can('Delete:Transcript');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Transcript $transcript): bool
+    public function restore(AuthUser $authUser, Transcript $transcript): bool
     {
-        return $user->can('Restore:Transcript');
+        return $authUser->can('Restore:Transcript');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Transcript $transcript): bool
+    public function forceDelete(AuthUser $authUser, Transcript $transcript): bool
     {
-        return $user->can('ForceDelete:Transcript');
+        return $authUser->can('ForceDelete:Transcript');
     }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Transcript');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Transcript');
+    }
+
+    public function replicate(AuthUser $authUser, Transcript $transcript): bool
+    {
+        return $authUser->can('Replicate:Transcript');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Transcript');
+    }
+
 }

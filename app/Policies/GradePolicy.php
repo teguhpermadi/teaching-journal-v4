@@ -1,66 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Grade;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class GradePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('ViewAny:Grade');
+        return $authUser->can('ViewAny:Grade');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Grade $grade): bool
+    public function view(AuthUser $authUser, Grade $grade): bool
     {
-        return $user->can('View:Grade');
+        return $authUser->can('View:Grade');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('Create:Grade');
+        return $authUser->can('Create:Grade');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Grade $grade): bool
+    public function update(AuthUser $authUser, Grade $grade): bool
     {
-        return $user->can('Update:Grade');
+        return $authUser->can('Update:Grade');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Grade $grade): bool
+    public function delete(AuthUser $authUser, Grade $grade): bool
     {
-        return $user->can('Delete:Grade');
+        return $authUser->can('Delete:Grade');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Grade $grade): bool
+    public function restore(AuthUser $authUser, Grade $grade): bool
     {
-        return $user->can('Restore:Grade');
+        return $authUser->can('Restore:Grade');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Grade $grade): bool
+    public function forceDelete(AuthUser $authUser, Grade $grade): bool
     {
-        return $user->can('ForceDelete:Grade');
+        return $authUser->can('ForceDelete:Grade');
     }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Grade');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Grade');
+    }
+
+    public function replicate(AuthUser $authUser, Grade $grade): bool
+    {
+        return $authUser->can('Replicate:Grade');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Grade');
+    }
+
 }

@@ -1,66 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Journal;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class JournalPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('ViewAny:Journal');
+        return $authUser->can('ViewAny:Journal');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Journal $journal): bool
+    public function view(AuthUser $authUser, Journal $journal): bool
     {
-        return $user->can('View:Journal');
+        return $authUser->can('View:Journal');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('Create:Journal');
+        return $authUser->can('Create:Journal');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Journal $journal): bool
+    public function update(AuthUser $authUser, Journal $journal): bool
     {
-        return $user->can('Update:Journal');
+        return $authUser->can('Update:Journal');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Journal $journal): bool
+    public function delete(AuthUser $authUser, Journal $journal): bool
     {
-        return $user->can('Delete:Journal');
+        return $authUser->can('Delete:Journal');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Journal $journal): bool
+    public function restore(AuthUser $authUser, Journal $journal): bool
     {
-        return $user->can('Restore:Journal');
+        return $authUser->can('Restore:Journal');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Journal $journal): bool
+    public function forceDelete(AuthUser $authUser, Journal $journal): bool
     {
-        return $user->can('ForceDelete:Journal');
+        return $authUser->can('ForceDelete:Journal');
     }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Journal');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Journal');
+    }
+
+    public function replicate(AuthUser $authUser, Journal $journal): bool
+    {
+        return $authUser->can('Replicate:Journal');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Journal');
+    }
+
 }

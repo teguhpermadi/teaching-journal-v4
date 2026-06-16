@@ -3,12 +3,11 @@
 namespace App\Filament\Resources\AcademicYears\Schemas;
 
 use App\SemesterEnum;
-use Filament\Schemas\Schema;
-use Filament\Tables\Columns\ToggleColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Schema;
 
 class AcademicYearForm
 {
@@ -48,6 +47,10 @@ class AcademicYearForm
                     ->placeholder('Select End Date'),
                 Toggle::make('active')
                     ->label('Active')
+                    ->default(false),
+                Toggle::make('saturday_is_active')
+                    ->label('Sabtu Aktif')
+                    ->helperText('Aktifkan jika hari Sabtu dihitung sebagai hari efektif')
                     ->default(false),
             ]);
     }

@@ -2,41 +2,37 @@
 
 namespace App\Filament\Resources\Journals\Widgets;
 
-use App\Filament\Resources\Journals\JournalResource;
+use App\Models\AcademicEvent;
 use App\Models\AcademicYear;
 use App\Models\Journal;
 use App\Models\MainTarget;
+use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Target;
+use App\StatusAttendanceEnum;
 use App\TeachingStatusEnum;
 use Filament\Actions\Action;
-use Guava\Calendar\Filament\Actions\CreateAction;
-use Guava\Calendar\Filament\Actions\EditAction;
-use Guava\Calendar\Filament\Actions\DeleteAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Hidden;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Get;
-use Filament\Forms\Set;
-use App\Models\Student;
-use App\StatusAttendanceEnum;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
+use Guava\Calendar\Filament\Actions\CreateAction;
+use Guava\Calendar\Filament\Actions\DeleteAction;
+use Guava\Calendar\Filament\Actions\EditAction;
 use Guava\Calendar\Filament\CalendarWidget;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
-use Guava\Calendar\ValueObjects\FetchInfo;
 use Guava\Calendar\ValueObjects\DateClickInfo;
-use Guava\Calendar\ValueObjects\EventClickInfo;
 use Guava\Calendar\ValueObjects\EventDropInfo;
-use Guava\Calendar\Contracts\ContextualInfo;
+use Guava\Calendar\ValueObjects\FetchInfo;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class JournalWidget extends CalendarWidget
@@ -57,9 +53,12 @@ class JournalWidget extends CalendarWidget
     // Property untuk menyimpan data attendance sementara
     public array $attendanceData = [];
 
-    protected function getEvents(FetchInfo $info): Collection | array | Builder
+    protected function getEvents(FetchInfo $info): Collection|array|Builder
     {
-        return Journal::query()->myJournals();
+        $journals = Journal::query()->myJournals()->get();
+        $academicEvents = AcademicEvent::query()->get();
+
+        return $journals->concat($academicEvents);
     }
 
     public function refreshEvents(): void
@@ -90,7 +89,7 @@ class JournalWidget extends CalendarWidget
         }
 
         // Fallback
-        if (!$selectedDate) {
+        if (! $selectedDate) {
             $selectedDate = $info->date ?? $info->dateStr ?? now()->format('Y-m-d');
         }
 
@@ -150,7 +149,7 @@ class JournalWidget extends CalendarWidget
                             ->where('date', $formattedDate)
                             ->exists();
 
-                        if (!$exists) {
+                        if (! $exists) {
                             $attendance->update(['date' => $formattedDate]);
                         } else {
                             // If exists, we delete the old one? Or keep it as is (duplicate/conflict)?
@@ -197,7 +196,7 @@ class JournalWidget extends CalendarWidget
                 $dateToUse = $this->selectedDate ?? now()->format('Y-m-d');
 
                 // Pastikan format tanggal benar
-                if ($dateToUse && !is_string($dateToUse)) {
+                if ($dateToUse && ! is_string($dateToUse)) {
                     if ($dateToUse instanceof \Carbon\Carbon) {
                         $dateToUse = $dateToUse->format('Y-m-d');
                     } elseif (is_object($dateToUse) && method_exists($dateToUse, 'format')) {
@@ -239,7 +238,7 @@ class JournalWidget extends CalendarWidget
             ->after(function (Journal $record) {
                 // Simpan data attendance
                 foreach ($this->attendanceData as $attendance) {
-                    if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
+                    if (! empty($attendance['student_id']) && ! empty($attendance['status'])) {
                         \App\Models\Attendance::create([
                             'journal_id' => $record->id,
                             'student_id' => $attendance['student_id'],
@@ -280,7 +279,7 @@ class JournalWidget extends CalendarWidget
                         ->where('date', $date)
                         ->get();
 
-                    $data['attendance'] = $attendances->map(fn($item) => [
+                    $data['attendance'] = $attendances->map(fn ($item) => [
                         'student_id' => $item->student_id,
                         'status' => $item->status,
                         'date' => $item->date,
@@ -325,7 +324,7 @@ class JournalWidget extends CalendarWidget
                     // Delete attendance for students that were removed from the form
                     $studentsToDelete = array_diff($allStudentIds, $formStudentIds);
 
-                    if (!empty($studentsToDelete)) {
+                    if (! empty($studentsToDelete)) {
                         \App\Models\Attendance::whereIn('student_id', $studentsToDelete)
                             ->where('date', $date)
                             ->delete();
@@ -333,7 +332,7 @@ class JournalWidget extends CalendarWidget
 
                     // Update or create attendance for students in the form
                     foreach ($this->attendanceData as $attendance) {
-                        if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
+                        if (! empty($attendance['student_id']) && ! empty($attendance['status'])) {
                             \App\Models\Attendance::updateOrCreate(
                                 [
                                     'student_id' => $attendance['student_id'],
@@ -382,12 +381,12 @@ class JournalWidget extends CalendarWidget
             $date = $get('date');
             $subjectId = $get('subject_id');
 
-            if (!$date || !$subjectId) {
+            if (! $date || ! $subjectId) {
                 return;
             }
 
             $subject = Subject::find($subjectId);
-            if (!$subject) {
+            if (! $subject) {
                 return;
             }
 
@@ -416,24 +415,24 @@ class JournalWidget extends CalendarWidget
                 ->default(now())
                 ->required()
                 ->live()
-                ->afterStateUpdated(fn(callable $get, callable $set) => $fillAttendance($get, $set)),
+                ->afterStateUpdated(fn (callable $get, callable $set) => $fillAttendance($get, $set)),
 
             Select::make('subject_id')
                 ->label('Mata Pelajaran')
                 ->options(
-                    fn() => Subject::mySubjects()
+                    fn () => Subject::mySubjects()
                         ->get()
                         ->map(
-                            fn($subject) => [
-                                'label' => $subject->code . ' - ' . $subject->grade->name,
-                                'value' => $subject->id
+                            fn ($subject) => [
+                                'label' => $subject->code.' - '.$subject->grade->name,
+                                'value' => $subject->id,
                             ]
                         )->pluck('label', 'value')
                 )
                 ->searchable()
                 ->preload()
                 ->reactive()
-                ->afterStateUpdated(fn(callable $get, callable $set) => $fillAttendance($get, $set))
+                ->afterStateUpdated(fn (callable $get, callable $set) => $fillAttendance($get, $set))
                 ->required(),
             Radio::make('status')
                 ->options(TeachingStatusEnum::class)
@@ -447,7 +446,7 @@ class JournalWidget extends CalendarWidget
                 ->reactive()
                 ->required(),
             Select::make('main_target_id')
-                ->visible(fn($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
+                ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                 ->options(
                     function ($get) {
                         $mainTargets = MainTarget::myMainTargetsInSubject($get('subject_id'))
@@ -458,9 +457,9 @@ class JournalWidget extends CalendarWidget
                         }
 
                         return $mainTargets->map(
-                            fn($mainTarget) => [
+                            fn ($mainTarget) => [
                                 'label' => $mainTarget->main_target,
-                                'value' => $mainTarget->id
+                                'value' => $mainTarget->id,
                             ]
                         )->pluck('label', 'value');
                     }
@@ -472,7 +471,7 @@ class JournalWidget extends CalendarWidget
                 ->required(),
 
             Select::make('target_id')
-                ->visible(fn($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
+                ->visible(fn ($get) => $get('status') == TeachingStatusEnum::PEMBELAJARAN)
                 ->options(
                     function ($get) {
                         $targets = Target::myTargetsInSubject($get('subject_id'))
@@ -484,9 +483,9 @@ class JournalWidget extends CalendarWidget
                         }
 
                         return $targets->map(
-                            fn($target) => [
+                            fn ($target) => [
                                 'label' => $target->target,
-                                'value' => $target->id
+                                'value' => $target->id,
                             ]
                         )->pluck('label', 'value');
                     }
@@ -527,7 +526,7 @@ class JournalWidget extends CalendarWidget
             TextInput::make('chapter')
                 ->label('Bab/Materi')
                 ->required()
-                ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
+                ->hidden(fn ($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
 
             RichEditor::make('activity')
@@ -540,7 +539,7 @@ class JournalWidget extends CalendarWidget
                     ['undo', 'redo'],
                 ])
                 ->required()
-                ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
+                ->hidden(fn ($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
 
             RichEditor::make('notes')
@@ -563,7 +562,7 @@ class JournalWidget extends CalendarWidget
                 ->collection('activity_photos')
                 ->image()
                 ->panelLayout('grid')
-                ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
+                ->hidden(fn ($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
 
             Section::make('Ketidakhadiran')
@@ -575,12 +574,12 @@ class JournalWidget extends CalendarWidget
                                 ->label('Siswa')
                                 ->options(function ($get) {
                                     $subjectId = $get('../../subject_id');
-                                    if (!$subjectId) {
+                                    if (! $subjectId) {
                                         return [];
                                     }
 
                                     $subject = Subject::find($subjectId);
-                                    if (!$subject) {
+                                    if (! $subject) {
                                         return [];
                                     }
 
@@ -613,7 +612,7 @@ class JournalWidget extends CalendarWidget
                                 ->required(),
 
                             Hidden::make('date')
-                                ->default(fn($get) => $get('../../date')),
+                                ->default(fn ($get) => $get('../../date')),
                         ])
                         ->addActionLabel('Tambah Siswa')
                         ->deletable()
@@ -621,7 +620,7 @@ class JournalWidget extends CalendarWidget
                         ->grid(1)
                         ->columnSpanFull(),
                 ])
-                ->hidden(fn($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
+                ->hidden(fn ($get) => $get('status') == TeachingStatusEnum::DITIADAKAN)
                 ->columnSpanFull(),
         ];
     }

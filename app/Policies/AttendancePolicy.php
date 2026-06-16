@@ -1,66 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Attendance;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AttendancePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('ViewAny:Attendance');
+        return $authUser->can('ViewAny:Attendance');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Attendance $attendance): bool
+    public function view(AuthUser $authUser, Attendance $attendance): bool
     {
-        return $user->can('View:Attendance');
+        return $authUser->can('View:Attendance');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('Create:Attendance');
+        return $authUser->can('Create:Attendance');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Attendance $attendance): bool
+    public function update(AuthUser $authUser, Attendance $attendance): bool
     {
-        return $user->can('Update:Attendance');
+        return $authUser->can('Update:Attendance');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Attendance $attendance): bool
+    public function delete(AuthUser $authUser, Attendance $attendance): bool
     {
-        return $user->can('Delete:Attendance');
+        return $authUser->can('Delete:Attendance');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Attendance $attendance): bool
+    public function restore(AuthUser $authUser, Attendance $attendance): bool
     {
-        return $user->can('Restore:Attendance');
+        return $authUser->can('Restore:Attendance');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Attendance $attendance): bool
+    public function forceDelete(AuthUser $authUser, Attendance $attendance): bool
     {
-        return $user->can('ForceDelete:Attendance');
+        return $authUser->can('ForceDelete:Attendance');
     }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Attendance');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Attendance');
+    }
+
+    public function replicate(AuthUser $authUser, Attendance $attendance): bool
+    {
+        return $authUser->can('Replicate:Attendance');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Attendance');
+    }
+
 }

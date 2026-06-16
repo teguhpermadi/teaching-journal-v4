@@ -1,66 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\AcademicYear;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AcademicYearPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('ViewAny:AcademicYear');
+        return $authUser->can('ViewAny:AcademicYear');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, AcademicYear $academicYear): bool
+    public function view(AuthUser $authUser, AcademicYear $academicYear): bool
     {
-        return $user->can('View:AcademicYear');
+        return $authUser->can('View:AcademicYear');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('Create:AcademicYear');
+        return $authUser->can('Create:AcademicYear');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, AcademicYear $academicYear): bool
+    public function update(AuthUser $authUser, AcademicYear $academicYear): bool
     {
-        return $user->can('Update:AcademicYear');
+        return $authUser->can('Update:AcademicYear');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, AcademicYear $academicYear): bool
+    public function delete(AuthUser $authUser, AcademicYear $academicYear): bool
     {
-        return $user->can('Delete:AcademicYear');
+        return $authUser->can('Delete:AcademicYear');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, AcademicYear $academicYear): bool
+    public function restore(AuthUser $authUser, AcademicYear $academicYear): bool
     {
-        return $user->can('Restore:AcademicYear');
+        return $authUser->can('Restore:AcademicYear');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, AcademicYear $academicYear): bool
+    public function forceDelete(AuthUser $authUser, AcademicYear $academicYear): bool
     {
-        return $user->can('ForceDelete:AcademicYear');
+        return $authUser->can('ForceDelete:AcademicYear');
     }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:AcademicYear');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:AcademicYear');
+    }
+
+    public function replicate(AuthUser $authUser, AcademicYear $academicYear): bool
+    {
+        return $authUser->can('Replicate:AcademicYear');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:AcademicYear');
+    }
+
 }

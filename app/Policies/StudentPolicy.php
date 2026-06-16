@@ -1,66 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Student;
-use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class StudentPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('ViewAny:Student');
+        return $authUser->can('ViewAny:Student');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Student $student): bool
+    public function view(AuthUser $authUser, Student $student): bool
     {
-        return $user->can('View:Student');
+        return $authUser->can('View:Student');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('Create:Student');
+        return $authUser->can('Create:Student');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Student $student): bool
+    public function update(AuthUser $authUser, Student $student): bool
     {
-        return $user->can('Update:Student');
+        return $authUser->can('Update:Student');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Student $student): bool
+    public function delete(AuthUser $authUser, Student $student): bool
     {
-        return $user->can('Delete:Student');
+        return $authUser->can('Delete:Student');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Student $student): bool
+    public function restore(AuthUser $authUser, Student $student): bool
     {
-        return $user->can('Restore:Student');
+        return $authUser->can('Restore:Student');
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Student $student): bool
+    public function forceDelete(AuthUser $authUser, Student $student): bool
     {
-        return $user->can('ForceDelete:Student');
+        return $authUser->can('ForceDelete:Student');
     }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Student');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Student');
+    }
+
+    public function replicate(AuthUser $authUser, Student $student): bool
+    {
+        return $authUser->can('Replicate:Student');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Student');
+    }
+
 }
