@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::table('attendances', function (Blueprint $table) {
             $connection = Schema::getConnection();
+            $driver = $connection->getDriverName();
+
+            if ($driver === 'sqlite') {
+                return;
+            }
+
             $databaseName = $connection->getDatabaseName();
 
             // Check if foreign key exists before dropping
@@ -26,7 +32,7 @@ return new class extends Migration
                 [$databaseName]
             );
 
-            if (!empty($foreignKeyExists)) {
+            if (! empty($foreignKeyExists)) {
                 $table->dropForeign(['journal_id']);
             }
 
@@ -40,7 +46,7 @@ return new class extends Migration
                 [$databaseName]
             );
 
-            if (!empty($uniqueIndexExists)) {
+            if (! empty($uniqueIndexExists)) {
                 $table->dropUnique('unique_journal_student_date');
             }
 

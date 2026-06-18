@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\AcademicCalendarColorEnum;
+use App\Models\AcademicCalendar;
+use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Spatie\GoogleCalendar\Event;
+
+class SyncAcademicCalendarFromGoogle extends Command
+{
+    protected $signature = 'academic-calendar:sync-from-google';
+
+    protected $description = 'Sync changes made in Google Calendar back to local AcademicCalendar records';
+
+    public function handle(): int
+    {
+        $start = Carbon::now()->subMonth();
+        $end = Carbon::now()->addMonths(6);
+
+        $this->components->task('Fetching Google Calendar events', function () use ($start, $end) {
+            $googleEvents = Event::get($start, $end);
+
+            $foundGoogleIds = collect();
+
+            $syncedCount = 0;
+
+            foreach ($googleEvents as $googleEvent) {
+                $foundGoogleIds->push($googleEvent->id);
+
+                $local = AcademicCalendar::where('google_calendar_event_id', $googleEvent->id)->first();
+
+                if (! $local) {
+                    continue;
+                }
+
+                $googleTitle = $googleEvent->name;
+                $googleDate = $googleEvent->startDate;
+                $googleDescription = $googleEvent->description ?? '';
+                $googleColor = AcademicCalendarColorEnum::fromColorId($googleEvent->colorId);
+
+                $changed = false;
+                $updateData = [];
+
+                if ($local->title !== $googleTitle) {
+                    $updateData['title'] = $googleTitle;
+                    $changed = true;
+                }
+
+                if ($local->date->format('Y-m-d') !== $googleDate->format('Y-m-d')) {
+                    $updateData['date'] = $googleDate;
+                    $changed = true;
+                }
+
+                if (($local->description ?? '') !== $googleDescription) {
+                    $updateData['description'] = $googleDescription ?: null;
+                    $changed = true;
+                }
+
+                if ($googleColor && $local->color !== $googleColor) {
+                    $updateData['color'] = $googleColor;
+                    $changed = true;
+                }
+
+                if ($changed) {
+                    $local->updateQuietly($updateData);
+                    $syncedCount++;
+                }
+            }
+
+            $deletedCount = $this->handleOrphanedRecords($foundGoogleIds);
+
+            $this->components->twoColumnDetail('Updated', (string) $syncedCount);
+            $this->components->twoColumnDetail('Deleted (orphaned)', (string) $deletedCount);
+
+            return true;
+        });
+
+        return Command::SUCCESS;
+    }
+
+    protected function handleOrphanedRecords($foundGoogleIds): int
+    {
+        $orphaned = AcademicCalendar::query()
+            ->whereNotNull('google_calendar_event_id')
+            ->whereNotIn('google_calendar_event_id', $foundGoogleIds)
+            ->get();
+
+        $count = 0;
+
+        foreach ($orphaned as $orphan) {
+            $orphan->deleteQuietly();
+            $count++;
+        }
+
+        return $count;
+    }
+}

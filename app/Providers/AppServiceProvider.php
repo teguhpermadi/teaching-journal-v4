@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Models\AcademicCalendar;
 use App\Models\Attendance;
+use App\Observers\AcademicCalendarObserver;
 use App\Observers\AttendanceObserver;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Attendance::observe(AttendanceObserver::class);
+        AcademicCalendar::observe(AcademicCalendarObserver::class);
     }
 }
