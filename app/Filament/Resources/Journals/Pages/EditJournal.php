@@ -7,14 +7,19 @@ use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Filament\Forms\Components\FileUpload;
+use Nben\FilamentRecordNav\Actions\NextRecordAction;
+use Nben\FilamentRecordNav\Actions\PreviousRecordAction;
+use Nben\FilamentRecordNav\Enums\NavigationPage;
 
 class EditJournal extends EditRecord
 {
     protected static string $resource = JournalResource::class;
+
     public array $attendanceData = [];
 
     protected function getHeaderActions(): array
@@ -23,13 +28,15 @@ class EditJournal extends EditRecord
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),
+            PreviousRecordAction::make()->navigateTo(NavigationPage::Edit),
+            NextRecordAction::make()->navigateTo(NavigationPage::Edit),
         ];
 
         $journal = $this->record;
         $user = Auth::user();
 
         // Add sign as owner action if user is the owner
-        if ($journal && $user && $journal->user_id === $user->id && !$journal->isSignedBy('owner')) {
+        if ($journal && $user && $journal->user_id === $user->id && ! $journal->isSignedBy('owner')) {
             $actions[] = Action::make('signAsOwner')
                 ->label('Tandatangani sebagai Pemilik')
                 ->icon('heroicon-o-pencil-square')
@@ -68,7 +75,7 @@ class EditJournal extends EditRecord
         }
 
         // Add sign as headmaster action if user has headmaster role
-        if ($journal && $user && $user->hasRole('headmaster') && !$journal->isSignedBy('headmaster')) {
+        if ($journal && $user && $user->hasRole('headmaster') && ! $journal->isSignedBy('headmaster')) {
             $actions[] = Action::make('signAsHeadmaster')
                 ->label('Tandatangani sebagai Kepala Sekolah')
                 ->icon('heroicon-o-check-circle')
@@ -146,6 +153,7 @@ class EditJournal extends EditRecord
 
         return $actions;
     }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $date = $this->record->date;
@@ -160,7 +168,7 @@ class EditJournal extends EditRecord
                 ->where('date', $date)
                 ->get();
 
-            $data['attendance'] = $attendances->map(fn($item) => [
+            $data['attendance'] = $attendances->map(fn ($item) => [
                 'student_id' => $item->student_id,
                 'status' => $item->status,
                 'date' => $item->date,
@@ -202,7 +210,7 @@ class EditJournal extends EditRecord
             // (students in grade but not in form)
             $studentsToDelete = array_diff($allStudentIds, $formStudentIds);
 
-            if (!empty($studentsToDelete)) {
+            if (! empty($studentsToDelete)) {
                 \App\Models\Attendance::whereIn('student_id', $studentsToDelete)
                     ->where('date', $date)
                     ->delete();
@@ -210,7 +218,7 @@ class EditJournal extends EditRecord
 
             // Update or create attendance for students in the form
             foreach ($this->attendanceData as $attendance) {
-                if (!empty($attendance['student_id']) && !empty($attendance['status'])) {
+                if (! empty($attendance['student_id']) && ! empty($attendance['status'])) {
                     \App\Models\Attendance::updateOrCreate(
                         [
                             'student_id' => $attendance['student_id'],
@@ -223,5 +231,29 @@ class EditJournal extends EditRecord
                 }
             }
         }
+    }
+
+    public function getPreviousRecord(): ?Model
+    {
+        return $this->getRecord()
+            ->newQuery()
+            ->where('user_id', Auth::id())
+            ->where('subject_id', $this->getRecord()->subject_id)
+            ->where('date', '<', $this->getRecord()->date)
+            ->reorder()
+            ->orderBy('date', 'desc')
+            ->first();
+    }
+
+    public function getNextRecord(): ?Model
+    {
+        return $this->getRecord()
+            ->newQuery()
+            ->where('user_id', Auth::id())
+            ->where('subject_id', $this->getRecord()->subject_id)
+            ->where('date', '>', $this->getRecord()->date)
+            ->reorder()
+            ->orderBy('date', 'asc')
+            ->first();
     }
 }
