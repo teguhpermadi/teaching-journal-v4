@@ -13,7 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUlids, HasRoles;
+    use HasFactory, HasRoles, HasUlids, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -67,6 +67,11 @@ class User extends Authenticatable
         return $this->hasMany(Subject::class);
     }
 
+    public function lessonPlans()
+    {
+        return $this->hasMany(LessonPlan::class);
+    }
+
     public function socialiteUsers()
     {
         return $this->hasMany(SocialiteUser::class);
@@ -78,12 +83,12 @@ class User extends Authenticatable
     public function isOnline(): bool
     {
         // If never logged in, definitely not online
-        if (!$this->last_login_at) {
+        if (! $this->last_login_at) {
             return false;
         }
 
         // If never logged out, check if login was recent (within 5 minutes)
-        if (!$this->last_logout_at) {
+        if (! $this->last_logout_at) {
             return $this->last_login_at->diffInMinutes(now()) <= 5;
         }
 
@@ -101,7 +106,7 @@ class User extends Authenticatable
      */
     public function getStatusAttribute(): string
     {
-        if (!$this->last_login_at) {
+        if (! $this->last_login_at) {
             return 'Belum Login';
         }
 

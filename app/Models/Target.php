@@ -47,10 +47,16 @@ class Target extends Model
         return $this->belongsTo(MainTarget::class);
     }
 
+    public function lessonPlans(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(LessonPlan::class);
+    }
+
     public function scopeMyTargetsInSubject($query, $subject)
     {
         // check academic year is active
         $academicYear = AcademicYear::active()->first();
+
         return $query->where('user_id', Auth::id())
             ->where('academic_year_id', $academicYear->id)
             ->where('subject_id', $subject);

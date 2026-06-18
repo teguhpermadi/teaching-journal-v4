@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Scopes\AcademicYearScope;
 use Colors\RandomColor;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 #[ScopedBy(AcademicYearScope::class)]
 class Subject extends Model
@@ -32,7 +32,7 @@ class Subject extends Model
 
         static::creating(function ($model) {
             // generate random color
-            if (!$model->color) {
+            if (! $model->color) {
                 $model->color = RandomColor::one();
             }
         });
@@ -56,6 +56,7 @@ class Subject extends Model
     public function scopeSubjectWithGradeActive($query)
     {
         $gradeActive = Grade::gradeAcademicYearActive()->get();
+
         return $query->whereHas('grade', function ($query) use ($gradeActive) {
             $query->whereIn('grades.id', $gradeActive->pluck('id'));
         });
@@ -79,5 +80,10 @@ class Subject extends Model
     public function mainTargets()
     {
         return $this->hasMany(MainTarget::class);
+    }
+
+    public function lessonPlans()
+    {
+        return $this->hasMany(LessonPlan::class);
     }
 }

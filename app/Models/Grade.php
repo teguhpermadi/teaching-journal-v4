@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\AcademicYear;
-use App\Models\Student;
 
 class Grade extends Model
 {
@@ -40,6 +38,11 @@ class Grade extends Model
         return $query->whereHas('academicYear', function ($query) {
             $query->where('active', true);
         });
+    }
+
+    public function lessonPlans()
+    {
+        return $this->hasMany(LessonPlan::class);
     }
 
     public function studentWithoutAttendance($date, $journal_id)

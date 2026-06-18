@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
+use App\SemesterEnum;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Grade;
-use App\SemesterEnum;
 
 class AcademicYear extends Model
 {
@@ -39,6 +38,11 @@ class AcademicYear extends Model
     public function subjects()
     {
         return $this->hasMany(Subject::class);
+    }
+
+    public function lessonPlans()
+    {
+        return $this->hasMany(LessonPlan::class);
     }
 
     public function scopeActive($query)
