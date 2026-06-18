@@ -7,17 +7,19 @@ use Filament\Support\Contracts\HasLabel;
 enum TeachingStatusEnum: string implements HasLabel
 {
     case PEMBELAJARAN = 'Pembelajaran';
-    case PENILAIAN = 'Penilaian';
+    case PENILAIAN = 'Formatif';
     case SUMATIF = 'Sumatif';
     case DITIADAKAN = 'Ditiadakan';
+    case LAIN_LAIN = 'Lain-lain';
 
     public function getLabel(): ?string
     {
         return match ($this) {
             self::PEMBELAJARAN => 'Pembelajaran',
-            self::PENILAIAN => 'Penilaian',
+            self::PENILAIAN => 'Formatif',
             self::SUMATIF => 'Sumatif',
             self::DITIADAKAN => 'Pembelajaran Ditiadakan',
+            self::LAIN_LAIN => 'Lain-lain',
         };
     }
 
@@ -28,6 +30,7 @@ enum TeachingStatusEnum: string implements HasLabel
             self::PENILAIAN => 'warning',
             self::SUMATIF => 'secondary',
             self::DITIADAKAN => 'danger',
+            self::LAIN_LAIN => 'info',
         };
     }
 }
