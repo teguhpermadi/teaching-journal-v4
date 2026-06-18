@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LessonPlans\Schemas;
 
 use App\Models\AcademicYear;
+use App\Models\MainTarget;
 use App\Models\Subject;
 use App\Models\Target;
 use App\TeachingStatusEnum;
@@ -12,7 +13,9 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 
@@ -55,6 +58,7 @@ class LessonPlanForm
                     ->reactive()
                     ->required(),
                 Select::make('target_id')
+                    ->hidden(fn ($get) => ! $get('subject_id'))
                     ->options(
                         fn ($get) => Target::myTargetsInSubject($get('subject_id'))
                             ->get()
@@ -67,7 +71,61 @@ class LessonPlanForm
                     )
                     ->searchable()
                     ->preload()
-                    ->nullable(),
+                    ->nullable()
+                    ->createOptionForm(function (Get $get) {
+                        $subjectId = $get('subject_id');
+                        $gradeId = $get('grade_id');
+                        $academicYearId = $get('academic_year_id');
+                        $userId = $get('user_id');
+
+                        return [
+                            Hidden::make('subject_id')
+                                ->default($subjectId),
+                            Hidden::make('grade_id')
+                                ->default($gradeId),
+                            Hidden::make('academic_year_id')
+                                ->default($academicYearId),
+                            Hidden::make('user_id')
+                                ->default($userId),
+                            Select::make('main_target_id')
+                                ->label('Tujuan Utama')
+                                ->options(
+                                    fn () => MainTarget::myMainTargetsInSubject($subjectId)
+                                        ->get()
+                                        ->pluck('main_target', 'id')
+                                )
+                                ->searchable()
+                                ->preload()
+                                ->required()
+                                ->createOptionForm([
+                                    TextInput::make('main_target')
+                                        ->label('Tujuan Utama Baru')
+                                        ->required(),
+                                ])
+                                ->createOptionUsing(function (array $data) use ($subjectId, $gradeId, $academicYearId, $userId) {
+                                    return MainTarget::create([
+                                        'subject_id' => $subjectId,
+                                        'grade_id' => $gradeId,
+                                        'academic_year_id' => $academicYearId,
+                                        'user_id' => $userId,
+                                        'main_target' => $data['main_target'],
+                                    ])->id;
+                                }),
+                            TextInput::make('target')
+                                ->label('Target Baru')
+                                ->required(),
+                        ];
+                    })
+                    ->createOptionUsing(function (array $data, callable $get) {
+                        return Target::create([
+                            'subject_id' => $get('subject_id'),
+                            'grade_id' => $get('grade_id'),
+                            'academic_year_id' => $get('academic_year_id'),
+                            'user_id' => $get('user_id'),
+                            'main_target_id' => $data['main_target_id'],
+                            'target' => $data['target'],
+                        ])->id;
+                    }),
                 TextInput::make('topic')
                     ->columnSpanFull()
                     ->required(),
@@ -92,7 +150,12 @@ class LessonPlanForm
                     ])
                     ->columnSpanFull()
                     ->required(),
+                Toggle::make('has_materials_assessment')
+                    ->label('Tambahkan Materi & Penilaian')
+                    ->live()
+                    ->columnSpanFull(),
                 RichEditor::make('materials')
+                    ->hidden(fn ($get) => ! $get('has_materials_assessment'))
                     ->label('Materi Ajar')
                     ->toolbarButtons([
                         ['bold', 'italic', 'underline'],
@@ -103,6 +166,7 @@ class LessonPlanForm
                     ])
                     ->columnSpanFull(),
                 RichEditor::make('assessment')
+                    ->hidden(fn ($get) => ! $get('has_materials_assessment'))
                     ->label('Penilaian')
                     ->toolbarButtons([
                         ['bold', 'italic', 'underline'],
