@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use BezhanSalleh\FilamentShield\Support\Utils;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\PermissionRegistrar;
 
 class ShieldSeeder extends Seeder
@@ -87,14 +87,9 @@ class ShieldSeeder extends Seeder
                     'View:Signature',
                     'Create:Signature',
                     'Update:Signature',
-                    'Delete:Signature',
-                    'Restore:Signature',
-                    'ForceDelete:Signature',
-                    'ForceDeleteAny:Signature',
-                    'RestoreAny:Signature',
-                    'Replicate:Signature',
-                    'Reorder:Signature',
-                ]
+                    'ViewAny:LessonPlan',
+                    'View:LessonPlan',
+                ],
             ],
             [
                 'name' => 'teacher',
@@ -143,8 +138,19 @@ class ShieldSeeder extends Seeder
                     'ForceDeleteAny:Attendance',
                     'RestoreAny:Attendance',
                     'Replicate:Attendance',
-                    'Reorder:Attendance'
-                ]
+                    'Reorder:Attendance',
+                    'ViewAny:LessonPlan',
+                    'View:LessonPlan',
+                    'Create:LessonPlan',
+                    'Update:LessonPlan',
+                    'Delete:LessonPlan',
+                    'Restore:LessonPlan',
+                    'ForceDelete:LessonPlan',
+                    'ForceDeleteAny:LessonPlan',
+                    'RestoreAny:LessonPlan',
+                    'Replicate:LessonPlan',
+                    'Reorder:LessonPlan',
+                ],
             ],
             [
                 'name' => 'headmaster',
@@ -165,8 +171,10 @@ class ShieldSeeder extends Seeder
                     'View:Signature',
                     'Create:Signature',
                     'Update:Signature',
-                ]
-            ]
+                    'ViewAny:LessonPlan',
+                    'View:LessonPlan',
+                ],
+            ],
             // [
             //     'name' => 'super_admin',
             //     'guard_name' => 'web',
@@ -207,7 +215,7 @@ class ShieldSeeder extends Seeder
 
                 if (! blank($rolePlusPermission['permissions'])) {
                     $permissionModels = collect($rolePlusPermission['permissions'])
-                        ->map(fn($permission) => $permissionModel::firstOrCreate([
+                        ->map(fn ($permission) => $permissionModel::firstOrCreate([
                             'name' => $permission,
                             'guard_name' => $rolePlusPermission['guard_name'],
                         ]))
@@ -218,5 +226,4 @@ class ShieldSeeder extends Seeder
             }
         }
     }
-
 }

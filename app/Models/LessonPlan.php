@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -59,5 +60,10 @@ class LessonPlan extends Model implements HasMedia
     public function target(): BelongsTo
     {
         return $this->belongsTo(Target::class);
+    }
+
+    public function scopeMyLessonPlans($query)
+    {
+        return $query->where('user_id', Auth::id());
     }
 }
