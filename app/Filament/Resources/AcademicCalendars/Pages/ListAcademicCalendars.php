@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\AcademicCalendars\Pages;
 
 use App\Filament\Resources\AcademicCalendars\AcademicCalendarResource;
+use App\Imports\AcademicCalendarImport;
+use EightyNine\ExcelImport\ExcelImportAction;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
@@ -55,6 +57,19 @@ class ListAcademicCalendars extends ListRecords
                             ->send();
                     }
                 }),
+            ExcelImportAction::make()
+                ->use(AcademicCalendarImport::class)
+                ->slideOver()
+                ->sampleExcel(
+                    sampleData: [
+                        ['title' => 'Hari Pertama Masuk Sekolah', 'date' => '2025-07-14', 'status' => 'Efektif', 'description' => 'Semester Ganjil 2025/2026'],
+                        ['title' => 'Libur Hari Raya', 'date' => '2026-03-30', 'status' => 'Tidak Efektif', 'description' => 'Libur Nasional'],
+                        ['title' => 'Penilaian Tengah Semester', 'date' => '2025-09-22', 'status' => 'Efektif', 'description' => 'PTS Ganjil'],
+                        ['title' => 'Pembagian Raport', 'date' => '2025-12-20', 'status' => 'Tidak Efektif', 'description' => ''],
+                    ],
+                    fileName: 'academic-calendar-template.xlsx',
+                    sampleButtonLabel: 'Download Template',
+                ),
             CreateAction::make()
                 ->modalWidth('lg'),
         ];
