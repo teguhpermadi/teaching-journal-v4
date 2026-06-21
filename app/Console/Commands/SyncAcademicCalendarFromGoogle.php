@@ -42,7 +42,8 @@ class SyncAcademicCalendarFromGoogle extends Command
                 }
 
                 $googleTitle = $googleEvent->name;
-                $googleDate = $googleEvent->startDate;
+                $googleStartDate = $googleEvent->startDate;
+                $googleEndDate = $googleEvent->endDate?->subDay();
                 $googleDescription = $googleEvent->description ?? '';
                 $googleColor = AcademicCalendarColorEnum::fromColorId($googleEvent->colorId);
 
@@ -54,8 +55,13 @@ class SyncAcademicCalendarFromGoogle extends Command
                     $changed = true;
                 }
 
-                if ($local->date->format('Y-m-d') !== $googleDate->format('Y-m-d')) {
-                    $updateData['date'] = $googleDate;
+                if ($local->start_date->format('Y-m-d') !== $googleStartDate->format('Y-m-d')) {
+                    $updateData['start_date'] = $googleStartDate;
+                    $changed = true;
+                }
+
+                if ($googleEndDate && (! $local->end_date || $local->end_date->format('Y-m-d') !== $googleEndDate->format('Y-m-d'))) {
+                    $updateData['end_date'] = $googleEndDate;
                     $changed = true;
                 }
 

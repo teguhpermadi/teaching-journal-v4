@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Validation\ValidationException;
 
 class AcademicCalendar extends Model implements Eventable
 {
@@ -18,7 +20,8 @@ class AcademicCalendar extends Model implements Eventable
 
     protected $fillable = [
         'title',
-        'date',
+        'start_date',
+        'end_date',
         'description',
         'status',
         'color',
@@ -28,10 +31,27 @@ class AcademicCalendar extends Model implements Eventable
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
         'status' => AcademicStatusCalendarEnum::class,
         'color' => AcademicCalendarColorEnum::class,
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (self $record) {
+            if ($record->end_date && $record->start_date && $record->end_date < $record->start_date) {
+                $validator = validator([], []);
+                $validator->after(fn ($v) => $v->errors()->add(
+                    'end_date',
+                    'Tanggal selesai harus setelah tanggal mulai.',
+                ));
+                throw new ValidationException($validator);
+            }
+        });
+    }
 
     public function user(): BelongsTo
     {
@@ -43,6 +63,11 @@ class AcademicCalendar extends Model implements Eventable
         return $this->belongsTo(AcademicYear::class);
     }
 
+    public function grades(): BelongsToMany
+    {
+        return $this->belongsToMany(Grade::class);
+    }
+
     public function toCalendarEvent(): CalendarEvent
     {
         $color = $this->color?->value ?? ($this->status === AcademicStatusCalendarEnum::EFFECTIVE
@@ -52,8 +77,8 @@ class AcademicCalendar extends Model implements Eventable
 
         return CalendarEvent::make($this)
             ->title($this->title)
-            ->start($this->date)
-            ->end($this->date)
+            ->start($this->start_date)
+            ->end($this->end_date)
             ->backgroundColor($color)
             ->textColor('#ffffff')
             ->allDay(true);

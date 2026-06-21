@@ -28,10 +28,16 @@ class AcademicCalendarForm
                     ->required()
                     ->maxLength(255)
                     ->placeholder('Masukkan judul kegiatan'),
-                DatePicker::make('date')
-                    ->label('Tanggal')
+                DatePicker::make('start_date')
+                    ->label('Tanggal Mulai')
                     ->required()
-                    ->placeholder('Pilih tanggal'),
+                    ->placeholder('Pilih tanggal mulai'),
+                DatePicker::make('end_date')
+                    ->label('Tanggal Selesai')
+                    ->required()
+                    ->afterOrEqual('start_date')
+                    ->default(fn ($get) => $get('start_date'))
+                    ->placeholder('Pilih tanggal selesai'),
                 Select::make('status')
                     ->label('Status')
                     ->options(AcademicStatusCalendarEnum::class)
@@ -47,6 +53,12 @@ class AcademicCalendarForm
                         ? AcademicCalendarColorEnum::SAGE->value
                         : AcademicCalendarColorEnum::TOMATO->value
                     ),
+                Select::make('grades')
+                    ->multiple()
+                    ->relationship('grades', 'name')
+                    ->preload()
+                    ->label('Kelas')
+                    ->placeholder('Kosongkan jika untuk semua kelas'),
                 Textarea::make('description')
                     ->label('Deskripsi')
                     ->nullable()

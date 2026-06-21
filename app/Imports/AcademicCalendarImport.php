@@ -33,12 +33,18 @@ class AcademicCalendarImport implements SkipsEmptyRows, ToModel, WithHeadingRow,
         $color = $this->resolveColor($status);
 
         try {
-            $date = $this->transformDate($row['date'] ?? null);
+            $startDate = $this->transformDate($row['start_date'] ?? $row['date'] ?? null);
+            $endDate = $this->transformDate($row['end_date'] ?? $row['date'] ?? null);
+
+            if (! $startDate || ! $endDate) {
+                return null;
+            }
 
             return AcademicCalendar::updateOrCreate(
                 [
                     'title' => $row['title'],
-                    'date' => $date,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
                 ],
                 [
                     'status' => $status,
@@ -60,7 +66,7 @@ class AcademicCalendarImport implements SkipsEmptyRows, ToModel, WithHeadingRow,
 
     public function uniqueBy()
     {
-        return ['title', 'date'];
+        return ['title', 'start_date', 'end_date'];
     }
 
     private function transformDate($value, $format = 'Y-m-d')

@@ -52,4 +52,9 @@ class Grade extends Model
                 ->where('journal_id', $journal_id);
         });
     }
+
+    public function academicCalendars(): BelongsToMany
+    {
+        return $this->belongsToMany(AcademicCalendar::class);
+    }
 }

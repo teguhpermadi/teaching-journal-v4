@@ -52,8 +52,8 @@ class AcademicCalendarObserver
 
             $event->name = $academicCalendar->title;
             $event->description = $academicCalendar->description ?? '';
-            $event->startDate = Carbon::parse($academicCalendar->date);
-            $event->endDate = Carbon::parse($academicCalendar->date)->addDay();
+            $event->startDate = Carbon::parse($academicCalendar->start_date);
+            $event->endDate = Carbon::parse($academicCalendar->end_date)->addDay();
 
             if ($academicCalendar->color) {
                 $event->setColorId($academicCalendar->color->getColorId());
@@ -82,8 +82,8 @@ class AcademicCalendarObserver
 
             $event->name = $academicCalendar->title;
             $event->description = $academicCalendar->description ?? '';
-            $event->startDate = Carbon::parse($academicCalendar->date);
-            $event->endDate = Carbon::parse($academicCalendar->date)->addDay();
+            $event->startDate = Carbon::parse($academicCalendar->start_date);
+            $event->endDate = Carbon::parse($academicCalendar->end_date)->addDay();
 
             if ($academicCalendar->color) {
                 $event->setColorId($academicCalendar->color->getColorId());

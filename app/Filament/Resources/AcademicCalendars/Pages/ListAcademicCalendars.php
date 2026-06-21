@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AcademicCalendars\Pages;
 
 use App\Filament\Resources\AcademicCalendars\AcademicCalendarResource;
+use App\Filament\Resources\AcademicCalendars\Widgets\AcademicCalendarWidget;
 use App\Imports\AcademicCalendarImport;
 use EightyNine\ExcelImport\ExcelImportAction;
 use Filament\Actions\Action;
@@ -10,10 +11,21 @@ use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Artisan;
+use Livewire\Attributes\On;
 
 class ListAcademicCalendars extends ListRecords
 {
     protected static string $resource = AcademicCalendarResource::class;
+
+    #[On('academic-calendar-updated')]
+    public function refreshTableFromSplit(): void {}
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AcademicCalendarWidget::class,
+        ];
+    }
 
     protected function getHeaderActions(): array
     {
@@ -62,10 +74,10 @@ class ListAcademicCalendars extends ListRecords
                 ->slideOver()
                 ->sampleExcel(
                     sampleData: [
-                        ['title' => 'Hari Pertama Masuk Sekolah', 'date' => '2025-07-14', 'status' => 'Efektif', 'description' => 'Semester Ganjil 2025/2026'],
-                        ['title' => 'Libur Hari Raya', 'date' => '2026-03-30', 'status' => 'Tidak Efektif', 'description' => 'Libur Nasional'],
-                        ['title' => 'Penilaian Tengah Semester', 'date' => '2025-09-22', 'status' => 'Efektif', 'description' => 'PTS Ganjil'],
-                        ['title' => 'Pembagian Raport', 'date' => '2025-12-20', 'status' => 'Tidak Efektif', 'description' => ''],
+                        ['title' => 'Hari Pertama Masuk Sekolah', 'start_date' => '2025-07-14', 'end_date' => '2025-07-14', 'status' => 'Efektif', 'description' => 'Semester Ganjil 2025/2026'],
+                        ['title' => 'Libur Hari Raya', 'start_date' => '2026-03-30', 'end_date' => '2026-03-30', 'status' => 'Tidak Efektif', 'description' => 'Libur Nasional'],
+                        ['title' => 'Sumatif Tengah Semester', 'start_date' => '2025-09-22', 'end_date' => '2025-09-26', 'status' => 'Efektif', 'description' => 'PTS Ganjil'],
+                        ['title' => 'Pembagian Raport', 'start_date' => '2025-12-20', 'end_date' => '2025-12-20', 'status' => 'Tidak Efektif', 'description' => ''],
                     ],
                     fileName: 'academic-calendar-template.xlsx',
                     sampleButtonLabel: 'Download Template',
