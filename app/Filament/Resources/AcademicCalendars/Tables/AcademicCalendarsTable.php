@@ -44,7 +44,8 @@ class AcademicCalendarsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->modalWidth('lg'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

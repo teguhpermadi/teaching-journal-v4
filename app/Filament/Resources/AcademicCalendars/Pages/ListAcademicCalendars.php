@@ -28,21 +28,35 @@ class ListAcademicCalendars extends ListRecords
                     $exitCode = Artisan::call('academic-calendar:sync-from-google');
                     $output = Artisan::output();
 
-                    if ($exitCode === 0) {
+                    $lines = array_filter(explode("\n", trim($output)));
+                    $lastLine = end($lines);
+                    $result = json_decode($lastLine, true);
+
+                    if ($exitCode === 0 && $result) {
+                        $parts = [];
+                        if ($result['updated'] > 0) {
+                            $parts[] = "{$result['updated']} data diperbarui";
+                        }
+                        if ($result['deleted'] > 0) {
+                            $parts[] = "{$result['deleted']} data dihapus (orphaned)";
+                        }
+                        $summary = implode(', ', $parts) ?: 'Tidak ada perubahan';
+
                         Notification::make()
                             ->title('Sinkronisasi Berhasil')
                             ->success()
-                            ->body($output)
+                            ->body("Sinkronisasi dari Google Calendar selesai.\n{$summary}.")
                             ->send();
                     } else {
                         Notification::make()
                             ->title('Sinkronisasi Gagal')
                             ->danger()
-                            ->body($output)
+                            ->body('Terjadi kesalahan saat sinkronisasi. Silakan coba lagi.')
                             ->send();
                     }
                 }),
-            CreateAction::make(),
+            CreateAction::make()
+                ->modalWidth('lg'),
         ];
     }
 }

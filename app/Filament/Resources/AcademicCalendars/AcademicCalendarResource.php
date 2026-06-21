@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\AcademicCalendars;
 
-use App\Filament\Resources\AcademicCalendars\Pages\CreateAcademicCalendar;
-use App\Filament\Resources\AcademicCalendars\Pages\EditAcademicCalendar;
 use App\Filament\Resources\AcademicCalendars\Pages\ListAcademicCalendars;
 use App\Filament\Resources\AcademicCalendars\Schemas\AcademicCalendarForm;
 use App\Filament\Resources\AcademicCalendars\Tables\AcademicCalendarsTable;
@@ -45,8 +43,6 @@ class AcademicCalendarResource extends Resource
     {
         return [
             'index' => ListAcademicCalendars::route('/'),
-            'create' => CreateAcademicCalendar::route('/create'),
-            'edit' => EditAcademicCalendar::route('/{record}/edit'),
         ];
     }
 

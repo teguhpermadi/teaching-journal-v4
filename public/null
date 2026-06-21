@@ -1,4 +1,1 @@
-Role::get();
-Role::find('01k5xkykd57m6rnrgvapf33qcv');
-Role::find('01k5xkykd57m6rnrgvapf33qcv')->permissions;
-Role::find('01k5xkykd57m6rnrgvapf33qcv')->permissions->pluck('name');
+AcademicCalendar::get()

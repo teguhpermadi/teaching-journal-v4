@@ -10,6 +10,12 @@ use Spatie\GoogleCalendar\Event;
 
 class SyncAcademicCalendarFromGoogle extends Command
 {
+    public int $syncedCount = 0;
+
+    public int $deletedCount = 0;
+
+    public int $totalEvents = 0;
+
     protected $signature = 'academic-calendar:sync-from-google';
 
     protected $description = 'Sync changes made in Google Calendar back to local AcademicCalendar records';
@@ -71,11 +77,18 @@ class SyncAcademicCalendarFromGoogle extends Command
 
             $deletedCount = $this->handleOrphanedRecords($foundGoogleIds);
 
-            $this->components->twoColumnDetail('Updated', (string) $syncedCount);
-            $this->components->twoColumnDetail('Deleted (orphaned)', (string) $deletedCount);
+            $this->syncedCount = $syncedCount;
+            $this->deletedCount = $deletedCount;
+            $this->totalEvents = count($googleEvents);
 
             return true;
         });
+
+        $this->line(json_encode([
+            'updated' => $this->syncedCount,
+            'deleted' => $this->deletedCount,
+            'total_events' => $this->totalEvents,
+        ]));
 
         return Command::SUCCESS;
     }
