@@ -45,6 +45,11 @@ class AcademicYear extends Model
         return $this->hasMany(LessonPlan::class);
     }
 
+    public function academicCalendars(): HasMany
+    {
+        return $this->hasMany(AcademicCalendar::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('active', true);

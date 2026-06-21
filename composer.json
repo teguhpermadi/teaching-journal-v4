@@ -14,6 +14,7 @@
         "eightynine/filament-excel-import": "^4.0",
         "filament/filament": "4.0",
         "filament/spatie-laravel-media-library-plugin": "4.0",
+        "filament/spatie-laravel-settings-plugin": "^4.0",
         "guava/calendar": "^2.0",
         "guava/filament-modal-relation-managers": "^2.0",
         "hedii/artisan-log-cleaner": "^8.0",
@@ -31,6 +32,7 @@
         "spatie/laravel-google-calendar": "*",
         "spatie/laravel-medialibrary": "^11.14",
         "spatie/laravel-permission": "^6.21",
+        "spatie/laravel-settings": "^3.9",
         "staudenmeir/eloquent-json-relations": "^1.14",
         "stechstudio/filament-impersonate": "^4.0"
     },
