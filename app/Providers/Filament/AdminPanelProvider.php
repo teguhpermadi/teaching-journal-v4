@@ -51,7 +51,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 WelcomeWidget::class,
                 AccountWidget::class,
-                AcademicWeekStatsWidget::class,
+                // AcademicWeekStatsWidget::class,
                 // UserLastLoginWidget::class,
                 // RecentLoginsWidget::class,
                 // FilamentInfoWidget::class,

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\AcademicCalendars\Pages;
 
 use App\Filament\Resources\AcademicCalendars\AcademicCalendarResource;
 use App\Filament\Resources\AcademicCalendars\Widgets\AcademicCalendarWidget;
+use App\Filament\Widgets\AcademicWeekStatsWidget;
 use App\Imports\AcademicCalendarImport;
 use EightyNine\ExcelImport\ExcelImportAction;
 use Filament\Actions\Action;
@@ -24,6 +25,7 @@ class ListAcademicCalendars extends ListRecords
     {
         return [
             AcademicCalendarWidget::class,
+            AcademicWeekStatsWidget::class,
         ];
     }
 
