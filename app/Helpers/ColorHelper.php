@@ -30,8 +30,11 @@ class ColorHelper
      * @param string $color Input color (RGB, HEX with or without #)
      * @return string Normalized HEX color with # prefix
      */
-    public static function normalizeColor(string $color): string
+    public static function normalizeColor(?string $color): string
     {
+        if (!$color) {
+            return '#3b82f6';
+        }
         // If it's already in valid HEX format (3 or 6 hex digits, optional # prefix)
         if (preg_match('/^#?([a-f0-9]{3}|[a-f0-9]{6})$/i', $color)) {
             $hex = ltrim($color, '#');
