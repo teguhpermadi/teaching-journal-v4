@@ -3,15 +3,17 @@
 namespace App\Filament\Pages;
 
 use App\Settings\AcademicWeekSettings;
+use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Schema;
+use UnitEnum;
 
 class ManageAcademicWeek extends SettingsPage
 {
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
 
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
     protected static ?int $navigationSort = 1;
 

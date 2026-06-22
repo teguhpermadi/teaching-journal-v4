@@ -128,7 +128,6 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->databaseNotifications()
-            ->databaseNotificationsPolling('10s')
-            ->topNavigation();
+            ->databaseNotificationsPolling('10s');
     }
 }
