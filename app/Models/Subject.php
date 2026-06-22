@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
@@ -85,5 +86,10 @@ class Subject extends Model
     public function lessonPlans()
     {
         return $this->hasMany(LessonPlan::class);
+    }
+
+    public function schedule(): HasOne
+    {
+        return $this->hasOne(Schedule::class);
     }
 }
