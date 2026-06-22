@@ -3,13 +3,13 @@
 namespace App\Filament\Resources\Journals\Widgets;
 
 use App\Models\Journal;
-use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget as BaseWidget;
-use EightyNine\FilamentAdvancedWidget\AdvancedStatsOverviewWidget\Stat;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
 
 class JournalSignatureStatsWidget extends BaseWidget
 {
-    protected static ?string $pollingInterval = '10s';
+    protected ?string $pollingInterval = '10s';
 
     protected function getStats(): array
     {
