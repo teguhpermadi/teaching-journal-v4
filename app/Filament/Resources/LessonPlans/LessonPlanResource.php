@@ -7,6 +7,7 @@ use App\Filament\Resources\LessonPlans\Pages\EditLessonPlan;
 use App\Filament\Resources\LessonPlans\Pages\ListLessonPlans;
 use App\Filament\Resources\LessonPlans\Schemas\LessonPlanForm;
 use App\Filament\Resources\LessonPlans\Tables\LessonPlansTable;
+use App\Filament\Resources\LessonPlans\Widgets\LessonPlanWidget;
 use App\Models\LessonPlan;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -48,6 +49,13 @@ class LessonPlanResource extends Resource
             'index' => ListLessonPlans::route('/'),
             'create' => CreateLessonPlan::route('/create'),
             'edit' => EditLessonPlan::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            LessonPlanWidget::class,
         ];
     }
 
