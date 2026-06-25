@@ -70,7 +70,16 @@ class LessonPlanWidget extends CalendarWidget
                 ->allDay(true);
         });
 
-        return collect($events)->merge($hints);
+        $academicCalendars = AcademicCalendar::query()
+            ->whereBetween('start_date', [$info->start, $info->end])
+            ->orWhereBetween('end_date', [$info->start, $info->end])
+            ->get();
+
+        $academicEvents = $academicCalendars->map(function (AcademicCalendar $cal) {
+            return $cal->toCalendarEvent()->editable(false);
+        });
+
+        return collect($events)->merge($hints)->merge($academicEvents);
     }
 
     protected function getScheduleHints(FetchInfo $info, Collection $lessonPlans): Collection
