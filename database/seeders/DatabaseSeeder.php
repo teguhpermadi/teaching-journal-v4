@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             JournalSeeder::class,
             AttendanceSeeder::class,
             ScheduleSeeder::class,
+            LessonPlanSeeder::class,
             // TranscriptSeeder::class,
         ]);
     }

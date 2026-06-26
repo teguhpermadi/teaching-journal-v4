@@ -11,7 +11,6 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class LessonPlansTable
@@ -58,13 +57,6 @@ class LessonPlansTable
                 ]),
             ])
             ->defaultSort('planned_date', 'desc')
-            ->modifyQueryUsing(function (Builder $query) {
-                $user = Auth::user();
-
-                if (! $user || ! ($user->hasRole('admin') || $user->hasRole('headmaster'))) {
-                    $query->where('user_id', $user?->id);
-                }
-            })
             ->poll('10s');
     }
 }

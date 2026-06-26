@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LessonPlans\Widgets;
 
+use App\Models\AcademicCalendar;
 use App\Models\AcademicYear;
 use App\Models\LessonPlan;
 use App\Models\MainTarget;

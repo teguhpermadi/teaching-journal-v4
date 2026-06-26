@@ -15,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class LessonPlanResource extends Resource
 {
@@ -59,11 +60,23 @@ class LessonPlanResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->when(
+            ! Auth::user()?->hasRole('admin') && ! Auth::user()?->hasRole('headmaster'),
+            fn (Builder $query) => $query->where('user_id', Auth::id())
+        );
+    }
+
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
-            ]);
+            ])
+            ->when(
+                ! Auth::user()?->hasRole('admin') && ! Auth::user()?->hasRole('headmaster'),
+                fn (Builder $query) => $query->where('user_id', Auth::id())
+            );
     }
 }
