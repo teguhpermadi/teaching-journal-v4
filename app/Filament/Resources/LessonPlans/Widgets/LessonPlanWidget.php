@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 
 class LessonPlanWidget extends CalendarWidget
 {
@@ -46,10 +47,28 @@ class LessonPlanWidget extends CalendarWidget
 
     public ?string $selectedDate = null;
 
+    public ?string $filterSubjectId = null;
+
+    public function mount(): void
+    {
+        $firstSubject = Subject::mySubjects()->first();
+        if ($firstSubject) {
+            $this->filterSubjectId = $firstSubject->id;
+        }
+    }
+
+    #[On('activeTabChanged')]
+    public function handleTabChanged(?string $subjectId = null): void
+    {
+        $this->filterSubjectId = $subjectId;
+        $this->refreshEvents();
+    }
+
     protected function getEvents(FetchInfo $info): Collection|array|Builder
     {
         $lessonPlans = LessonPlan::query()
             ->myLessonPlans()
+            ->when($this->filterSubjectId, fn (Builder $q) => $q->where('subject_id', $this->filterSubjectId))
             ->whereBetween('planned_date', [$info->start, $info->end])
             ->with(['subject', 'grade'])
             ->get();
@@ -60,7 +79,7 @@ class LessonPlanWidget extends CalendarWidget
             $color = \App\Helpers\ColorHelper::normalizeColor($lessonPlan->subject?->color);
             $textColor = \App\Helpers\ColorHelper::getContrastColor($color);
 
-            return CalendarEvent::make()
+            return CalendarEvent::make($lessonPlan)
                 ->title($lessonPlan->subject?->code.' - '.$lessonPlan->topic)
                 ->key($lessonPlan->id)
                 ->start($lessonPlan->planned_date)
@@ -86,7 +105,8 @@ class LessonPlanWidget extends CalendarWidget
     protected function getScheduleHints(FetchInfo $info, Collection $lessonPlans): Collection
     {
         $schedules = Schedule::whereHas('subject', function ($q) {
-            $q->mySubjects();
+            $q->mySubjects()
+                ->when($this->filterSubjectId, fn (Builder $q) => $q->where('id', $this->filterSubjectId));
         })->with('subject')->get();
 
         if ($schedules->isEmpty()) {
@@ -380,18 +400,12 @@ class LessonPlanWidget extends CalendarWidget
                 ->createOptionForm(function ($get) {
                     $subjectId = $get('subject_id');
                     $gradeId = $get('grade_id');
-                    $academicYearId = $get('academic_year_id');
-                    $userId = $get('user_id');
 
                     return [
                         Hidden::make('subject_id')
                             ->default($subjectId),
                         Hidden::make('grade_id')
                             ->default($gradeId),
-                        Hidden::make('academic_year_id')
-                            ->default($academicYearId),
-                        Hidden::make('user_id')
-                            ->default($userId),
                         Select::make('main_target_id')
                             ->label('Tujuan Utama')
                             ->options(
@@ -407,12 +421,12 @@ class LessonPlanWidget extends CalendarWidget
                                     ->label('Tujuan Utama Baru')
                                     ->required(),
                             ])
-                            ->createOptionUsing(function (array $data) use ($subjectId, $gradeId, $academicYearId, $userId) {
+                            ->createOptionUsing(function (array $data) use ($subjectId, $gradeId) {
                                 return MainTarget::create([
                                     'subject_id' => $subjectId,
                                     'grade_id' => $gradeId,
-                                    'academic_year_id' => $academicYearId,
-                                    'user_id' => $userId,
+                                    'academic_year_id' => AcademicYear::active()->first()?->id,
+                                    'user_id' => Auth::id(),
                                     'main_target' => $data['main_target'],
                                 ])->id;
                             }),
@@ -425,8 +439,8 @@ class LessonPlanWidget extends CalendarWidget
                     return Target::create([
                         'subject_id' => $get('subject_id'),
                         'grade_id' => $get('grade_id'),
-                        'academic_year_id' => $get('academic_year_id'),
-                        'user_id' => $get('user_id'),
+                        'academic_year_id' => AcademicYear::active()->first()?->id,
+                        'user_id' => Auth::id(),
                         'main_target_id' => $data['main_target_id'],
                         'target' => $data['target'],
                     ])->id;
