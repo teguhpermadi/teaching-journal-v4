@@ -17,6 +17,7 @@ use Guava\Calendar\Filament\Actions\DeleteAction;
 use Guava\Calendar\Filament\Actions\EditAction;
 use Guava\Calendar\Filament\CalendarWidget;
 use Guava\Calendar\ValueObjects\DateClickInfo;
+use Guava\Calendar\ValueObjects\DatesSetInfo;
 use Guava\Calendar\ValueObjects\EventDropInfo;
 use Guava\Calendar\ValueObjects\FetchInfo;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,6 +39,13 @@ class AcademicCalendarWidget extends CalendarWidget
     protected bool $eventDragEnabled = true;
 
     public ?string $selectedDate = null;
+
+    protected bool $datesSetEnabled = true;
+
+    protected function onDatesSet(DatesSetInfo $info): void
+    {
+        $this->dispatch('monthChanged', month: $info->start->addDays(15)->format('Y-m'));
+    }
 
     #[On('academic-calendar-updated')]
     public function refreshFromEvent(): void

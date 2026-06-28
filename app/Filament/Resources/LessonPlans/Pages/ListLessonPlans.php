@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LessonPlans\Pages;
 
 use App\Filament\Resources\LessonPlans\LessonPlanResource;
 use App\Filament\Resources\LessonPlans\Widgets\LessonPlanWidget;
+use App\Filament\Widgets\MonthStatsWidget;
 use App\Models\LessonPlan;
 use App\Models\Subject;
 use Filament\Actions\CreateAction;
@@ -56,6 +57,7 @@ class ListLessonPlans extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
+            MonthStatsWidget::class,
             LessonPlanWidget::class,
         ];
     }

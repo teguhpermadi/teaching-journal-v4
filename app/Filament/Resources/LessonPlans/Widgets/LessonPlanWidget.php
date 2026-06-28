@@ -25,6 +25,7 @@ use Guava\Calendar\Filament\Actions\EditAction;
 use Guava\Calendar\Filament\CalendarWidget;
 use Guava\Calendar\ValueObjects\CalendarEvent;
 use Guava\Calendar\ValueObjects\DateClickInfo;
+use Guava\Calendar\ValueObjects\DatesSetInfo;
 use Guava\Calendar\ValueObjects\EventDropInfo;
 use Guava\Calendar\ValueObjects\FetchInfo;
 use Illuminate\Database\Eloquent\Builder;
@@ -42,6 +43,8 @@ class LessonPlanWidget extends CalendarWidget
     protected bool $eventClickEnabled = true;
 
     protected bool $eventDragEnabled = true;
+
+    protected bool $datesSetEnabled = true;
 
     protected ?string $defaultEventClickAction = null;
 
@@ -62,6 +65,11 @@ class LessonPlanWidget extends CalendarWidget
     {
         $this->filterSubjectId = $subjectId;
         $this->refreshEvents();
+    }
+
+    protected function onDatesSet(DatesSetInfo $info): void
+    {
+        $this->dispatch('monthChanged', month: $info->start->addDays(15)->format('Y-m'));
     }
 
     protected function getEvents(FetchInfo $info): Collection|array|Builder
@@ -217,8 +225,10 @@ class LessonPlanWidget extends CalendarWidget
     protected function getEventClickContextMenuActions(): array
     {
         return [
-            $this->editAction(),
-            $this->deleteAction(),
+            $this->editAction()
+                ->visible(fn (): bool => $this->getEventRecord() instanceof LessonPlan),
+            $this->deleteAction()
+                ->visible(fn (): bool => $this->getEventRecord() instanceof LessonPlan),
         ];
     }
 

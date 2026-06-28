@@ -5,6 +5,7 @@ namespace App\Filament\Resources\AcademicCalendars\Pages;
 use App\Filament\Resources\AcademicCalendars\AcademicCalendarResource;
 use App\Filament\Resources\AcademicCalendars\Widgets\AcademicCalendarWidget;
 use App\Filament\Widgets\AcademicWeekStatsWidget;
+use App\Filament\Widgets\MonthStatsWidget;
 use App\Imports\AcademicCalendarImport;
 use EightyNine\ExcelImport\ExcelImportAction;
 use Filament\Actions\Action;
@@ -24,6 +25,7 @@ class ListAcademicCalendars extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
+            MonthStatsWidget::class,
             AcademicCalendarWidget::class,
             AcademicWeekStatsWidget::class,
         ];
@@ -32,6 +34,8 @@ class ListAcademicCalendars extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            /* ---- syncFromGoogle ---- */
+            /*
             Action::make('syncFromGoogle')
                 ->label('Sync Google Calendar')
                 ->icon('heroicon-o-arrow-path')
@@ -71,6 +75,7 @@ class ListAcademicCalendars extends ListRecords
                             ->send();
                     }
                 }),
+            */
             ExcelImportAction::make()
                 ->use(AcademicCalendarImport::class)
                 ->slideOver()
